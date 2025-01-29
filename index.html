@@ -4,38 +4,157 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>V-Mach Cantina</title>
-    <link rel="stylesheet" href="assets/styles.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to right, #FFD700, #FFB300);
+            color: #343a40;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        h1 {
+            color: #007bff;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-size: 1.1em;
+            text-align: left;
+        }
+
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 1em;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .mail-btn {
+            background-color: #6f42c1;
+        }
+
+        .mail-btn:hover {
+            background-color: #5a32a3;
+        }
+
+        .command-list {
+            margin-top: 20px;
+            text-align: left;
+            overflow-x: auto;
+        }
+
+        .command-table {
+            width: 100%;
+            margin-top: 10px;
+            border-collapse: collapse;
+            background: #fff;
+            min-width: 600px;
+        }
+
+        .command-table th, .command-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .command-table th {
+            background: #007bff;
+            color: white;
+        }
+
+        .command-table tr:hover {
+            background: #f1f1f1;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .counter {
+            font-size: 1.2em;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #007bff;
+        }
+    </style>
 </head>
 <body>
+
+    <h1>V-Mach Cantina</h1>
+
     <div class="container">
-        <h1>V-Mach Cantina</h1>
-        <label>Nom :</label>
-        <input type="text" id="nom">
+        <label for="nom">Nom :</label>
+        <input type="text" id="nom" placeholder="Entrez votre nom">
 
-        <label>Entrée :</label>
-        <input type="text" id="entree">
+        <label for="entree">Entrée :</label>
+        <input type="text" id="entree" placeholder="Entrez l'entrée souhaitée">
 
-        <label>Plat :</label>
-        <input type="text" id="plat">
+        <label for="plat">Plat :</label>
+        <input type="text" id="plat" placeholder="Entrez le plat souhaité">
 
-        <label>Accompagnement :</label>
-        <input type="text" id="accompagnement">
+        <label for="accompagnement">Accompagnement :</label>
+        <input type="text" id="accompagnement" placeholder="Accompagnement (facultatif)">
 
-        <label>Boisson :</label>
-        <input type="text" id="boisson">
+        <label for="boisson">Boisson :</label>
+        <input type="text" id="boisson" placeholder="Entrez la boisson souhaitée">
 
-        <label>Autre :</label>
-        <input type="text" id="autre">
+        <label for="autre">Autre :</label>
+        <input type="text" id="autre" placeholder="Autre demande (facultatif)">
 
         <button onclick="ajouterCommande()">Ajouter la commande</button>
         <button onclick="reinitialiserCommandes()">Réinitialiser la liste</button>
-        <button onclick="envoyerMail()">Envoyer par mail</button>
+        <button class="mail-btn" onclick="envoyerMail()">Envoyer par mail</button>
 
-        <div id="compteur"></div>
+        <div class="counter" id="compteur"></div>
 
-        <table id="commandes"></table>
+        <div class="command-list">
+            <table class="command-table" id="commandes"></table>
+        </div>
     </div>
 
     <script src="assets/script.js"></script>
+
 </body>
 </html>
