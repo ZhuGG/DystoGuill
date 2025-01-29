@@ -1,3 +1,5 @@
+let GITHUB_TOKEN = localStorage.getItem("GITHUB_TOKEN") || prompt("Entrez votre token GitHub :");
+localStorage.setItem("GITHUB_TOKEN", GITHUB_TOKEN);
 const GITHUB_TOKEN = prompt("Entrez votre token GitHub :");
 const REPO_URL = "https://api.github.com/repos/ZhuGG/v-mach-cantina/issues";
 
@@ -73,13 +75,14 @@ function supprimerCommande(issueNumber) {
     })
     .then(response => {
         if (response.ok) {
-            chargerCommandes(); // Recharge la liste après suppression
+            setTimeout(() => { location.reload(); }, 500); // Recharge après suppression
         } else {
             console.error("Erreur lors de la suppression :", response);
         }
     })
     .catch(error => console.error("Erreur lors de la suppression de la commande :", error));
 }
+
 
 // 🔹 Fonction pour réinitialiser toutes les commandes
 function reinitialiserCommandes() {
@@ -123,17 +126,17 @@ function envoyerMail() {
         }
 
         let subject = "Commandes V-Mach Cantina";
-        let body = "Voici les commandes enregistrées :%0A%0A";
+        let body = "Voici les commandes enregistrées :\n\n";
         
         data.forEach((c, index) => {
             let details = c.body.split("\\n");
-            body += `Commande ${index + 1} :%0A`;
-            body += `Nom : ${c.title.replace("Commande - ", "")}%0A`;
-            body += `Entrée : ${details[0] || 'Aucune'}%0A`;
-            body += `Plat : ${details[1] || 'Aucun'}%0A`;
-            body += `Accompagnement : ${details[2] || 'Aucun'}%0A`;
-            body += `Boisson : ${details[3] || 'Aucune'}%0A`;
-            body += `Autre : ${details[4] || 'Rien à signaler'}%0A%0A`;
+            body += `Commande ${index + 1} :\n`;
+            body += `Nom : ${c.title.replace("Commande - ", "")}\n`;
+            body += `Entrée : ${details[0] || 'Aucune'}\n`;
+            body += `Plat : ${details[1] || 'Aucun'}\n`;
+            body += `Accompagnement : ${details[2] || 'Aucun'}\n`;
+            body += `Boisson : ${details[3] || 'Aucune'}\n`;
+            body += `Autre : ${details[4] || 'Rien à signaler'}\n\n`;
         });
 
         window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
