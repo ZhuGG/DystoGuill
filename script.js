@@ -2,7 +2,7 @@
 let GITHUB_TOKEN = localStorage.getItem("GITHUB_TOKEN");
 
 if (!GITHUB_TOKEN) {
-    GITHUB_TOKEN = prompt("Entrez votre token GitHub :");
+    GITHUB_TOKEN = prompt("Entrez votre token GitHub :").trim();
     localStorage.setItem("GITHUB_TOKEN", GITHUB_TOKEN);
 }
 
@@ -32,14 +32,20 @@ function chargerCommandes() {
             table.innerHTML += headerRow;
 
             data.forEach(issue => {
-                let body = issue.body.split("\\n");
+                let body;
+                try {
+                    body = JSON.parse(issue.body); // 🔹 On parse le JSON proprement
+                } catch (e) {
+                    body = {}; // 🔹 S'il y a une erreur, on initialise un objet vide
+                }
+
                 let row = `<tr>
                     <td>${issue.title.replace("Commande - ", "")}</td>
-                    <td>${body[0] || '-'}</td>
-                    <td>${body[1] || '-'}</td>
-                    <td>${body[2] || '-'}</td>
-                    <td>${body[3] || '-'}</td>
-                    <td>${body[4] || '-'}</td>
+                    <td>${body.entree || '-'}</td>
+                    <td>${body.plat || '-'}</td>
+                    <td>${body.accompagnement || '-'}</td>
+                    <td>${body.boisson || '-'}</td>
+                    <td>${body.autre || '-'}</td>
                     <td><button class="delete-btn" onclick="supprimerCommande(${issue.number})">Supprimer</button></td>
                 </tr>`;
                 table.innerHTML += row;
@@ -72,7 +78,13 @@ function ajouterCommande() {
         },
         body: JSON.stringify({
             title: `Commande - ${nom}`,
-            body: `${entree}\\n${plat}\\n${accompagnement}\\n${boisson}\\n${autre}`
+            body: JSON.stringify({
+                entree: entree,
+                plat: plat,
+                accompagnement: accompagnement,
+                boisson: boisson,
+                autre: autre
+            })
         })
     })
     .then(response => {
@@ -106,37 +118,7 @@ function supprimerCommande(issueNumber) {
     .catch(error => console.error("Erreur lors de la suppression de la commande :", error));
 }
 
-// 🔹 Fonction pour réinitialiser toutes les commandes
-function reinitialiserCommandes() {
-    fetch(REPO_URL, {
-        headers: {
-            "Authorization": `token ${GITHUB_TOKEN}`,
-            "Accept": "application/vnd.github.v3+json"
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        let promises = data.map(issue => {
-            return fetch(`${REPO_URL}/${issue.number}`, {
-                method: "PATCH",
-                headers: {
-                    "Authorization": `token ${GITHUB_TOKEN}`,
-                    "Accept": "application/vnd.github.v3+json",
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ state: "closed" })
-            });
-        });
-
-        return Promise.all(promises);
-    })
-    .then(() => {
-        setTimeout(chargerCommandes, 1000); // Recharge après suppression
-    })
-    .catch(error => console.error("Erreur lors de la réinitialisation :", error));
-}
-
-// 🔹 Fonction pour envoyer les commandes par mail (format amélioré)
+// 🔹 Fonction pour envoyer les commandes par mail
 function envoyerMail() {
     fetch(REPO_URL, {
         headers: {
@@ -155,14 +137,20 @@ function envoyerMail() {
         let body = "📌 Voici les commandes enregistrées :\n\n";
         
         data.forEach((c, index) => {
-            let details = c.body.split("\\n");
+            let details;
+            try {
+                details = JSON.parse(c.body);
+            } catch (e) {
+                details = {}; // Si le parsing échoue, on évite de planter
+            }
+
             body += `📍 Commande ${index + 1} :\n`;
             body += `👤 Nom : ${c.title.replace("Commande - ", "")}\n`;
-            body += `🥗 Entrée : ${details[0] || 'Aucune'}\n`;
-            body += `🍽 Plat : ${details[1] || 'Aucun'}\n`;
-            body += `🍟 Accompagnement : ${details[2] || 'Aucun'}\n`;
-            body += `🥤 Boisson : ${details[3] || 'Aucune'}\n`;
-            body += `📝 Autre : ${details[4] || 'Rien à signaler'}\n\n`;
+            body += `🥗 Entrée : ${details.entree || 'Aucune'}\n`;
+            body += `🍽 Plat : ${details.plat || 'Aucun'}\n`;
+            body += `🍟 Accompagnement : ${details.accompagnement || 'Aucun'}\n`;
+            body += `🥤 Boisson : ${details.boisson || 'Aucune'}\n`;
+            body += `📝 Autre : ${details.autre || 'Rien à signaler'}\n\n`;
         });
 
         window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
