@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V-Mach Cantina</title>
+    <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>V-Mach Cantina</h1>
+        <label>Nom :</label>
+        <input type="text" id="nom">
+
+        <label>Entrée :</label>
+        <input type="text" id="entree">
+
+        <label>Plat :</label>
+        <input type="text" id="plat">
+
+        <label>Accompagnement :</label>
+        <input type="text" id="accompagnement">
+
+        <label>Boisson :</label>
+        <input type="text" id="boisson">
+
+        <label>Autre :</label>
+        <input type="text" id="autre">
+
+        <button onclick="ajouterCommande()">Ajouter la commande</button>
+        <button onclick="reinitialiserCommandes()">Réinitialiser la liste</button>
+        <button onclick="envoyerMail()">Envoyer par mail</button>
+
+        <div id="compteur"></div>
+
+        <table id="commandes"></table>
+    </div>
+
+    <script src="assets/script.js"></script>
+</body>
+</html>
