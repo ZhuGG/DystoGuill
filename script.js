@@ -1,4 +1,4 @@
-const GITHUB_TOKEN = "TON_TOKEN_ICI";  // ⚠️ À remplacer par ton token GitHub
+const GITHUB_TOKEN = "token";  // ⚠️ À remplacer par ton token GitHub
 
 function chargerCommandes() {
     fetch("https://api.github.com/repos/ZhuGG/v-mach-cantina/issues", {
