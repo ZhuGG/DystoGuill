@@ -1,3 +1,7 @@
+function nettoyerTexte(texte) {
+    return texte.normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Supprime les accents
+               .replace(/[^\x00-\x7F]/g, ""); // Supprime tous les caractères non ASCII
+}
 function supprimerEmojis(texte) {
     return texte.replace(/[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, "");
 }
@@ -60,12 +64,12 @@ function chargerCommandes() {
 
 // 🔹 Fonction pour ajouter une nouvelle commande
 function ajouterCommande() {
-    let nom = supprimerEmojis(document.getElementById("nom").value.trim());
-    let entree = supprimerEmojis(document.getElementById("entree").value.trim());
-    let plat = supprimerEmojis(document.getElementById("plat").value.trim());
-    let accompagnement = supprimerEmojis(document.getElementById("accompagnement").value.trim());
-    let boisson = supprimerEmojis(document.getElementById("boisson").value.trim());
-    let autre = supprimerEmojis(document.getElementById("autre").value.trim());
+    let nom = nettoyerTexte(document.getElementById("nom").value.trim());
+    let entree = nettoyerTexte(document.getElementById("entree").value.trim());
+    let plat = nettoyerTexte(document.getElementById("plat").value.trim());
+    let accompagnement = nettoyerTexte(document.getElementById("accompagnement").value.trim());
+    let boisson = nettoyerTexte(document.getElementById("boisson").value.trim());
+    let autre = nettoyerTexte(document.getElementById("autre").value.trim());
 
     if (!nom) {
         alert("Le champ Nom est obligatoire !");
@@ -100,7 +104,6 @@ function ajouterCommande() {
     .catch(error => console.error("Erreur lors de l'ajout de la commande :", error));
 }
 
-
 // 🔹 Fonction pour supprimer une commande
 function supprimerCommande(issueNumber) {
     fetch(`${REPO_URL}/${issueNumber}`, {
@@ -124,7 +127,6 @@ function supprimerCommande(issueNumber) {
 
 // 🔹 Fonction pour envoyer les commandes par mail
 function envoyerMail() {
-  function envoyerMail() {
     fetch(REPO_URL, {
         headers: {
             "Authorization": `token ${GITHUB_TOKEN}`,
@@ -150,12 +152,12 @@ function envoyerMail() {
             }
 
             body += `📍 Commande ${index + 1} :\n`;
-            body += `👤 Nom : ${supprimerEmojis(c.title.replace("Commande - ", ""))}\n`;
-            body += `🥗 Entrée : ${supprimerEmojis(details.entree || 'Aucune')}\n`;
-            body += `🍽 Plat : ${supprimerEmojis(details.plat || 'Aucun')}\n`;
-            body += `🍟 Accompagnement : ${supprimerEmojis(details.accompagnement || 'Aucun')}\n`;
-            body += `🥤 Boisson : ${supprimerEmojis(details.boisson || 'Aucune')}\n`;
-            body += `📝 Autre : ${supprimerEmojis(details.autre || 'Rien à signaler')}\n\n`;
+            body += `👤 Nom : ${nettoyerTexte(c.title.replace("Commande - ", ""))}\n`;
+            body += `🥗 Entrée : ${nettoyerTexte(details.entree || 'Aucune')}\n`;
+            body += `🍽 Plat : ${nettoyerTexte(details.plat || 'Aucun')}\n`;
+            body += `🍟 Accompagnement : ${nettoyerTexte(details.accompagnement || 'Aucun')}\n`;
+            body += `🥤 Boisson : ${nettoyerTexte(details.boisson || 'Aucune')}\n`;
+            body += `📝 Autre : ${nettoyerTexte(details.autre || 'Rien à signaler')}\n\n`;
         });
 
         window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
