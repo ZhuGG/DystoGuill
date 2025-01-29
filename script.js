@@ -1,7 +1,8 @@
-const GITHUB_TOKEN = "token";  // ⚠️ À remplacer par ton token GitHub
+const GITHUB_TOKEN = prompt("Entrez votre token GitHub :");
+const REPO_URL = "https://api.github.com/repos/ZhuGG/v-mach-cantina/issues";
 
 function chargerCommandes() {
-    fetch("https://api.github.com/repos/ZhuGG/v-mach-cantina/issues", {
+    fetch(REPO_URL, {
         headers: {
             "Authorization": `token ${GITHUB_TOKEN}`,
             "Accept": "application/vnd.github.v3+json"
@@ -12,24 +13,28 @@ function chargerCommandes() {
         let table = document.getElementById("commandes");
         let compteur = document.getElementById("compteur");
         table.innerHTML = "";
-        
+
         compteur.innerHTML = `Commandes enregistrées : ${data.length}`;
 
-        data.forEach(issue => {
-            let body = issue.body.split("\n");
-            let row = `<tr>
-                <td>${issue.title}</td>
-                <td>${body[0] || '-'}</td>
-                <td>${body[1] || '-'}</td>
-                <td>${body[2] || '-'}</td>
-                <td>${body[3] || '-'}</td>
-                <td>${body[4] || '-'}</td>
-                <td><button onclick="supprimerCommande(${issue.number})">Supprimer</button></td>
-            </tr>`;
-            table.innerHTML += row;
-        });
-    })
-    .catch(error => console.error("Erreur lors du chargement des commandes :", error));
+        if (data.length > 0) {
+            let headerRow = "<tr><th>Nom</th><th>Entrée</th><th>Plat</th><th>Accompagnement</th><th>Boisson</th><th>Autre</th><th>Action</th></tr>";
+            table.innerHTML += headerRow;
+
+            data.forEach(issue => {
+                let body = issue.body.split("\\n");
+                let row = `<tr>
+                    <td>${issue.title.replace("Commande - ", "")}</td>
+                    <td>${body[0] || '-'}</td>
+                    <td>${body[1] || '-'}</td>
+                    <td>${body[2] || '-'}</td>
+                    <td>${body[3] || '-'}</td>
+                    <td>${body[4] || '-'}</td>
+                    <td><button class="delete-btn" onclick="supprimerCommande(${issue.number})">Supprimer</button></td>
+                </tr>`;
+                table.innerHTML += row;
+            });
+        }
+    });
 }
 
 function ajouterCommande() {
@@ -40,14 +45,7 @@ function ajouterCommande() {
     let boisson = document.getElementById("boisson").value;
     let autre = document.getElementById("autre").value;
 
-    if (nom.trim() === "") {
-        alert("Veuillez entrer votre nom !");
-        return;
-    }
-
-    let body = `${entree || 'Aucune'}\n${plat || 'Aucun'}\n${accompagnement || 'Aucun'}\n${boisson || 'Aucune'}\n${autre || 'Rien à signaler'}`;
-
-    fetch("https://api.github.com/repos/ZhuGG/v-mach-cantina/issues", {
+    fetch(REPO_URL, {
         method: "POST",
         headers: {
             "Authorization": `token ${GITHUB_TOKEN}`,
@@ -56,31 +54,9 @@ function ajouterCommande() {
         },
         body: JSON.stringify({
             title: `Commande - ${nom}`,
-            body: body,
-            labels: ["commande"]
+            body: `${entree}\\n${plat}\\n${accompagnement}\\n${boisson}\\n${autre}`
         })
-    })
-    .then(response => response.json())
-    .then(() => {
-        chargerCommandes();
-    })
-    .catch(error => console.error("Erreur lors de l'ajout de la commande :", error));
-}
-
-function supprimerCommande(issueNumber) {
-    fetch("https://api.github.com/repos/ZhuGG/v-mach-cantina/issues/" + issueNumber, {
-        method: "PATCH",
-        headers: {
-            "Authorization": `token ${GITHUB_TOKEN}`,
-            "Accept": "application/vnd.github.v3+json",
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ state: "closed" })
-    })
-    .then(() => {
-        chargerCommandes();
-    })
-    .catch(error => console.error("Erreur lors de la suppression de la commande :", error));
+    }).then(() => chargerCommandes());
 }
 
 document.addEventListener("DOMContentLoaded", chargerCommandes);
