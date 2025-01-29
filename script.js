@@ -2,20 +2,22 @@ function nettoyerTexte(texte) {
     return texte.normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Supprime les accents
                .replace(/[^\x00-\x7F]/g, ""); // Supprime tous les caractères non ASCII
 }
+
 function supprimerEmojis(texte) {
     return texte.replace(/[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, "");
 }
-// 🔹 Stockage du token GitHub (évite de le redemander après un rafraîchissement)
+
+// 🔹 Stockage du token GitHub
 let GITHUB_TOKEN = localStorage.getItem("GITHUB_TOKEN");
 
-if (!GITHUB_TOKEN) {
+if (!GITHUB_TOKEN || GITHUB_TOKEN.length < 40) {
     GITHUB_TOKEN = prompt("Entrez votre token GitHub :").trim();
     localStorage.setItem("GITHUB_TOKEN", GITHUB_TOKEN);
 }
 
 const REPO_URL = "https://api.github.com/repos/ZhuGG/v-mach-cantina/issues";
 
-// 🔹 Fonction pour charger les commandes depuis GitHub Issues
+// 🔹 Charger les commandes depuis GitHub Issues
 function chargerCommandes() {
     fetch(REPO_URL, {
         headers: {
@@ -23,11 +25,10 @@ function chargerCommandes() {
             "Accept": "application/vnd.github.v3+json"
         }
     })
-    .then(response => {
-        if (!response.ok) throw new Error("Erreur API GitHub : Impossible de récupérer les commandes.");
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
+        console.log("📌 Données récupérées :", data);
+
         let table = document.getElementById("commandes");
         let compteur = document.getElementById("compteur");
         table.innerHTML = "";
@@ -41,9 +42,9 @@ function chargerCommandes() {
             data.forEach(issue => {
                 let body;
                 try {
-                    body = JSON.parse(issue.body); // 🔹 On parse le JSON proprement
+                    body = JSON.parse(issue.body);
                 } catch (e) {
-                    body = {}; // 🔹 S'il y a une erreur, on initialise un objet vide
+                    body = {};
                 }
 
                 let row = `<tr>
@@ -59,11 +60,13 @@ function chargerCommandes() {
             });
         }
     })
-    .catch(error => console.error("Erreur de récupération des commandes :", error));
+    .catch(error => console.error("❌ Erreur de récupération des commandes :", error));
 }
 
-// 🔹 Fonction pour ajouter une nouvelle commande
+// 🔹 Ajouter une commande
 function ajouterCommande() {
+    console.log("🟢 Ajout d'une commande...");
+
     let nom = nettoyerTexte(document.getElementById("nom").value.trim());
     let entree = nettoyerTexte(document.getElementById("entree").value.trim());
     let plat = nettoyerTexte(document.getElementById("plat").value.trim());
@@ -85,13 +88,7 @@ function ajouterCommande() {
         },
         body: JSON.stringify({
             title: `Commande - ${nom}`,
-            body: JSON.stringify({
-                entree: entree,
-                plat: plat,
-                accompagnement: accompagnement,
-                boisson: boisson,
-                autre: autre
-            })
+            body: JSON.stringify({ entree, plat, accompagnement, boisson, autre })
         })
     })
     .then(response => {
@@ -99,13 +96,16 @@ function ajouterCommande() {
         return response.json();
     })
     .then(() => {
-        setTimeout(chargerCommandes, 500); // Recharge après ajout
+        console.log("✅ Commande ajoutée !");
+        setTimeout(chargerCommandes, 500);
     })
-    .catch(error => console.error("Erreur lors de l'ajout de la commande :", error));
+    .catch(error => console.error("❌ Erreur lors de l'ajout de la commande :", error));
 }
 
-// 🔹 Fonction pour supprimer une commande
+// 🔹 Supprimer une commande
 function supprimerCommande(issueNumber) {
+    console.log("🟠 Suppression de la commande :", issueNumber);
+
     fetch(`${REPO_URL}/${issueNumber}`, {
         method: "PATCH",
         headers: {
@@ -120,12 +120,13 @@ function supprimerCommande(issueNumber) {
         return response.json();
     })
     .then(() => {
-        setTimeout(chargerCommandes, 500); // Recharge après suppression
+        console.log("✅ Commande supprimée !");
+        setTimeout(chargerCommandes, 500);
     })
-    .catch(error => console.error("Erreur lors de la suppression de la commande :", error));
+    .catch(error => console.error("❌ Erreur lors de la suppression de la commande :", error));
 }
 
-// 🔹 Fonction pour envoyer les commandes par mail
+// 🔹 Envoyer les commandes par mail
 function envoyerMail() {
     fetch(REPO_URL, {
         headers: {
@@ -151,18 +152,18 @@ function envoyerMail() {
                 details = {};
             }
 
-            body += `📍 Commande ${index + 1} :\n`;
-            body += `👤 Nom : ${nettoyerTexte(c.title.replace("Commande - ", ""))}\n`;
-            body += `🥗 Entrée : ${nettoyerTexte(details.entree || 'Aucune')}\n`;
-            body += `🍽 Plat : ${nettoyerTexte(details.plat || 'Aucun')}\n`;
-            body += `🍟 Accompagnement : ${nettoyerTexte(details.accompagnement || 'Aucun')}\n`;
-            body += `🥤 Boisson : ${nettoyerTexte(details.boisson || 'Aucune')}\n`;
-            body += `📝 Autre : ${nettoyerTexte(details.autre || 'Rien à signaler')}\n\n`;
+            body += `Commande ${index + 1} :\n`;
+            body += `Nom : ${nettoyerTexte(c.title.replace("Commande - ", ""))}\n`;
+            body += `Entrée : ${details.entree || 'Aucune'}\n`;
+            body += `Plat : ${details.plat || 'Aucun'}\n`;
+            body += `Accompagnement : ${details.accompagnement || 'Aucun'}\n`;
+            body += `Boisson : ${details.boisson || 'Aucune'}\n`;
+            body += `Autre : ${details.autre || 'Rien à signaler'}\n\n`;
         });
 
         window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     })
-    .catch(error => console.error("Erreur lors de l'envoi du mail :", error));
+    .catch(error => console.error("❌ Erreur lors de l'envoi du mail :", error));
 }
 
 // Chargement des commandes au démarrage
