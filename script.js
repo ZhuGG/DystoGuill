@@ -1,7 +1,12 @@
-let GITHUB_TOKEN = localStorage.getItem("GITHUB_TOKEN") || prompt("Entrez votre token GitHub :");
-localStorage.setItem("GITHUB_TOKEN", GITHUB_TOKEN);
-const GITHUB_TOKEN = prompt("Entrez votre token GitHub :");
+let GITHUB_TOKEN = localStorage.getItem("GITHUB_TOKEN");
+
+if (!GITHUB_TOKEN) {
+    GITHUB_TOKEN = prompt("Entrez votre token GitHub :");
+    localStorage.setItem("GITHUB_TOKEN", GITHUB_TOKEN);
+}
+
 const REPO_URL = "https://api.github.com/repos/ZhuGG/v-mach-cantina/issues";
+
 
 function chargerCommandes() {
     fetch(REPO_URL, {
@@ -75,13 +80,14 @@ function supprimerCommande(issueNumber) {
     })
     .then(response => {
         if (response.ok) {
-            setTimeout(() => { location.reload(); }, 500); // Recharge après suppression
+            setTimeout(() => { chargerCommandes(); }, 500); // Recharge uniquement les commandes, sans reload total
         } else {
             console.error("Erreur lors de la suppression :", response);
         }
     })
     .catch(error => console.error("Erreur lors de la suppression de la commande :", error));
 }
+
 
 
 // 🔹 Fonction pour réinitialiser toutes les commandes
