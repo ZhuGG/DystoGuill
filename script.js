@@ -1,3 +1,6 @@
+function supprimerEmojis(texte) {
+    return texte.replace(/[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, "");
+}
 // 🔹 Stockage du token GitHub (évite de le redemander après un rafraîchissement)
 let GITHUB_TOKEN = localStorage.getItem("GITHUB_TOKEN");
 
@@ -57,12 +60,12 @@ function chargerCommandes() {
 
 // 🔹 Fonction pour ajouter une nouvelle commande
 function ajouterCommande() {
-    let nom = document.getElementById("nom").value.trim();
-    let entree = document.getElementById("entree").value.trim();
-    let plat = document.getElementById("plat").value.trim();
-    let accompagnement = document.getElementById("accompagnement").value.trim();
-    let boisson = document.getElementById("boisson").value.trim();
-    let autre = document.getElementById("autre").value.trim();
+    let nom = supprimerEmojis(document.getElementById("nom").value.trim());
+    let entree = supprimerEmojis(document.getElementById("entree").value.trim());
+    let plat = supprimerEmojis(document.getElementById("plat").value.trim());
+    let accompagnement = supprimerEmojis(document.getElementById("accompagnement").value.trim());
+    let boisson = supprimerEmojis(document.getElementById("boisson").value.trim());
+    let autre = supprimerEmojis(document.getElementById("autre").value.trim());
 
     if (!nom) {
         alert("Le champ Nom est obligatoire !");
@@ -97,6 +100,7 @@ function ajouterCommande() {
     .catch(error => console.error("Erreur lors de l'ajout de la commande :", error));
 }
 
+
 // 🔹 Fonction pour supprimer une commande
 function supprimerCommande(issueNumber) {
     fetch(`${REPO_URL}/${issueNumber}`, {
@@ -120,6 +124,7 @@ function supprimerCommande(issueNumber) {
 
 // 🔹 Fonction pour envoyer les commandes par mail
 function envoyerMail() {
+  function envoyerMail() {
     fetch(REPO_URL, {
         headers: {
             "Authorization": `token ${GITHUB_TOKEN}`,
@@ -139,18 +144,18 @@ function envoyerMail() {
         data.forEach((c, index) => {
             let details;
             try {
-                details = JSON.parse(c.body);
+                details = JSON.parse(decodeURIComponent(escape(c.body)));
             } catch (e) {
-                details = {}; // Si le parsing échoue, on évite de planter
+                details = {};
             }
 
             body += `📍 Commande ${index + 1} :\n`;
-            body += `👤 Nom : ${c.title.replace("Commande - ", "")}\n`;
-            body += `🥗 Entrée : ${details.entree || 'Aucune'}\n`;
-            body += `🍽 Plat : ${details.plat || 'Aucun'}\n`;
-            body += `🍟 Accompagnement : ${details.accompagnement || 'Aucun'}\n`;
-            body += `🥤 Boisson : ${details.boisson || 'Aucune'}\n`;
-            body += `📝 Autre : ${details.autre || 'Rien à signaler'}\n\n`;
+            body += `👤 Nom : ${supprimerEmojis(c.title.replace("Commande - ", ""))}\n`;
+            body += `🥗 Entrée : ${supprimerEmojis(details.entree || 'Aucune')}\n`;
+            body += `🍽 Plat : ${supprimerEmojis(details.plat || 'Aucun')}\n`;
+            body += `🍟 Accompagnement : ${supprimerEmojis(details.accompagnement || 'Aucun')}\n`;
+            body += `🥤 Boisson : ${supprimerEmojis(details.boisson || 'Aucune')}\n`;
+            body += `📝 Autre : ${supprimerEmojis(details.autre || 'Rien à signaler')}\n\n`;
         });
 
         window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
