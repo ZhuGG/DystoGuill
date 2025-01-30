@@ -1,10 +1,27 @@
 // 🔹 Stockage du token GitHub (évite de le redemander après un rafraîchissement)
-let GITHUB_TOKEN = localStorage.getItem("GITHUB_TOKEN");
+async function getToken() {
+    const response = await fetch("/.github/workflows/token.yml"); // GitHub Actions gère le secret ici
+    if (!response.ok) {
+        console.error("Erreur de récupération du token sécurisé");
+        return null;
+    }
 
-if (!GITHUB_TOKEN) {
-    GITHUB_TOKEN = prompt("Entrez votre token GitHub :").trim();
-    localStorage.setItem("GITHUB_TOKEN", GITHUB_TOKEN);
+    const data = await response.text();
+    const tokenMatch = data.match(/GITHUB_TOKEN_CANTINA=(.+)/);
+    return tokenMatch ? tokenMatch[1] : null;
 }
+
+async function init() {
+    GITHUB_TOKEN = await getToken();
+    if (GITHUB_TOKEN) {
+        chargerCommandes();
+    } else {
+        console.error("Impossible de charger l'application sans token.");
+    }
+}
+
+document.addEventListener("DOMContentLoaded", init);
+
 
 const REPO_URL = "https://api.github.com/repos/ZhuGG/v-mach-cantina/issues";
 
