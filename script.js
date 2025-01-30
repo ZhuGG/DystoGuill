@@ -1,15 +1,34 @@
-let GITHUB_TOKEN;
+import { GITHUB_TOKEN } from "./token.js";
 
-async function chargerToken() {
+console.log("✅ Token chargé :", GITHUB_TOKEN); // Vérifier si le token est bien récupéré
+
+async function chargerCommandes() {
+    if (!GITHUB_TOKEN) {
+        console.error("❌ Impossible de récupérer le token sécurisé");
+        return;
+    }
+
     try {
-        const tokenModule = await import("./token.js");
-        GITHUB_TOKEN = tokenModule.GITHUB_TOKEN;
-        console.log("✅ Token chargé avec succès !");
-        chargerCommandes();
+        let response = await fetch("https://api.github.com/repos/ZhuGG/v-mach-cantina/issues", {
+            headers: {
+                "Authorization": `token ${GITHUB_TOKEN}`,
+                "Accept": "application/vnd.github.v3+json"
+            }
+        });
+
+        if (!response.ok) throw new Error("Erreur API GitHub");
+
+        let data = await response.json();
+        console.log("📌 Commandes récupérées :", data);
+        // Affichage des commandes dans la page (à implémenter)
     } catch (error) {
-        console.error("❌ Erreur lors du chargement du token :", error);
+        console.error("❌ Erreur de récupération des commandes :", error);
     }
 }
+
+// Charger les commandes après que le DOM soit prêt
+document.addEventListener("DOMContentLoaded", chargerCommandes);
+
 
 document.addEventListener("DOMContentLoaded", chargerToken);
 // 🔹 Stockage du token GitHub (évite de le redemander après un rafraîchissement)
