@@ -17,6 +17,9 @@ body {
     padding: 20px;
     margin: 0;
 }
+body {
+    transition: background 0.5s ease, color 0.5s ease;
+}
 
 /* 🔹 Titre bien centré et espacé */
 h1 {
