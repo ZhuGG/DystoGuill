@@ -27,41 +27,34 @@ function chargerCommandes() {
     })
     .then(response => response.json())
     .then(data => {
-        console.log("📌 Données récupérées :", data);
+        let commandesContainer = document.getElementById("commandes");
+        commandesContainer.innerHTML = "";
 
-        let table = document.getElementById("commandes");
-        let compteur = document.getElementById("compteur");
-        table.innerHTML = "";
+        data.forEach(issue => {
+            let body;
+            try {
+                body = JSON.parse(issue.body);
+            } catch (e) {
+                body = {};
+            }
 
-        compteur.innerHTML = `Commandes enregistrées : ${data.length}`;
-
-        if (data.length > 0) {
-            let headerRow = "<tr><th>Nom</th><th>Entrée</th><th>Plat</th><th>Accompagnement</th><th>Boisson</th><th>Autre</th><th>Action</th></tr>";
-            table.innerHTML += headerRow;
-
-            data.forEach(issue => {
-                let body;
-                try {
-                    body = JSON.parse(issue.body);
-                } catch (e) {
-                    body = {};
-                }
-
-                let row = `<tr>
-                    <td>${issue.title.replace("Commande - ", "")}</td>
-                    <td>${body.entree || '-'}</td>
-                    <td>${body.plat || '-'}</td>
-                    <td>${body.accompagnement || '-'}</td>
-                    <td>${body.boisson || '-'}</td>
-                    <td>${body.autre || '-'}</td>
-                    <td><button class="delete-btn" onclick="supprimerCommande(${issue.number})">Supprimer</button></td>
-                </tr>`;
-                table.innerHTML += row;
-            });
-        }
+            let commandeCard = document.createElement("div");
+            commandeCard.classList.add("command-card");
+            commandeCard.innerHTML = `
+                <strong>${issue.title.replace("Commande - ", "")}</strong>
+                <p>Entrée : ${body.entree || '-'}</p>
+                <p>Plat : ${body.plat || '-'}</p>
+                <p>Accompagnement : ${body.accompagnement || '-'}</p>
+                <p>Boisson : ${body.boisson || '-'}</p>
+                <p>Autre : ${body.autre || '-'}</p>
+                <button class="delete-btn" onclick="supprimerCommande(${issue.number})">Supprimer</button>
+            `;
+            commandesContainer.appendChild(commandeCard);
+        });
     })
     .catch(error => console.error("❌ Erreur de récupération des commandes :", error));
 }
+
 
 // 🔹 Ajouter une commande
 function ajouterCommande() {
