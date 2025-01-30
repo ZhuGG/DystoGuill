@@ -1,17 +1,44 @@
-import { GITHUB_TOKEN } from "./token.js";
+// 🔹 Chargement sécurisé du token GitHub
+async function chargerToken() {
+    try {
+        let response = await fetch("./token.js"); // Chargement depuis un fichier JS public
+        if (!response.ok) throw new Error("Impossible de charger le token sécurisé.");
+        
+        let tokenModule = await response.text();
+        let tokenMatch = tokenModule.match(/GITHUB_TOKEN\s*=\s*['"](.+?)['"]/);
+        
+        if (!tokenMatch) throw new Error("Token introuvable.");
+        
+        return tokenMatch[1];
+    } catch (error) {
+        console.error("❌ Erreur de récupération du token sécurisé :", error);
+        return null;
+    }
+}
 
-console.log("✅ Token chargé :", GITHUB_TOKEN); // Vérifier si le token est bien récupéré
+// 🔹 Initialisation de l'application
+async function init() {
+    window.GITHUB_TOKEN = await chargerToken();
+    
+    if (!window.GITHUB_TOKEN) {
+        console.error("❌ Impossible de charger l'application sans token.");
+        return;
+    }
 
+    chargerCommandes();
+}
+
+// 🔹 Chargement des commandes depuis GitHub Issues
 async function chargerCommandes() {
-    if (!GITHUB_TOKEN) {
-        console.error("❌ Impossible de récupérer le token sécurisé");
+    if (!window.GITHUB_TOKEN) {
+        console.error("❌ Token manquant.");
         return;
     }
 
     try {
         let response = await fetch("https://api.github.com/repos/ZhuGG/v-mach-cantina/issues", {
             headers: {
-                "Authorization": `token ${GITHUB_TOKEN}`,
+                "Authorization": `token ${window.GITHUB_TOKEN}`,
                 "Accept": "application/vnd.github.v3+json"
             }
         });
@@ -19,85 +46,42 @@ async function chargerCommandes() {
         if (!response.ok) throw new Error("Erreur API GitHub");
 
         let data = await response.json();
-        console.log("📌 Commandes récupérées :", data);
-        // Affichage des commandes dans la page (à implémenter)
+        afficherCommandes(data);
     } catch (error) {
         console.error("❌ Erreur de récupération des commandes :", error);
     }
 }
 
-// Charger les commandes après que le DOM soit prêt
-document.addEventListener("DOMContentLoaded", chargerCommandes);
+// 🔹 Fonction d'affichage des commandes
+function afficherCommandes(data) {
+    let commandesContainer = document.getElementById("commandes");
+    commandesContainer.innerHTML = "";
 
-
-document.addEventListener("DOMContentLoaded", chargerToken);
-// 🔹 Stockage du token GitHub (évite de le redemander après un rafraîchissement)
-async function getToken() {
-    const response = await fetch("/.github/workflows/token.yml"); // GitHub Actions gère le secret ici
-    if (!response.ok) {
-        console.error("Erreur de récupération du token sécurisé");
-        return null;
-    }
-
-    const data = await response.text();
-    const tokenMatch = data.match(/GITHUB_TOKEN_CANTINA=(.+)/);
-    return tokenMatch ? tokenMatch[1] : null;
-}
-
-async function init() {
-    GITHUB_TOKEN = await getToken();
-    if (GITHUB_TOKEN) {
-        chargerCommandes();
-    } else {
-        console.error("Impossible de charger l'application sans token.");
-    }
-}
-
-document.addEventListener("DOMContentLoaded", init);
-
-
-const REPO_URL = "https://api.github.com/repos/ZhuGG/v-mach-cantina/issues";
-
-// 🔹 Fonction pour charger les commandes depuis GitHub Issues
-function chargerCommandes() {
-    fetch(REPO_URL, {
-        headers: {
-            "Authorization": `token ${GITHUB_TOKEN}`,
-            "Accept": "application/vnd.github.v3+json"
+    data.forEach(issue => {
+        let body;
+        try {
+            body = JSON.parse(issue.body);
+        } catch (e) {
+            body = {};
         }
-    })
-    .then(response => response.json())
-    .then(data => {
-        let commandesContainer = document.getElementById("commandes");
-        commandesContainer.innerHTML = "";
 
-        data.forEach(issue => {
-            let body;
-            try {
-                body = JSON.parse(issue.body);
-            } catch (e) {
-                body = {};
-            }
-
-            let commandeCard = document.createElement("div");
-            commandeCard.classList.add("command-card");
-            commandeCard.innerHTML = `
-                <strong>${issue.title.replace("Commande - ", "")}</strong>
-                <p>Entrée : ${body.entree || '-'}</p>
-                <p>Plat : ${body.plat || '-'}</p>
-                <p>Accompagnement : ${body.accompagnement || '-'}</p>
-                <p>Boisson : ${body.boisson || '-'}</p>
-                <p>Autre : ${body.autre || '-'}</p>
-                <button class="delete-btn" onclick="supprimerCommande(${issue.number})">🗑️</button>
-            `;
-            commandesContainer.appendChild(commandeCard);
-        });
-    })
-    .catch(error => console.error("❌ Erreur de récupération des commandes :", error));
+        let commandeCard = document.createElement("div");
+        commandeCard.classList.add("command-card");
+        commandeCard.innerHTML = `
+            <strong>${issue.title.replace("Commande - ", "")}</strong>
+            <p>Entrée : ${body.entree || '-'}</p>
+            <p>Plat : ${body.plat || '-'}</p>
+            <p>Accompagnement : ${body.accompagnement || '-'}</p>
+            <p>Boisson : ${body.boisson || '-'}</p>
+            <p>Autre : ${body.autre || '-'}</p>
+            <button class="delete-btn" onclick="supprimerCommande(${issue.number})">🗑️</button>
+        `;
+        commandesContainer.appendChild(commandeCard);
+    });
 }
 
-// 🔹 Fonction pour ajouter une nouvelle commande
-function ajouterCommande() {
+// 🔹 Fonction pour ajouter une commande
+async function ajouterCommande() {
     let nom = document.getElementById("nom").value.trim();
     let entree = document.getElementById("entree").value.trim();
     let plat = document.getElementById("plat").value.trim();
@@ -110,72 +94,66 @@ function ajouterCommande() {
         return;
     }
 
-    fetch(REPO_URL, {
-        method: "POST",
-        headers: {
-            "Authorization": `token ${GITHUB_TOKEN}`,
-            "Accept": "application/vnd.github.v3+json",
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            title: `Commande - ${nom}`,
+    try {
+        let response = await fetch("https://api.github.com/repos/ZhuGG/v-mach-cantina/issues", {
+            method: "POST",
+            headers: {
+                "Authorization": `token ${window.GITHUB_TOKEN}`,
+                "Accept": "application/vnd.github.v3+json",
+                "Content-Type": "application/json"
+            },
             body: JSON.stringify({
-                entree: entree,
-                plat: plat,
-                accompagnement: accompagnement,
-                boisson: boisson,
-                autre: autre
+                title: `Commande - ${nom}`,
+                body: JSON.stringify({
+                    entree: entree,
+                    plat: plat,
+                    accompagnement: accompagnement,
+                    boisson: boisson,
+                    autre: autre
+                })
             })
-        })
-    })
-    .then(() => {
-        setTimeout(chargerCommandes, 500); // Recharge après ajout
-    })
-    .catch(error => console.error("Erreur lors de l'ajout de la commande :", error));
+        });
+
+        if (!response.ok) throw new Error("Erreur API GitHub");
+        setTimeout(chargerCommandes, 500);
+    } catch (error) {
+        console.error("Erreur lors de l'ajout de la commande :", error);
+    }
 }
 
 // 🔹 Fonction pour supprimer une commande
-function supprimerCommande(issueNumber) {
-    fetch(`${REPO_URL}/${issueNumber}`, {
-        method: "PATCH",
-        headers: {
-            "Authorization": `token ${GITHUB_TOKEN}`,
-            "Accept": "application/vnd.github.v3+json",
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ state: "closed" })
-    })
-    .then(() => {
-        setTimeout(chargerCommandes, 500); // Recharge après suppression
-    })
-    .catch(error => console.error("Erreur lors de la suppression de la commande :", error));
-}
+async function supprimerCommande(issueNumber) {
+    try {
+        let response = await fetch(`https://api.github.com/repos/ZhuGG/v-mach-cantina/issues/${issueNumber}`, {
+            method: "PATCH",
+            headers: {
+                "Authorization": `token ${window.GITHUB_TOKEN}`,
+                "Accept": "application/vnd.github.v3+json",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ state: "closed" })
+        });
 
-// 🔹 Fonction pour activer le mode sombre
-const darkModeToggle = document.getElementById("toggle-dark-mode");
-
-if (darkModeToggle) {
-    darkModeToggle.addEventListener("click", function () {
-        document.body.classList.toggle("dark-mode");
-        localStorage.setItem("dark-mode", document.body.classList.contains("dark-mode"));
-    });
-
-    // Vérifier l'état du mode sombre au chargement
-    if (localStorage.getItem("dark-mode") === "true") {
-        document.body.classList.add("dark-mode");
+        if (!response.ok) throw new Error("Erreur API GitHub");
+        setTimeout(chargerCommandes, 500);
+    } catch (error) {
+        console.error("Erreur lors de la suppression de la commande :", error);
     }
 }
 
 // 🔹 Fonction pour envoyer les commandes par mail
-function envoyerMail() {
-    fetch(REPO_URL, {
-        headers: {
-            "Authorization": `token ${GITHUB_TOKEN}`,
-            "Accept": "application/vnd.github.v3+json"
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
+async function envoyerMail() {
+    try {
+        let response = await fetch("https://api.github.com/repos/ZhuGG/v-mach-cantina/issues", {
+            headers: {
+                "Authorization": `token ${window.GITHUB_TOKEN}`,
+                "Accept": "application/vnd.github.v3+json"
+            }
+        });
+
+        if (!response.ok) throw new Error("Erreur API GitHub");
+
+        let data = await response.json();
         if (data.length === 0) {
             alert("Aucune commande à envoyer.");
             return;
@@ -202,9 +180,10 @@ function envoyerMail() {
         });
 
         window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    })
-    .catch(error => console.error("Erreur lors de l'envoi du mail :", error));
+    } catch (error) {
+        console.error("Erreur lors de l'envoi du mail :", error);
+    }
 }
 
-// Chargement des commandes au démarrage
-document.addEventListener("DOMContentLoaded", chargerCommandes);
+// 🔹 Initialiser l'application
+document.addEventListener("DOMContentLoaded", init);
