@@ -1,4 +1,4 @@
-/* 🔹 Correction du layout général */
+/* 🔹 Centrage total du corps */
 body {
     display: flex;
     flex-direction: column;
@@ -8,16 +8,16 @@ body {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     color: var(--text-light);
     text-align: center;
-    padding: 20px;
     margin: 0;
+    padding: 20px;
 }
 
-/* 🔹 Centrage correct du container */
+/* 🔹 Conteneur principal bien centré */
 .container {
     width: 90%;
     max-width: 500px;
     background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(15px);
+    backdrop-filter: blur(10px);
     border-radius: 15px;
     padding: 20px;
     text-align: center;
@@ -26,9 +26,10 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
 }
 
-/* 🔹 Ajustement des champs */
+/* 🔹 Centrage des boutons et champs */
 input, button {
     width: 100%;
     max-width: 400px;
@@ -39,15 +40,15 @@ input, button {
     font-size: 1em;
     text-align: center;
     backdrop-filter: blur(10px);
-    transition: all 0.3s ease-in-out;
 }
 
-/* 🔹 Ajustement des boutons */
+/* 🔹 Correction des boutons */
 button {
     background: rgba(255, 255, 255, 0.2);
     color: white;
     font-weight: bold;
     cursor: pointer;
+    transition: all 0.3s ease-in-out;
 }
 
 button:hover {
@@ -55,7 +56,7 @@ button:hover {
     transform: scale(1.05);
 }
 
-/* 🔹 Positionnement du bouton Dark Mode */
+/* 🔹 Correction du bouton mode sombre */
 #toggle-dark-mode {
     position: fixed;
     top: 15px;
@@ -71,7 +72,7 @@ button:hover {
     transform: scale(1.2);
 }
 
-/* 🔹 Listes des commandes bien centrées */
+/* 🔹 Correction du positionnement des commandes */
 .command-list {
     width: 100%;
     display: flex;
@@ -79,7 +80,7 @@ button:hover {
     align-items: center;
 }
 
-/* 🔹 Cartes commandes corrigées */
+/* 🔹 Ajustement des cartes commandes */
 .command-card {
     width: 100%;
     max-width: 400px;
@@ -88,7 +89,7 @@ button:hover {
     border-radius: 15px;
     padding: 15px;
     margin: 10px 0;
-    text-align: left;
+    text-align: center;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
