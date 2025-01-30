@@ -1,0 +1,16 @@
+name: Inject GitHub Token
+on:
+  push:
+    branches:
+      - main  # Change selon ta branche principale
+  workflow_dispatch:
+
+jobs:
+  inject-token:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout du repo
+        uses: actions/checkout@v3
+
+      - name: Injecter le token
+        run: echo "GITHUB_TOKEN_CANTINA=${{ secrets.GITHUB_TOKEN_CANTINA }}" >> $GITHUB_ENV
