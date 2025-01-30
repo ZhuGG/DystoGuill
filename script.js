@@ -158,6 +158,16 @@ function envoyerMail() {
     })
     .catch(error => console.error("❌ Erreur lors de l'envoi du mail :", error));
 }
+// 🔹 Activation/Désactivation du mode sombre
+document.getElementById("toggle-dark-mode").addEventListener("click", function () {
+    document.body.classList.toggle("dark-mode");
+    localStorage.setItem("darkMode", document.body.classList.contains("dark-mode"));
+});
+
+// 🔹 Vérification si le mode sombre était activé au dernier chargement
+if (localStorage.getItem("darkMode") === "true") {
+    document.body.classList.add("dark-mode");
+}
 
 // Chargement des commandes au démarrage
 document.addEventListener("DOMContentLoaded", chargerCommandes);
