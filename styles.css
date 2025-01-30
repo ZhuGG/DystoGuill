@@ -40,17 +40,88 @@ body.dark-mode {
     background: #333;
     color: white;
 }
+/* 🔹 Amélioration du mode sombre */
+body.dark-mode {
+    background: #121212;
+    color: #f5f5f5;
+}
 
-/* 🔹 Bouton mode sombre : réduction et repositionnement */
-#toggle-dark-mode {
-    position: absolute;
+/* 🔹 Correction du texte invisible en mode sombre */
+.dark-mode .container, 
+.dark-mode .command-card {
+    background: #222 !important;
+    color: white !important;
+}
+
+.dark-mode input, 
+.dark-mode textarea {
+    background: #333 !important;
+    color: white !important;
+    border: 1px solid #555 !important;
+}
+
+.dark-mode button {
+    background-color: #444 !important;
+    color: white !important;
+    border: 1px solid #666 !important;
+}
+
+.dark-mode button:hover {
+    background-color: #555 !important;
+}
+
+/* 🔹 Alignement parfait du bouton mode sombre */
+#mode-container {
+    position: fixed;
     top: 15px;
-    right: 20px;
-    font-size: 1.8rem;
+    right: 15px;
+    z-index: 1000;
+}
+
+#toggle-dark-mode {
     background: none;
     border: none;
+    font-size: 1.8rem;
     cursor: pointer;
     transition: transform 0.3s ease;
+}
+
+#toggle-dark-mode:hover {
+    transform: scale(1.2);
+}
+
+/* 🔹 Ajustement de la taille des champs pour éviter le débordement */
+input, textarea {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* 🔹 Ajout de marges pour un meilleur espacement */
+.container {
+    margin-top: 40px;
+    padding: 25px;
+}
+
+/* 🔹 Responsive amélioré */
+@media (max-width: 768px) {
+    #mode-container {
+        top: 10px;
+        right: 10px;
+    }
+}
+
+/* 🔹 Bouton mode sombre : réduction et repositionnement */
+#mode-container {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+}
+
+#toggle-dark-mode {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
 }
 
 #toggle-dark-mode:hover {
@@ -110,6 +181,23 @@ button:hover {
 }
 
 /* 🔹 Affichage des commandes sous forme de cartes */
+.dark-mode .command-card {
+    background: #222;
+    color: white;
+    border: 1px solid #555;
+}
+
+.dark-mode input, 
+.dark-mode textarea {
+    background: #333;
+    color: white;
+    border: 1px solid #555;
+}
+
+.dark-mode .delete-btn {
+    background: #ff5555;
+    color: white;
+}
 .command-list {
     margin-top: 20px;
     text-align: left;
