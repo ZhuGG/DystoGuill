@@ -1,78 +1,50 @@
-/* 🔹 Importation de la police Poppins */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap');
-
-/* 🔹 Variables de couleurs */
-:root {
-    --primary-color: #007bff;
-    --secondary-color: #ffcc00;
-    --background-light: rgba(255, 255, 255, 0.3);
-    --text-light: rgba(255, 255, 255, 0.8);
-    --card-light: rgba(255, 255, 255, 0.2);
-    --border-light: rgba(255, 255, 255, 0.3);
-    --shadow-light: rgba(0, 0, 0, 0.1);
-
-    --background-dark: rgba(0, 0, 0, 0.3);
-    --text-dark: rgba(255, 255, 255, 0.9);
-    --card-dark: rgba(0, 0, 0, 0.2);
-    --border-dark: rgba(255, 255, 255, 0.2);
-    --shadow-dark: rgba(0, 0, 0, 0.5);
-}
-
-/* 🔹 Global */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
+/* 🔹 Correction de la mise en page */
 body {
-    font-family: 'Poppins', sans-serif;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     height: 100vh;
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     color: var(--text-light);
-    transition: background 0.5s ease, color 0.5s ease;
+    text-align: center;
+    padding: 20px;
+    margin: 0;
 }
 
-/* 🔹 Conteneur Glassmorphism */
+/* 🔹 Conteneur principal */
 .container {
     width: 90%;
-    max-width: 450px;
+    max-width: 500px;
     background: var(--card-light);
     backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
     border-radius: 15px;
     padding: 20px;
     text-align: center;
     box-shadow: 0 8px 32px var(--shadow-light);
     border: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-/* 🔹 Titre */
-h1 {
-    font-size: 1.8rem;
-    color: white;
-    font-weight: 700;
-}
-
-/* 🔹 Input et bouton */
+/* 🔹 Boutons et inputs bien alignés */
 input, button {
-    width: 100%;
+    width: 90%;
+    max-width: 400px;
     padding: 12px;
     margin-top: 10px;
     border-radius: 10px;
     border: none;
     font-size: 1em;
-    box-sizing: border-box;
+    text-align: center;
     backdrop-filter: blur(10px);
     transition: all 0.3s ease-in-out;
 }
 
-/* 🔹 Boutons */
+/* 🔹 Amélioration des boutons */
 button {
-    background: var(--background-light);
+    background: rgba(255, 255, 255, 0.2);
     color: white;
     cursor: pointer;
 }
@@ -82,48 +54,57 @@ button:hover {
     transform: scale(1.05);
 }
 
-/* 🔹 Mode sombre */
-body.dark-mode {
-    background: linear-gradient(135deg, #222, #444);
-    color: var(--text-dark);
+/* 🔹 Réalignement du bouton Dark Mode */
+#toggle-dark-mode {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    font-size: 1.8rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
 }
 
+#toggle-dark-mode:hover {
+    transform: scale(1.2);
+}
+
+/* 🔹 Listes des commandes bien centrées */
+.command-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* 🔹 Cartes commandes corrigées */
+.command-card {
+    width: 90%;
+    max-width: 400px;
+    background: var(--card-light);
+    backdrop-filter: blur(15px);
+    border-radius: 15px;
+    padding: 15px;
+    margin: 10px 0;
+    text-align: left;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 🔹 Dark mode : meilleures couleurs */
 .dark-mode .container {
-    background: var(--card-dark);
-    box-shadow: 0 8px 32px var(--shadow-dark);
-    border: 1px solid var(--border-dark);
+    background: rgba(0, 0, 0, 0.3);
 }
 
-.dark-mode input, 
-.dark-mode button {
-    background: var(--background-dark);
-    color: var(--text-dark);
-    border: 1px solid var(--border-dark);
+.dark-mode input, .dark-mode button {
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.dark-mode button:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-/* 🔹 Animation d’apparition */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.container {
-    animation: fadeIn 1s ease-in-out;
-}
-
-/* 🔹 Responsive */
+/* 🔹 Responsive pour les petits écrans */
 @media (max-width: 768px) {
-    .container {
+    .container, .command-card {
         width: 95%;
     }
 }
