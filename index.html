@@ -7,39 +7,40 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div id="mode-container">
-    <button id="toggle-dark-mode">🌙</button>
-</div>
 
-    <h1> V-Mach Cantina - BETA</h1>
+    <!-- 🔹 Bouton Mode Sombre -->
+    <div id="mode-container">
+        <button id="toggle-dark-mode">🌙</button>
+    </div>
 
-
+    <h1>V-Mach Cantina - BETA</h1>
 
     <div class="container">
-        <label for="nom">Nom :</label>
-        <input type="text" id="nom" placeholder="Entrez votre nom">
+        <div class="form-container">
+            <label for="nom">Nom :</label>
+            <input type="text" id="nom" placeholder="Entrez votre nom">
 
-        <label for="entree">Entrée :</label>
-        <input type="text" id="entree" placeholder="Entrez l'entrée souhaitée">
+            <label for="entree">Entrée :</label>
+            <input type="text" id="entree" placeholder="Entrez l'entrée souhaitée">
 
-        <label for="plat">Plat :</label>
-        <input type="text" id="plat" placeholder="Entrez le plat souhaité">
+            <label for="plat">Plat :</label>
+            <input type="text" id="plat" placeholder="Entrez le plat souhaité">
 
-        <label for="accompagnement">Accompagnement :</label>
-        <input type="text" id="accompagnement" placeholder="Accompagnement (facultatif)">
+            <label for="accompagnement">Accompagnement :</label>
+            <input type="text" id="accompagnement" placeholder="Accompagnement (facultatif)">
 
-        <label for="boisson">Boisson :</label>
-        <input type="text" id="boisson" placeholder="Entrez la boisson souhaitée">
+            <label for="boisson">Boisson :</label>
+            <input type="text" id="boisson" placeholder="Entrez la boisson souhaitée">
 
-        <label for="autre">Autre :</label>
-        <input type="text" id="autre" placeholder="Autre demande (facultatif)">
+            <label for="autre">Autre :</label>
+            <input type="text" id="autre" placeholder="Autre demande (facultatif)">
+        </div>
 
         <button onclick="ajouterCommande()">Ajouter la commande</button>
         <button onclick="reinitialiserCommandes()">Réinitialiser la liste</button>
         <button class="mail-btn" onclick="envoyerMail()">Envoyer par mail</button>
 
         <div class="counter" id="compteur"></div>
-
         <div class="command-list" id="commandes"></div>
     </div>
 
