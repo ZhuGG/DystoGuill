@@ -37,14 +37,21 @@ h1 {
     }
 }
 .container {
-    max-width: 600px;
+    max-width: 600px;  /* Même largeur que les boutons */
     margin: auto;
     background: var(--card-background);
     padding: 20px;
     border-radius: var(--border-radius);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
-
+.container {
+    max-width: 600px;  /* Même largeur que les boutons */
+    margin: auto;
+    background: var(--card-background);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
 label {
     display: block;
     margin-top: 10px;
