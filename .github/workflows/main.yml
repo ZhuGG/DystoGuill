@@ -1,8 +1,8 @@
-name: Inject GitHub Token
+name: Inject GitHub Token in ENV
 on:
   push:
     branches:
-      - main  # Change selon ta branche principale
+      - main  # Change selon ta branche
   workflow_dispatch:
 
 jobs:
@@ -12,5 +12,13 @@ jobs:
       - name: Checkout du repo
         uses: actions/checkout@v3
 
-      - name: Injecter le token
-        run: echo "GITHUB_TOKEN_CANTINA=${{ secrets.GITHUB_TOKEN_CANTINA }}" >> $GITHUB_ENV
+      - name: Créer un fichier JavaScript avec le token
+        run: echo "const GITHUB_TOKEN = '${{ secrets.GITHUB_TOKEN_CANTINA }}';" > token.js
+
+      - name: Commit du token temporaire
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add token.js
+          git commit -m "Ajout du token sécurisé"
+          git push
