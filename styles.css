@@ -1,52 +1,61 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
 
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #ffcc00;
+    --background-color: #f8f9fa;
+    --text-color: #343a40;
+    --card-background: white;
+    --border-radius: 12px;
+}
+
 body {
     font-family: 'Poppins', sans-serif;
-    background: linear-gradient(to right, #FFD700, #FFB300);
-    color: #343a40;
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+    color: var(--text-color);
     text-align: center;
     padding: 20px;
     margin: 0;
 }
 
 h1 {
-    color: #007bff;
+    color: white;
     margin-bottom: 20px;
     text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .container {
-    max-width: 500px;
-    margin: 0 auto;
+    max-width: 600px;
+    margin: auto;
+    background: var(--card-background);
     padding: 20px;
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 label {
     display: block;
-    margin-top: 15px;
-    font-size: 1.1em;
+    margin-top: 10px;
+    font-size: 1em;
     text-align: left;
+    font-weight: bold;
 }
 
 input, button {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     margin-top: 5px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
+    border-radius: 8px;
+    border: 1px solid #ddd;
     font-size: 1em;
 }
 
 button {
-    background-color: #007bff;
+    background-color: var(--primary-color);
     color: white;
     font-weight: bold;
     border: none;
     cursor: pointer;
-    margin-top: 10px;
     transition: all 0.3s ease;
 }
 
@@ -63,51 +72,45 @@ button:hover {
     background-color: #5a32a3;
 }
 
+/* AFFICHAGE DES COMMANDES */
 .command-list {
     margin-top: 20px;
     text-align: left;
-    overflow-x: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-.command-table {
+.command-card {
+    background: var(--card-background);
     width: 100%;
+    max-width: 500px;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.3s ease-in-out;
+}
+
+.command-card:hover {
+    transform: translateY(-5px);
+}
+
+.command-card button {
     margin-top: 10px;
-    border-collapse: collapse;
-    background: #fff;
-    min-width: 600px;
+    width: auto;
+    padding: 8px 15px;
 }
 
-.command-table th, .command-table td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: center;
-}
-
-.command-table th {
-    background: #007bff;
-    color: white;
-}
-
-.command-table tr:hover {
-    background: #f1f1f1;
-}
-
-.delete-btn {
-    background: #dc3545;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
-    border-radius: 3px;
-}
-
-.delete-btn:hover {
-    background: #c82333;
-}
-
-.counter {
-    font-size: 1.2em;
-    margin-top: 10px;
-    font-weight: bold;
-    color: #007bff;
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .container {
+        width: 90%;
+    }
+    .command-card {
+        width: 90%;
+    }
 }
