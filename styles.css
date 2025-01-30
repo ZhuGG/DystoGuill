@@ -20,10 +20,22 @@ body {
 
 h1 {
     color: white;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px; /* Espace entre l'icône et le texte */
+    text-align: center;
+    font-size: 2rem; /* Ajuste la taille pour mobile */
 }
-
+* Ajustement sur mobile */
+@media (max-width: 768px) {
+    h1 {
+        flex-direction: column; /* Place l'icône au-dessus du texte si besoin */
+        font-size: 1.8rem;
+    }
+}
 .container {
     max-width: 600px;
     margin: auto;
