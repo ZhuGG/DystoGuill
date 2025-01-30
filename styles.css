@@ -1,137 +1,127 @@
-/* 🔹 Importation de la police */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
-
-/* 🔹 Variables de couleurs */
+/* 🌟 Global */
 :root {
-    --primary-color: #007bff;
-    --secondary-color: #ffcc00;
-    --background-light: linear-gradient(to right, #007bff, #ffcc00);
-    --background-dark: linear-gradient(to right, #222, #444);
-    --text-light: #343a40;
-    --text-dark: #ffffff;
-    --card-background-light: rgba(255, 255, 255, 0.9);
-    --card-background-dark: rgba(0, 0, 0, 0.8);
-    --border-radius: 12px;
+    --primary-color: rgba(0, 123, 255, 0.6); /* Bleu semi-transparent */
+    --secondary-color: rgba(255, 204, 0, 0.6); /* Jaune semi-transparent */
+    --background-light: rgba(255, 255, 255, 0.3);
+    --background-dark: rgba(0, 0, 0, 0.3);
+    --text-light: #fff;
+    --text-dark: #222;
 }
 
-/* 🔹 Styles de base */
+/* 🌟 Fond en Glassmorphism */
 body {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     font-family: 'Poppins', sans-serif;
-    background: var(--background-light);
-    color: var(--text-light);
     text-align: center;
-    margin: 0;
-    padding: 20px;
-    transition: background 0.5s ease, color 0.5s ease;
-}
-
-/* 🔹 Conteneur principal */
-.container {
-    max-width: 600px;
-    margin: auto;
-    background: var(--card-background-light);
-    padding: 20px;
-    border-radius: var(--border-radius);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(10px);
-}
-
-/* 🔹 Formulaire */
-.form-container {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
 }
 
-label {
-    text-align: left;
-    font-weight: bold;
-    display: block;
-    margin-top: 10px;
+/* 🌟 Conteneur principal */
+.container {
+    width: 90%;
+    max-width: 500px;
+    background: var(--background-light);
+    backdrop-filter: blur(15px);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    text-align: center;
 }
 
-input {
+/* 🌟 Champs et boutons uniformisés */
+input, button {
     width: 100%;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    font-size: 1em;
-    box-sizing: border-box;
-    background: rgba(255, 255, 255, 0.7);
-}
-
-/* 🔹 Boutons */
-button {
-    width: 100%;
+    max-width: 400px;
     padding: 12px;
     margin-top: 10px;
-    border-radius: 8px;
+    border-radius: 10px;
     border: none;
     font-size: 1em;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease-in-out;
+}
+
+/* 🌟 Boutons avec effet Glassmorphism */
+button {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--text-dark);
     font-weight: bold;
     cursor: pointer;
-    transition: all 0.3s ease;
 }
 
 button:hover {
+    background: rgba(255, 255, 255, 0.4);
     transform: scale(1.05);
 }
 
-.mail-btn {
-    background-color: #6f42c1;
-    color: white;
-}
-
-.mail-btn:hover {
-    background-color: #5a32a3;
-}
-
-/* 🔹 Mode Sombre */
+/* 🌟 Mode sombre */
 .dark-mode {
-    background: var(--background-dark);
-    color: var(--text-dark);
+    background: linear-gradient(135deg, #222, #555);
+    color: var(--text-light);
 }
 
 .dark-mode .container {
-    background: var(--card-background-dark);
-    color: var(--text-dark);
+    background: var(--background-dark);
+    color: var(--text-light);
 }
 
-.dark-mode input,
 .dark-mode button {
-    background: #444;
-    color: white;
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--text-light);
 }
 
-/* 🔹 Mode Sombre : Bouton */
-#mode-container {
+.dark-mode .command-card {
+    background: rgba(0, 0, 0, 0.3);
+    color: var(--text-light);
+}
+
+/* 🌙 Mode sombre - Position icône */
+#toggle-dark-mode {
     position: fixed;
     top: 15px;
     right: 15px;
-    z-index: 1000;
-}
-
-#toggle-dark-mode {
-    background: rgba(255, 255, 255, 0.3);
+    font-size: 1.8rem;
+    background: transparent;
     border: none;
-    font-size: 1.5rem;
     cursor: pointer;
-    border-radius: 50%;
-    padding: 10px;
-    transition: all 0.3s ease-in-out;
+    transition: transform 0.2s ease-in-out;
 }
 
 #toggle-dark-mode:hover {
     transform: scale(1.2);
 }
 
-.dark-mode #toggle-dark-mode {
-    background: rgba(0, 0, 0, 0.3);
+/* 🌟 Commandes */
+.command-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-/* 🔹 Responsive */
+/* 🌟 Cartes de commande */
+.command-card {
+    width: 100%;
+    max-width: 400px;
+    background: var(--background-light);
+    backdrop-filter: blur(15px);
+    border-radius: 15px;
+    padding: 15px;
+    margin: 10px 0;
+    text-align: left;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 🌟 Responsive */
 @media (max-width: 768px) {
-    .container {
-        width: 90%;
+    .container, .command-card {
+        width: 95%;
     }
 }
