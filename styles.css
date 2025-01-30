@@ -1,241 +1,129 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
+/* 🔹 Importation de la police Poppins */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap');
 
+/* 🔹 Variables de couleurs */
 :root {
     --primary-color: #007bff;
     --secondary-color: #ffcc00;
-    --background-color: #f8f9fa;
-    --text-color: #343a40;
-    --card-background: white;
-    --border-radius: 12px;
+    --background-light: rgba(255, 255, 255, 0.3);
+    --text-light: rgba(255, 255, 255, 0.8);
+    --card-light: rgba(255, 255, 255, 0.2);
+    --border-light: rgba(255, 255, 255, 0.3);
+    --shadow-light: rgba(0, 0, 0, 0.1);
+
+    --background-dark: rgba(0, 0, 0, 0.3);
+    --text-dark: rgba(255, 255, 255, 0.9);
+    --card-dark: rgba(0, 0, 0, 0.2);
+    --border-dark: rgba(255, 255, 255, 0.2);
+    --shadow-dark: rgba(0, 0, 0, 0.5);
+}
+
+/* 🔹 Global */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
     font-family: 'Poppins', sans-serif;
-    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
-    color: var(--text-color);
-    text-align: center;
-    padding: 20px;
-    margin: 0;
-}
-body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: var(--text-light);
     transition: background 0.5s ease, color 0.5s ease;
 }
 
-/* 🔹 Titre bien centré et espacé */
-h1 {
-    color: white;
-    margin-bottom: 10px;
-    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-    text-align: center;
-    font-size: 2rem;
-}
-
-/* 🔹 Mode sombre : couleurs ajustées */
-body.dark-mode {
-    background: linear-gradient(to right, #222, #444);
-    color: white;
-}
-
-.dark-mode .container {
-    background: #333;
-    color: white;
-}
-/* 🔹 Amélioration du mode sombre */
-body.dark-mode {
-    background: #121212;
-    color: #f5f5f5;
-}
-
-/* 🔹 Correction du texte invisible en mode sombre */
-.dark-mode .container, 
-.dark-mode .command-card {
-    background: #222 !important;
-    color: white !important;
-}
-
-.dark-mode input, 
-.dark-mode textarea {
-    background: #333 !important;
-    color: white !important;
-    border: 1px solid #555 !important;
-}
-
-.dark-mode button {
-    background-color: #444 !important;
-    color: white !important;
-    border: 1px solid #666 !important;
-}
-
-.dark-mode button:hover {
-    background-color: #555 !important;
-}
-
-/* 🔹 Alignement parfait du bouton mode sombre */
-#mode-container {
-    position: fixed;
-    top: 15px;
-    right: 15px;
-    z-index: 1000;
-}
-
-#toggle-dark-mode {
-    background: none;
-    border: none;
-    font-size: 1.8rem;
-    cursor: pointer;
-    transition: transform 0.3s ease;
-}
-
-#toggle-dark-mode:hover {
-    transform: scale(1.2);
-}
-
-/* 🔹 Ajustement de la taille des champs pour éviter le débordement */
-input, textarea {
-    width: 100% !important;
-    max-width: 100% !important;
-}
-
-/* 🔹 Ajout de marges pour un meilleur espacement */
+/* 🔹 Conteneur Glassmorphism */
 .container {
-    margin-top: 40px;
-    padding: 25px;
-}
-
-/* 🔹 Responsive amélioré */
-@media (max-width: 768px) {
-    #mode-container {
-        top: 10px;
-        right: 10px;
-    }
-}
-
-/* 🔹 Bouton mode sombre : réduction et repositionnement */
-#mode-container {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-}
-
-#toggle-dark-mode {
-    background: transparent;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-}
-
-#toggle-dark-mode:hover {
-    transform: scale(1.2);
-}
-
-/* 🔹 Conteneur principal, unifié */
-.container {
-    max-width: 600px;  
-    margin: auto;
-    background: var(--card-background);
+    width: 90%;
+    max-width: 450px;
+    background: var(--card-light);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-radius: 15px;
     padding: 20px;
-    border-radius: var(--border-radius);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    box-shadow: 0 8px 32px var(--shadow-light);
+    border: 1px solid var(--border-light);
 }
 
-/* 🔹 Styles des champs */
-label {
-    display: block;
-    margin-top: 10px;
-    font-size: 1em;
-    text-align: left;
-    font-weight: bold;
+/* 🔹 Titre */
+h1 {
+    font-size: 1.8rem;
+    color: white;
+    font-weight: 700;
 }
 
+/* 🔹 Input et bouton */
 input, button {
     width: 100%;
     padding: 12px;
-    margin-top: 5px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
+    margin-top: 10px;
+    border-radius: 10px;
+    border: none;
     font-size: 1em;
-    box-sizing: border-box; /* 🔹 Empêche les débordements */
+    box-sizing: border-box;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease-in-out;
 }
 
-/* 🔹 Boutons interactifs */
+/* 🔹 Boutons */
 button {
-    background-color: var(--primary-color);
+    background: var(--background-light);
     color: white;
-    font-weight: bold;
-    border: none;
     cursor: pointer;
-    transition: all 0.3s ease;
 }
 
 button:hover {
-    background-color: #0056b3;
+    background: rgba(255, 255, 255, 0.4);
     transform: scale(1.05);
 }
 
-.mail-btn {
-    background-color: #6f42c1;
+/* 🔹 Mode sombre */
+body.dark-mode {
+    background: linear-gradient(135deg, #222, #444);
+    color: var(--text-dark);
 }
 
-.mail-btn:hover {
-    background-color: #5a32a3;
-}
-
-/* 🔹 Affichage des commandes sous forme de cartes */
-.dark-mode .command-card {
-    background: #222;
-    color: white;
-    border: 1px solid #555;
+.dark-mode .container {
+    background: var(--card-dark);
+    box-shadow: 0 8px 32px var(--shadow-dark);
+    border: 1px solid var(--border-dark);
 }
 
 .dark-mode input, 
-.dark-mode textarea {
-    background: #333;
-    color: white;
-    border: 1px solid #555;
+.dark-mode button {
+    background: var(--background-dark);
+    color: var(--text-dark);
+    border: 1px solid var(--border-dark);
 }
 
-.dark-mode .delete-btn {
-    background: #ff5555;
-    color: white;
-}
-.command-list {
-    margin-top: 20px;
-    text-align: left;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+.dark-mode button:hover {
+    background: rgba(255, 255, 255, 0.2);
 }
 
-.command-card {
-    background: var(--card-background);
-    width: 100%;
-    max-width: 500px;
-    padding: 15px;
-    margin: 10px 0;
-    border-radius: var(--border-radius);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    transition: transform 0.3s ease-in-out;
+/* 🔹 Animation d’apparition */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.command-card:hover {
-    transform: translateY(-5px);
+.container {
+    animation: fadeIn 1s ease-in-out;
 }
 
-.command-card button {
-    margin-top: 10px;
-    width: auto;
-    padding: 8px 15px;
-}
-
-/* 🔹 Responsive pour les petits écrans */
+/* 🔹 Responsive */
 @media (max-width: 768px) {
     .container {
-        width: 90%;
-    }
-    .command-card {
-        width: 90%;
+        width: 95%;
     }
 }
