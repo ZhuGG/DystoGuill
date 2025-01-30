@@ -142,6 +142,37 @@ button:hover {
 .dark-mode .command-card {
     background: var(--background-dark);
 }
+/* 🔹 Ajustement du bouton dark mode */
+#toggle-dark-mode {
+    position: fixed; /* Fixé pour éviter le débordement */
+    top: 15px;
+    right: 15px;
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.2); /* Effet verre */
+    border-radius: 50%; /* Rond */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease-in-out;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* 🔹 Animation au clic */
+#toggle-dark-mode:hover {
+    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.4);
+}
+
+/* 🔹 Mode sombre : ajustement du bouton */
+.dark-mode #toggle-dark-mode {
+    background: rgba(0, 0, 0, 0.3);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
 
 /* 🔹 Responsive */
 @media (max-width: 768px) {
