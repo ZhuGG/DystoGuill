@@ -9,6 +9,28 @@ if (!GITHUB_TOKEN) {
         alert("Vous devez entrer un token pour utiliser l'application !");
     }
 }
+// 🔹 Mode sombre - Activation et stockage
+function toggleDarkMode() {
+    document.body.classList.toggle("dark-mode");
+    localStorage.setItem("dark-mode", document.body.classList.contains("dark-mode"));
+}
+
+// Vérifie l’état stocké et applique le mode sombre si activé
+if (localStorage.getItem("dark-mode") === "true") {
+    document.body.classList.add("dark-mode");
+}
+
+// 🔹 Ajout du bouton dynamique
+const darkModeButton = document.createElement("button");
+darkModeButton.innerText = "🌙";
+darkModeButton.style.position = "absolute";
+darkModeButton.style.top = "10px";
+darkModeButton.style.right = "10px";
+darkModeButton.style.padding = "10px";
+darkModeButton.style.borderRadius = "50%";
+darkModeButton.style.cursor = "pointer";
+darkModeButton.onclick = toggleDarkMode;
+document.body.appendChild(darkModeButton);
 
 // 🔹 URL du repo GitHub
 const REPO_URL = "https://api.github.com/repos/ZhuGG/v-mach-cantina/issues";
