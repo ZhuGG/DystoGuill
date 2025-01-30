@@ -1,3 +1,17 @@
+let GITHUB_TOKEN;
+
+async function chargerToken() {
+    try {
+        const tokenModule = await import("./token.js");
+        GITHUB_TOKEN = tokenModule.GITHUB_TOKEN;
+        console.log("✅ Token chargé avec succès !");
+        chargerCommandes();
+    } catch (error) {
+        console.error("❌ Erreur lors du chargement du token :", error);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", chargerToken);
 // 🔹 Stockage du token GitHub (évite de le redemander après un rafraîchissement)
 async function getToken() {
     const response = await fetch("/.github/workflows/token.yml"); // GitHub Actions gère le secret ici
