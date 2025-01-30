@@ -29,6 +29,26 @@ h1 {
     text-align: center;
     font-size: 2rem; /* Ajuste la taille pour mobile */
 }
+
+body.dark-mode {
+    background: linear-gradient(to right, #222, #444);
+    color: white;
+}
+
+.dark-mode .container {
+    background: #333;
+    color: white;
+}
+
+#toggle-dark-mode {
+    background: #222;
+    color: white;
+    border: 1px solid white;
+    padding: 10px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: 0.3s;
+}
 * Ajustement sur mobile */
 @media (max-width: 768px) {
     h1 {
