@@ -1,185 +1,143 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
-
-/* 🔹 Définition des couleurs principales */
 :root {
-    --primary-color: #007bff; /* Bleu V-Mach */
-    --secondary-color: #ffcc00; /* Jaune */
-    --background-light: rgba(255, 255, 255, 0.4); /* Fond effet verre */
-    --background-dark: rgba(0, 0, 0, 0.3); /* Fond effet verre en mode sombre */
-    --text-color-light: #343a40;
-    --text-color-dark: #ffffff;
-    --border-radius: 12px;
-    --blur-effect: blur(10px);
+  --vert: #46815f;
+  --vert-clair: #70ad85;
+  --gris: #f5f7f3;
+  --gris-foncé: #343932;
+  --blanc: #fff;
+  --bois: #cdb891;
 }
 
-/* 🔹 Global */
 body {
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(120deg, var(--primary-color), var(--secondary-color));
-    color: var(--text-color-light);
-    text-align: center;
-    padding: 20px;
-    margin: 0;
-    transition: background 0.5s ease, color 0.5s ease;
+  font-family: 'Segoe UI', 'Arial', sans-serif;
+  background: var(--gris);
+  color: var(--gris-foncé);
+  margin: 0;
+  padding: 0;
+  font-size: 17px;
+  line-height: 1.6;
 }
 
-/* 🔹 Effet glassmorphism pour les conteneurs */
+header {
+  background: var(--vert);
+  color: var(--blanc);
+  padding: 18px 0 10px 0;
+  margin-bottom: 18px;
+  box-shadow: 0 3px 10px #0001;
+}
+
+header h1 {
+  font-size: 2.2em;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 1px #0003;
+}
+.sous-titre { font-size: 1.1em; font-weight: 400; color: var(--bois); }
+header .container { max-width: 900px; margin: 0 auto; padding: 0 16px; }
+
+#menu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 0;
+  font-size: 1em;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+#menu a {
+  color: var(--blanc);
+  text-decoration: none;
+  background: rgba(112,173,133,0.25);
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: background 0.18s;
+}
+#menu a:hover, #menu a:focus { background: var(--vert-clair); color: var(--gris-foncé); }
+
 .container {
-    max-width: 600px;
-    margin: auto;
-    background: var(--background-light);
-    padding: 20px;
-    border-radius: var(--border-radius);
-    backdrop-filter: var(--blur-effect);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    transition: background 0.3s ease-in-out;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 16px;
 }
 
-/* 🔹 Titre */
-h1 {
-    color: white;
-    margin-bottom: 15px;
-    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-    font-size: 2rem;
+main section { margin-bottom: 38px; }
+main h2 {
+  color: var(--vert);
+  border-left: 5px solid var(--bois);
+  padding-left: 10px;
+  margin-top: 26px;
+  margin-bottom: 10px;
+  font-weight: 700;
+  font-size: 1.33em;
+  letter-spacing: 0.5px;
 }
 
-/* 🔹 Mode sombre */
-body.dark-mode {
-    background: linear-gradient(120deg, #222, #444);
-    color: var(--text-color-dark);
+table {
+  width: 100%;
+  background: var(--blanc);
+  border-radius: 9px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px #0001;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+th, td {
+  padding: 10px 7px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+thead tr {
+  background: var(--vert-clair);
+  color: var(--blanc);
+}
+tbody tr:nth-child(even) { background: #f8fbf8; }
+tbody tr:hover { background: #e7f3ec; }
+
+.profil-alt { margin-bottom: 7px; }
+.profil-legend { font-size: 0.97em; color: #7a9680; margin-left: 5px; }
+
+ul { margin: 12px 0 12px 18px; }
+li { margin-bottom: 5px; }
+
+.checklist {
+  list-style: none;
+  padding-left: 0;
+}
+.checklist li {
+  margin-bottom: 7px;
+  display: flex;
+  align-items: center;
+}
+.checklist input[type=checkbox] {
+  accent-color: var(--vert);
+  width: 1.1em;
+  height: 1.1em;
+  margin-right: 7px;
 }
 
-.dark-mode .container {
-    background: var(--background-dark);
+.encadre {
+  background: #e2f0e7;
+  border-left: 5px solid var(--vert-clair);
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  font-size: 0.98em;
+}
+footer {
+  background: var(--gris);
+  color: #7d8877;
+  text-align: center;
+  font-size: 1em;
+  padding: 14px 0 9px 0;
+  border-top: 1px solid #d3e2d2;
+  margin-top: 28px;
 }
 
-/* 🔹 Bouton mode sombre */
-#toggle-dark-mode {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    padding: 10px;
-    font-size: 1.5rem;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-#toggle-dark-mode:hover {
-    background: rgba(255, 255, 255, 0.4);
-}
-
-/* 🔹 Styles des champs */
-label {
-    display: block;
-    margin-top: 10px;
-    font-size: 1em;
-    text-align: left;
-    font-weight: bold;
-}
-
-input, button {
-    width: 100%;
-    padding: 12px;
-    margin-top: 5px;
-    border-radius: 8px;
-    border: none;
-    font-size: 1em;
-    box-sizing: border-box;
-    backdrop-filter: var(--blur-effect);
-}
-
-/* 🔹 Boutons */
-button {
-    background-color: var(--primary-color);
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-button:hover {
-    background-color: #0056b3;
-    transform: scale(1.05);
-}
-
-/* 🔹 Style du bouton "Envoyer mail" */
-.mail-btn {
-    background-color: #6f42c1;
-}
-
-.mail-btn:hover {
-    background-color: #5a32a3;
-}
-
-/* 🔹 Cartes de commandes */
-.command-list {
-    margin-top: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.command-card {
-    background: var(--background-light);
-    width: 100%;
-    max-width: 500px;
-    padding: 15px;
-    margin: 10px 0;
-    border-radius: var(--border-radius);
-    backdrop-filter: var(--blur-effect);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease-in-out;
-}
-
-.command-card:hover {
-    transform: translateY(-5px);
-}
-
-/* 🔹 Mode sombre pour les cartes */
-.dark-mode .command-card {
-    background: var(--background-dark);
-}
-/* 🔹 Ajustement du bouton dark mode */
-#toggle-dark-mode {
-    position: fixed; /* Fixé pour éviter le débordement */
-    top: 15px;
-    right: 15px;
-    width: 50px;
-    height: 50px;
-    background: rgba(255, 255, 255, 0.2); /* Effet verre */
-    border-radius: 50%; /* Rond */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    cursor: pointer;
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease-in-out;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-/* 🔹 Animation au clic */
-#toggle-dark-mode:hover {
-    transform: scale(1.1);
-    background: rgba(255, 255, 255, 0.4);
-}
-
-/* 🔹 Mode sombre : ajustement du bouton */
-.dark-mode #toggle-dark-mode {
-    background: rgba(0, 0, 0, 0.3);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-}
-
-/* 🔹 Responsive */
-@media (max-width: 768px) {
-    .container {
-        width: 90%;
-    }
-    .command-card {
-        width: 90%;
-    }
+@media (max-width: 700px) {
+  header h1 { font-size: 1.1em; }
+  .container { max-width: 98vw; padding: 0 4vw; }
+  table, th, td { font-size: 15px; }
+  #menu { gap: 6px; font-size: 0.97em; }
+  main h2 { font-size: 1.07em; }
 }
