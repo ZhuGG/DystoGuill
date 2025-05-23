@@ -1,50 +1,207 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>V-Mach Cantina</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <title>Topo Bauges 2025 – Roadbook Outdoor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="style.css" rel="stylesheet">
 </head>
 <body>
-
-    <!-- 🔹 Bouton Mode Sombre -->
-    <div id="mode-container">
-        <button id="toggle-dark-mode">🌙</button>
-    </div>
-
-    <h1>V-Mach Cantina - BETA</h1>
-
+  <header>
     <div class="container">
-        <div class="form-container">
-            <label for="nom">Nom :</label>
-            <input type="text" id="nom" placeholder="Entrez votre nom">
-
-            <label for="entree">Entrée :</label>
-            <input type="text" id="entree" placeholder="Entrez l'entrée souhaitée">
-
-            <label for="plat">Plat :</label>
-            <input type="text" id="plat" placeholder="Entrez le plat souhaité">
-
-            <label for="accompagnement">Accompagnement :</label>
-            <input type="text" id="accompagnement" placeholder="Accompagnement (facultatif)">
-
-            <label for="boisson">Boisson :</label>
-            <input type="text" id="boisson" placeholder="Entrez la boisson souhaitée">
-
-            <label for="autre">Autre :</label>
-            <input type="text" id="autre" placeholder="Autre demande (facultatif)">
-        </div>
-
-        <button onclick="ajouterCommande()">Ajouter la commande</button>
-        <button onclick="reinitialiserCommandes()">Réinitialiser la liste</button>
-        <button class="mail-btn" onclick="envoyerMail()">Envoyer par mail</button>
-
-        <div class="counter" id="compteur"></div>
-        <div class="command-list" id="commandes"></div>
+      <h1>Topo & Roadbook<br><span class="sous-titre">Massif des Bauges</span></h1>
+      <nav id="menu">
+        <a href="#profil">Profil</a>
+        <a href="#itineraire">Itinéraire</a>
+        <a href="#bivouac">Bivouacs</a>
+        <a href="#eau">Eau</a>
+        <a href="#nourriture">Nourriture</a>
+        <a href="#materiel">Matériel</a>
+        <a href="#info">Infos</a>
+        <a href="#contacts">Contacts</a>
+      </nav>
     </div>
+  </header>
+  <main class="container">
+    <section id="profil">
+      <h2>Profil altimétrique</h2>
+      <!-- SVG responsive profil -->
+      <div class="profil-alt">
+        <svg viewBox="0 0 330 90" width="100%" height="60">
+          <polyline fill="none" stroke="#46815f" stroke-width="3"
+            points="0,80 22,27 35,10 70,34 100,54 140,41 175,32 205,32 235,18 270,35 330,80"/>
+          <text x="5" y="88" class="tick">0</text>
+          <text x="70" y="88" class="tick">5 km</text>
+          <text x="140" y="88" class="tick">15 km</text>
+          <text x="235" y="88" class="tick">25 km</text>
+          <text x="0" y="15" class="tick">1930m</text>
+          <text x="0" y="80" class="tick">935m</text>
+        </svg>
+        <div class="profil-legend">Doucy-en-Bauges → Dent des Portes → Charbon → Bonverdan → Orgeval</div>
+      </div>
+    </section>
 
-    <script src="script.js"></script>
+    <section id="itineraire">
+      <h2>Itinéraire jour par jour</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Jour</th>
+            <th>Parcours</th>
+            <th>Distance / D+</th>
+            <th>Durée</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Jeudi 29/05</td>
+            <td>Parking Les Cornes (935 m) → Dent des Portes → Chalet du Charbon (1 660 m)</td>
+            <td>8,5 km<br>+900 m</td>
+            <td>≈ 4 h 30</td>
+          </tr>
+          <tr>
+            <td>Vendredi 30/05</td>
+            <td>Charbon → Combe d’Ire → Pas de l’Ours → Bonverdan (1 580 m)</td>
+            <td>13 km<br>+1 000 m</td>
+            <td>≈ 5 h 30</td>
+          </tr>
+          <tr>
+            <td>Samedi 31/05</td>
+            <td>Bonverdan → Col d’Orgeval → descente Nant Fourchu (1 050 m)</td>
+            <td>8,8 km<br>+476 m</td>
+            <td>≈ 4 h</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
 
+    <section id="bivouac">
+      <h2>Spots de bivouac & conseils terrain</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Spot</th>
+            <th>Atouts</th>
+            <th>Eau</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Chalet du Charbon</td>
+            <td>Pelouses douces, abri, vue Aravis</td>
+            <td>Robinet + abreuvoir</td>
+            <td>Fréquenté le week‑end. Bivouac < 50 m refuge</td>
+          </tr>
+          <tr>
+            <td>Combe d’Ire</td>
+            <td>Replats ombragés hors réserve</td>
+            <td>Torrent permanent</td>
+            <td>Sol humide : footprint utile</td>
+          </tr>
+          <tr>
+            <td>Bonverdan</td>
+            <td>Clairière devant la cabane</td>
+            <td>Ruisseau 200 m N</td>
+            <td>Souris : suspendre la nourriture</td>
+          </tr>
+          <tr>
+            <td>Col d’Orgeval</td>
+            <td>Alpages panoramiques</td>
+            <td>Source des Auges (faible débit)</td>
+            <td>Bovins/clôtures l’été</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="eau">
+      <h2>Points d’eau fiables</h2>
+      <ul>
+        <li><b>Charbon</b> : robinet intérieur (filtrer) + abreuvoir extérieur.</li>
+        <li><b>Combe d’Ire</b> : torrent principal permanent.</li>
+        <li><b>Bonverdan</b> : ruisseau 200 m au nord (peut tarir l’été — faites le plein avant).</li>
+        <li><b>Col d’Orgeval</b> : source des Auges (débit faible mais constant).</li>
+      </ul>
+    </section>
+
+    <section id="nourriture">
+      <h2>Plan nourriture (par personne)</h2>
+      <ul>
+        <li>Petit-déj ×2 : flocons avoine + lait poudre + fruits secs (600 kcal/j).</li>
+        <li>Déjeuners ×2 : wraps blé complet + fromage sec + chorizo (700 kcal/j).</li>
+        <li>Dîners ×2 : plats lyophilisés + soupe miso (800 kcal/j).</li>
+        <li>Snacks : 200 g mélanges noix & barres (500 kcal/j).</li>
+        <li><b>Total ≈ 6 000 kcal (≈ 2 kg).</b></li>
+      </ul>
+    </section>
+
+    <section id="materiel">
+      <h2>Matériel collectif</h2>
+      <ul class="checklist" id="collectif">
+        <li><input type="checkbox"> Tente 3 saisons &lt;2,5 kg + footprint &amp; piquets solides</li>
+        <li><input type="checkbox"> Réchaud gaz + cartouche 450 g</li>
+        <li><input type="checkbox"> Popote 1,5 L + 0,8 L, éponge &amp; liquide biodégradable</li>
+        <li><input type="checkbox"> Filtre Sawyer ou gravité + 2 L poches eau</li>
+        <li><input type="checkbox"> Carte IGN 3432 OT + boussole + trace GPX hors-ligne</li>
+        <li><input type="checkbox"> Trousse secours (bande, ibuprofène, steri‑strip…)</li>
+        <li><input type="checkbox"> Powerbank 10 000 mAh, frontales + piles</li>
+        <li><input type="checkbox"> GPS/SOS si dispo (zone blanche J2)</li>
+      </ul>
+
+      <h2>Matériel individuel</h2>
+      <ul class="checklist" id="individuel">
+        <li><input type="checkbox"> Sac de couchage confort −5 °C, matelas isolant R≥3</li>
+        <li><input type="checkbox"> Veste imper (10 000 mm) + doudoune légère</li>
+        <li><input type="checkbox"> Pantalon rando, collant nuit, t‑shirt mérinos ×2</li>
+        <li><input type="checkbox"> Polaire fine, bonnet léger, gants</li>
+        <li><input type="checkbox"> Chaussures tige haute, micro‑crampons</li>
+        <li><input type="checkbox"> Lunettes cat.3, crème solaire SPF 50</li>
+        <li><input type="checkbox"> Couverts, gobelet, couteau</li>
+        <li><input type="checkbox"> Sac poubelle zip (leave no trace)</li>
+      </ul>
+    </section>
+
+    <section id="info">
+      <h2>Météo & conditions (23 mai 2025)</h2>
+      <div class="encadre">
+        <ul>
+          <li><b>Jeudi</b> : averses le matin, 13 °C à 1 800 m ; soleil l’aprèm</li>
+          <li><b>Vendredi & samedi</b> : temps sec, max 20 °C, UV forts</li>
+          <li>Névés sous la Chaurionde : micro‑crampons utiles</li>
+          <li>Risque avalanche limité &lt;2 000 m (restez sur l’itinéraire)</li>
+        </ul>
+      </div>
+      <h2>Réglementation</h2>
+      <div class="encadre">
+        <ul>
+          <li>Bivouac <b>uniquement</b> à moins de 50 m d’une cabane/refuge (du coucher au lever du soleil)</li>
+          <li>Feux interdits (utilisez un réchaud)</li>
+          <li>Respectez faune/flore, chiens en laisse</li>
+          <li>Ramenez tous les déchets (leave no trace)</li>
+        </ul>
+      </div>
+      <h2>Logistique</h2>
+      <ul>
+        <li>Aller : TGV Paris 06 h 55 → Chambéry 10 h 33, taxi Chambéry → Les Cornes (~45 min)</li>
+        <li>Retour : taxi Nant Fourchu → Doucy (25 min) ou Chambéry (1 h). Pas de bus hors saison.</li>
+      </ul>
+    </section>
+
+    <section id="contacts">
+      <h2>Contacts utiles</h2>
+      <ul>
+        <li><b>Taxi des Bauges</b> : +33 4 79 54 84 87</li>
+        <li><b>Alp’Taxis</b> : +33 6 08 92 05 33</li>
+        <li><b>Secours montagne</b> : 112</li>
+      </ul>
+    </section>
+  </main>
+  <footer>
+    <div class="container">
+      <span>Topo Bauges 2025 – Fait par l’équipe · Partage libre</span>
+    </div>
+  </footer>
+  <script src="script.js"></script>
 </body>
-</html>
+              </html>
