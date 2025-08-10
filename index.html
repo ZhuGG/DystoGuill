@@ -3,97 +3,99 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>TRAME DOUCE — Guillotière Edition (Proto v2)</title>
+<title>TRAME DOUCE — Guillotière // Pastel‑Punk Arty (Proto v3)</title>
 <style>
-  /* ==========================================================
-     DIRECTION ARTISTIQUE — Pastel‑Punk Guill’ (codes couleur)
-     ----------------------------------------------------------
-     Fond      : #0c0f14  (noir bleu nuit)
-     Panneaux  : #141a25  (bleu nuit doux)
-     Texte     : #e9f1ff  (glace lune)
-     Atténué   : #b7c6de  (brume acier)
-     Accents   : menthe #b9fbc0 • pêche #ffd6a5 • bleu #bde0fe • rose #ffafcc
-     Alerte    : #ff6b6b  •  Succès : #7bf1a8  •  Avert.: #ffe066
-     Typo (suggestion) : « Space Grotesk »/« Söhne » (titres), « Inter » (texte),
-                         « JetBrains Mono » (HUD ASCII). Remplaçables.
-     Sprites   : conteneurs <figure.sprite> (placeholders SVG à remplacer)
-     ========================================================== */
-  :root{
-    --bg:#0c0f14; --panel:#141a25; --muted:#1a2132; --ink:#e9f1ff; --ink-dim:#b7c6de;
-    --accent:#b9fbc0; --accent-2:#ffd6a5; --accent-3:#bde0fe; --accent-4:#ffafcc;
-    --danger:#ff6b6b; --good:#7bf1a8; --warn:#ffe066; --border:#263146;
-    --radius:16px; --shadow:0 10px 30px rgba(189,224,254,.08);
-  }
-  *{ box-sizing:border-box }
-  html,body{ height:100% }
-  body{
-    margin:0; font:16px/1.45 system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial;
-    letter-spacing:.2px; color:var(--ink);
-    background:
-      radial-gradient(1200px 800px at 10% -10%, rgba(255,175,204,.08), transparent 60%),
-      radial-gradient(1400px 900px at 120% 0%, rgba(189,224,254,.06), transparent 60%),
-      radial-gradient(1200px 900px at 50% 120%, rgba(185,251,192,.07), transparent 60%),
-      var(--bg);
-    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-  }
-  .app{ display:grid; grid-template-columns: 320px 1fr 360px; grid-template-rows:auto 1fr auto; gap:14px; max-width:1400px; margin:0 auto; padding:16px 18px 18px; }
-  header{ grid-column:1/4; background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:10px 12px; position:sticky; top:0; z-index:10; backdrop-filter:saturate(1.1) blur(8px) }
-  header .row{ display:flex; gap:10px; align-items:center; justify-content:space-between }
-  .brand{ display:flex; align-items:center; gap:12px; font-weight:650; letter-spacing:.5px }
-  .dot{ width:10px; height:10px; border-radius:50%; background: conic-gradient(var(--accent-4),var(--accent-3),var(--accent),var(--accent-2)); box-shadow:0 0 16px rgba(255,175,204,.35) }
-  .hud{ display:flex; gap:8px; flex-wrap:wrap }
-  .chip{ background:var(--muted); border:1px solid var(--border); border-radius:999px; padding:6px 10px; display:inline-flex; align-items:center; gap:8px; color:var(--ink-dim) }
-  .chip strong{ color:var(--ink) }
-  .bar{ height:8px; background:#101522; border-radius:6px; overflow:hidden; box-shadow: inset 0 0 0 1px var(--border) }
-  .bar > i{ display:block; height:100%; background:linear-gradient(90deg, var(--accent-3), var(--accent-4)); }
+/* =====================================================================
+   DIRECTION ARTISTIQUE — PASTEL‑PUNK ARTY (Guillotière)
+   ---------------------------------------------------------------------
+   • Palette :
+     Fond      #0b0f15   | Panneau   #121826   | Encre     #e6f0ff
+     Atténué   #9fb2d3   | Menthe    #b9fbc0   | Pêche     #ffd6a5
+     Bleu      #bde0fe   | Rose      #ffafcc   | Corail    #ff6b6b
+     Lime      #7bf1a8   | Ambre     #ffe066   | Bordure   #273248
+   • Typo suggérée (remplaçable) : Inter (texte), Space Grotesk (titres),
+     JetBrains Mono (ASCII). Pas d’import web → fallback système OK.
+   • Sprites : placeholders SVG **CC0** à remplacer (commentaires inclus).
+   • Ton : plus sombre, un peu vulgaire, réaliste. Pas de misérabilisme.
+   ===================================================================== */
+:root{
+  --bg:#0b0f15; --panel:#121826; --muted:#182033; --ink:#e6f0ff; --ink-dim:#9fb2d3;
+  --accent:#b9fbc0; --accent2:#ffd6a5; --accent3:#bde0fe; --accent4:#ffafcc;
+  --danger:#ff6b6b; --good:#7bf1a8; --warn:#ffe066; --border:#273248;
+  --radius:16px; --shadow:0 14px 40px rgba(189,224,254,.10);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; font:16px/1.45 system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial; color:var(--ink);
+  background:
+    radial-gradient(1200px 800px at 10% -10%, rgba(255,175,204,.08), transparent 60%),
+    radial-gradient(1400px 900px at 120% 0%, rgba(189,224,254,.06), transparent 60%),
+    radial-gradient(1000px 900px at 40% 120%, rgba(185,251,192,.07), transparent 60%),
+    var(--bg);
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+}
+.app{display:grid;grid-template-columns:340px 1fr 380px;grid-template-rows:auto 1fr auto;gap:14px;max-width:1440px;margin:0 auto;padding:16px 18px 18px}
+header{grid-column:1/4;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;position:sticky;top:0;z-index:10;backdrop-filter:saturate(1.08) blur(8px)}
+header .row{display:flex;gap:10px;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:12px;font-weight:650;letter-spacing:.5px}
+.dot{width:10px;height:10px;border-radius:50%;background:conic-gradient(var(--accent4),var(--accent3),var(--accent),var(--accent2));box-shadow:0 0 16px rgba(255,175,204,.35)}
+.hud{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:var(--muted);border:1px solid var(--border);border-radius:999px;padding:6px 10px;display:inline-flex;align-items:center;gap:8px;color:var(--ink-dim)}
+.chip strong{color:var(--ink)}
+.bar{height:8px;background:#0d1422;border-radius:6px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--border)}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent3),var(--accent4))}
+.left,.center,.right{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius)}
+.left{padding:14px}.center{padding:18px}.right{padding:14px}
+.panel-title{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:10px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stat{background:linear-gradient(180deg,rgba(189,224,254,.05),transparent 60%);border:1px solid var(--border);border-radius:14px;padding:10px;display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}
+.stat .abbr{font-weight:700;color:var(--accent3);letter-spacing:.08em}
+.stat .name{color:var(--ink-dim);font-size:12px}.stat .val{font-weight:700}
+.mini-map{height:240px;border:1px dashed var(--border);border-radius:14px;padding:10px;position:relative;overflow:hidden}
+.node{position:absolute;padding:6px 8px;border-radius:10px;border:1px solid var(--border);background:rgba(26,32,48,.6);color:var(--ink-dim);font-size:12px}
+.node.visited{color:var(--ink);box-shadow:0 0 0 1px #3b4760 inset;background:rgba(26,32,48,.92)}
+.node::after{content:"";position:absolute;width:6px;height:6px;right:-3px;top:50%;transform:translateY(-50%);border-radius:50%;background:var(--accent4);box-shadow:0 0 12px rgba(255,175,204,.6)}
+.story{min-height:290px;font-size:17px}
+.choice-list{display:grid;gap:10px;margin-top:8px}
+.btn{--glow:rgba(189,224,254,.10);background:linear-gradient(180deg,rgba(185,251,192,.08),rgba(189,224,254,.06));border:1px solid var(--border);color:var(--ink);padding:14px 14px;border-radius:14px;text-align:left;cursor:pointer;display:flex;justify-content:space-between;gap:10px;transition:transform .08s ease, box-shadow .2s ease, border-color .2s ease;position:relative}
+.btn::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;border-radius:14px 0 0 14px;background:linear-gradient(180deg,var(--accent3),var(--accent4));opacity:.8}
+.btn:hover{transform:translateY(-1px);box-shadow:0 8px 28px var(--glow);border-color:#324162}
+.btn:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(189,224,254,.4)}
+.meta{color:var(--ink-dim);font-size:12px;display:flex;gap:10px;align-items:center}
+.tag{border:1px solid var(--border);background:var(--muted);border-radius:999px;padding:3px 8px;font-size:11px;color:var(--ink-dim)}
+.log{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, "JetBrains Mono", monospace;background:linear-gradient(180deg,rgba(255,214,165,.06),transparent 50%);border:1px solid var(--border);border-radius:14px;padding:10px;height:360px;overflow:auto}
+.log .entry{border-bottom:1px dashed var(--border);padding:6px 0}
+.log .ok{color:var(--good)}.log .bad{color:var(--danger)}
+.toggles{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.toggle{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);background:var(--muted);border-radius:999px;padding:6px 10px;cursor:pointer}
+.toggle input{accent-color:var(--accent3)}
+.ascii{display:none;white-space:pre;font-family:ui-monospace, Menlo, Consolas, monospace;background:#0a0d12;border:1px solid var(--border);border-radius:14px;padding:12px;color:#c3cee4}
+.ascii.on{display:block}
+.sprite{width:100%;height:200px;border:1px dashed var(--border);border-radius:14px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(185,251,192,.05),rgba(255,175,204,.06));color:var(--ink-dim)}
+.sprite svg{width:120px;height:120px;opacity:.75}
+footer{grid-column:1/4;display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 4px;color:var(--ink-dim)}
+.kbd{font-family:ui-monospace, Menlo, Consolas, monospace;border:1px solid var(--border);border-bottom-width:3px;background:var(--muted);padding:2px 6px;border-radius:6px}
+.ghost{color:var(--ink-dim)}
+@media (max-width:1180px){.app{grid-template-columns:1fr}}
 
-  .left,.center,.right{ background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); }
-  .left{ padding:14px } .center{ padding:18px } .right{ padding:14px }
-  .panel-title{ font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-dim); margin-bottom:10px }
+/* Dice overlay */
+#diceOverlay{position:fixed;inset:0;background:rgba(9,12,18,.64);display:none;align-items:center;justify-content:center;z-index:100}
+.diceBox{background:var(--panel);border:1px solid var(--border);padding:18px;border-radius:16px;box-shadow:var(--shadow);display:flex;gap:18px;align-items:center}
+.die{width:64px;height:64px;border-radius:12px;background:linear-gradient(180deg,#1a2234,#0f1524);display:flex;align-items:center;justify-content:center;font:700 28px/1 "JetBrains Mono", ui-monospace;color:var(--ink);border:1px solid #33435f}
+.die.rolling{animation:roll .8s linear infinite}
+@keyframes roll{0%{transform:rotate(0)}50%{transform:rotate(180deg)}100%{transform:rotate(360deg)}}
 
-  .stats{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px }
-  .stat{ background:linear-gradient(180deg, rgba(189,224,254,.05), transparent 60%); border:1px solid var(--border); border-radius:14px; padding:10px; display:grid; grid-template-columns:auto 1fr auto; gap:10px; align-items:center }
-  .stat .abbr{ font-weight:700; color:var(--accent-3); letter-spacing:.08em }
-  .stat .name{ color:var(--ink-dim); font-size:12px } .stat .val{ font-weight:700 }
-
-  .mini-map{ height:220px; border:1px dashed var(--border); border-radius:14px; padding:10px; position:relative; overflow:hidden }
-  .node{ position:absolute; padding:6px 8px; border-radius:10px; border:1px solid var(--border); background:rgba(26,32,48,.6); color:var(--ink-dim); font-size:12px }
-  .node.visited{ color:var(--ink); box-shadow:0 0 0 1px #3b4760 inset; background:rgba(26,32,48,.9) }
-  .node::after{ content:""; position:absolute; width:6px; height:6px; right:-3px; top:50%; transform:translateY(-50%); border-radius:50%; background:var(--accent-4); box-shadow:0 0 12px rgba(255,175,204,.6) }
-
-  .story{ min-height:260px; font-size:17px }
-  .choice-list{ display:grid; gap:10px; margin-top:8px }
-  .btn{ background:linear-gradient(180deg, rgba(185,251,192,.08), rgba(189,224,254,.06)); border:1px solid var(--border); color:var(--ink); padding:12px 14px; border-radius:12px; text-align:left; cursor:pointer; display:flex; justify-content:space-between; gap:10px; transition:transform .08s ease, box-shadow .2s ease; }
-  .btn:hover{ transform:translateY(-1px); box-shadow:var(--shadow) }
-  .btn:focus-visible{ outline:none; box-shadow:0 0 0 3px rgba(189,224,254,.4) }
-  .meta{ color:var(--ink-dim); font-size:12px; display:flex; gap:10px; align-items:center }
-  .tag{ border:1px solid var(--border); background:var(--muted); border-radius:999px; padding:3px 8px; font-size:11px; color:var(--ink-dim) }
-
-  .log{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "JetBrains Mono", monospace; background:linear-gradient(180deg, rgba(255,214,165,.06), transparent 50%); border:1px solid var(--border); border-radius:14px; padding:10px; height:340px; overflow:auto }
-  .log .entry{ border-bottom:1px dashed var(--border); padding:6px 0 }
-  .log .ok{ color:var(--good) } .log .bad{ color:var(--danger) }
-
-  .toggles{ display:flex; gap:8px; flex-wrap:wrap; align-items:center }
-  .toggle{ display:inline-flex; align-items:center; gap:8px; border:1px solid var(--border); background:var(--muted); border-radius:999px; padding:6px 10px; cursor:pointer }
-  .toggle input{ accent-color: var(--accent-3) }
-
-  .ascii{ display:none; white-space:pre; font-family: ui-monospace, Menlo, Consolas, monospace; background:#0a0d12; border:1px solid var(--border); border-radius:14px; padding:12px; color:#c3cee4 }
-  .ascii.on{ display:block }
-
-  .sprite{ width:100%; height:180px; border:1px dashed var(--border); border-radius:14px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, rgba(185,251,192,.05), rgba(255,175,204,.06)); color:var(--ink-dim) }
-  .sprite svg{ width:120px; height:120px; opacity:.7 }
-
-  footer{ grid-column:1/4; display:flex; gap:10px; align-items:center; justify-content:space-between; padding:10px 4px; color:var(--ink-dim) }
-  .kbd{ font-family: ui-monospace, Menlo, Consolas, monospace; border:1px solid var(--border); border-bottom-width:3px; background:var(--muted); padding:2px 6px; border-radius:6px }
-  .ghost{ color:var(--ink-dim) }
-  @media (max-width: 1100px){ .app{ grid-template-columns:1fr } }
+/* Font scale */
+:root{--fs:1}
+body{font-size:calc(16px * var(--fs))}
 </style>
 </head>
 <body>
-  <div class="app" role="application" aria-label="TRAME DOUCE — Guillotière Edition">
+  <div class="app" role="application" aria-label="TRAME DOUCE — Guillotière v3">
     <header aria-live="polite">
       <div class="row">
-        <div class="brand"><span class="dot" aria-hidden="true"></span> TRAME DOUCE — <span class="ghost">Guillotière (post‑apo doux)</span></div>
+        <div class="brand"><span class="dot" aria-hidden="true"></span> TRAME DOUCE — <span class="ghost">Guillotière</span></div>
         <div class="hud" id="hud"></div>
       </div>
     </header>
@@ -105,19 +107,23 @@
       <div class="panel-title">Mini‑carte (Guill’)</div>
       <div class="mini-map" id="minimap" aria-label="Mini-carte de la Guillotière">
         <div class="node" id="node-G0" style="left:18px; top:36px">Place du Pont</div>
-        <div class="node" id="node-G1" style="left:190px; top:28px">Cours Gambetta</div>
-        <div class="node" id="node-G2" style="left:86px; top:122px">Friche Mazagran</div>
-        <div class="node" id="node-G3" style="left:236px; top:120px">Berges — Jardins d’Algues</div>
+        <div class="node" id="node-G1" style="left:178px; top:28px">Rue de Marseille</div>
+        <div class="node" id="node-G2" style="left:92px; top:126px">Friche Mazagran</div>
+        <div class="node" id="node-G3" style="left:236px; top:118px">Berges — Darses</div>
         <div class="node" id="node-G4" style="left:34px; top:178px">Pont de la Guill’</div>
         <div class="node" id="node-G5" style="left:208px; top:176px">Sous‑station T1</div>
       </div>
       <div style="height:10px"></div>
-      <div class="panel-title">Préférences</div>
+      <div class="panel-title">Réglages</div>
       <div class="toggles">
-        <label class="toggle"><input type="checkbox" id="t-reduced" /> Réduire les animations</label>
+        <label class="toggle"><input type="checkbox" id="t-reduced" /> Réduire animations</label>
         <label class="toggle"><input type="checkbox" id="t-ascii" /> HUD ASCII (<span class="kbd">H</span>)</label>
+        <label class="toggle"><input type="checkbox" id="t-sound" /> Son (très discret)</label>
+        <label class="toggle"><input type="checkbox" id="t-cru" checked /> Langage cru</label>
         <label class="toggle"><input type="checkbox" id="t-autosave" checked /> Sauvegarde auto</label>
       </div>
+      <div style="margin:10px 0 4px" class="ghost">Taille texte</div>
+      <input type="range" min="0.9" max="1.3" step="0.01" value="1" id="fontRange" style="width:100%" />
       <div style="height:10px"></div>
       <button class="btn" id="btn-save">Export sauvegarde</button>
       <button class="btn" id="btn-load">Importer sauvegarde</button>
@@ -126,16 +132,13 @@
     <section class="center" aria-live="polite" aria-label="Narration et choix">
       <div class="panel-title">Histoire</div>
       <figure class="sprite" id="art" aria-label="Illustration de scène">
-        <!-- Placeholder SVG to replace later -->
+        <!-- Sprites CC0 placeholders (remplacez par vos images) -->
         <svg viewBox="0 0 100 100" role="img" aria-label="sprite">
           <defs>
-            <linearGradient id="g" x1="0" x2="1">
-              <stop offset="0" stop-color="#bde0fe"/>
-              <stop offset="1" stop-color="#ffafcc"/>
-            </linearGradient>
+            <linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#bde0fe"/><stop offset="1" stop-color="#ffafcc"/></linearGradient>
           </defs>
-          <circle cx="50" cy="50" r="40" fill="url(#g)"/>
-          <rect x="18" y="62" width="64" height="10" rx="5" fill="#b9fbc0"/>
+          <rect x="8" y="8" width="84" height="84" rx="12" fill="url(#g)"/>
+          <g fill="#0b0f15" opacity=".15"><circle cx="30" cy="28" r="8"/><rect x="18" y="62" width="64" height="10" rx="5"/></g>
         </svg>
       </figure>
       <div id="story" class="story"></div>
@@ -148,305 +151,254 @@
       <div class="log" id="log" aria-live="polite"></div>
       <div style="height:10px"></div>
       <div class="panel-title">Aides</div>
-      <div class="ghost">• Raccourcis <span class="kbd">1‑9</span> pour choisir. <br>• <span class="kbd">H</span> : HUD ASCII. <br>• « Pousser sa chance » et « Flux » proposés sur les tests.</div>
+      <div class="ghost">• Raccourcis <span class="kbd">1‑9</span> pour choisir. <br>• <span class="kbd">H</span> : HUD ASCII. <br>• « Pousser sa chance » et « Flux » proposés sur les tests. <br>• Export/Import JSON de sauvegarde.</div>
     </aside>
 
     <footer>
-      <div>© Proto v2 — « Pastel‑punk Guill’ » — UI/UX accessible (remplaçable)</div>
-      <div class="ghost">Fichier unique. Sprites/images <em>placeholders</em> à remplacer.</div>
+      <div>© Proto v3 — « Pastel‑punk Guill’ » — UI/UX accessible, arty. CC0 sprites.</div>
+      <div class="ghost">Fichier unique. Aucune dépendance. Responsive.</div>
     </footer>
   </div>
 
-<script>
-/* =============================================================
-   TRAME DOUCE — Micro moteur (Disco‑like) — Guillotière Edition
-   — Archetypes avec histoires propres
-   — Scènes centrées sur la Guillotière (sans clichés ni misérabilisme)
-   — DA pastel‑punk + HUD ASCII optionnel
-   ============================================================= */
-(function(){
-  const $ = sel => document.querySelector(sel);
-  const $$ = sel => Array.from(document.querySelectorAll(sel));
+  <!-- Dice overlay -->
+  <div id="diceOverlay" aria-hidden="true"><div class="diceBox"><div class="die" id="d1">—</div><div class="die" id="d2">—</div><div style="min-width:180px"><div class="ghost" style="font-size:12px">Lancer en cours…</div><div id="diceText" style="font-family:ui-monospace,Menlo,Consolas,monospace;margin-top:6px"></div></div></div></div>
 
-  // ---------- Core State ----------
+<script>
+/* =====================================================================
+   TRAME DOUCE — Guillotière v3 (Disco-like narratif)
+   • Plus sombre, réaliste, langage cru optionnel
+   • ASCII HUD avancé, animation de dés, CC0 sprites
+   • App responsive, réglages, seed RNG, sauvegarde
+   ===================================================================== */
+(function(){
+  const $ = s=>document.querySelector(s); const $$ = s=>Array.from(document.querySelectorAll(s));
+
+  // --------- Core State ---------
   const state = {
     seed: Date.now(),
     scene: 'START',
     visited: new Set(),
     archetype: null,
-    stats: { NEU:2, VOL:2, SOM:2, CIN:2 }, // baseline before pick
+    stats: { NEU:2, VOL:2, SOM:2, CIN:2 }, // baseline
     skills: { Empathie:0, Intimidation:0, Furtivite:0, Cryptanalyse:0, Deduction:0, Mnemographie:0, Endurance:0, Resistance:0, Mecafortune:0, Reflexes:0, CAC:0 },
     stress: 5, hp: 5,
     flux: 2, fragments: 2,
     inventory: [],
-    flags: { ascii:false, reduced:false },
+    flags: { ascii:false, reduced:false, sound:false, cru:true },
+    tags: {},
     log: []
   };
 
-  // Save/Load
-  try{ const saved = JSON.parse(localStorage.getItem('TRAME_DOUCE_GUILL_SAVE')||'null'); if(saved && saved.scene){ Object.assign(state, saved); state.visited = new Set(saved.visited||[]); } }catch(e){}
+  // Load
+  try{ const saved = JSON.parse(localStorage.getItem('TRAME_GUILL_V3')||'null'); if(saved && saved.scene){ Object.assign(state,saved); state.visited=new Set(saved.visited||[]); } }catch(e){}
 
   // RNG
   function mulberry32(a){ return function(){ let t = a += 0x6D2B79F5; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296 } }
   let rng = mulberry32(state.seed);
   function d6(){ return Math.floor(rng()*6)+1 }
-  function roll2d6(){ const a=d6(), b=d6(); return {a,b,sum:a+b, doubles:(a===b)} }
+  function roll2d6(){ const a=d6(), b=d6(); return {a,b,sum:a+b,doubles:(a===b)} }
 
-  // ---------- Archetypes ----------
+  // Audio (optional, very soft)
+  const ctx = (window.AudioContext||window.webkitAudioContext) ? new (window.AudioContext||window.webkitAudioContext)() : null;
+  function beep(freq=220, ms=90){ if(!state.flags.sound || !ctx) return; const o=ctx.createOscillator(); const g=ctx.createGain(); o.frequency.value=freq; o.type='triangle'; g.gain.value=.0008; o.connect(g); g.connect(ctx.destination); o.start(); setTimeout(()=>{ o.stop(); }, ms); }
+
+  // --------- Archetypes ----------
   const ARCH = {
-    ACCORDEUR: {
-      label:'Accordeur de Bruit',
-      pitch:`Tu calmes les foules par gestes et timbres. À la Guill’, on te connaît pour avoir arrêté une rixe en accordant un rideau métallique.`,
-      stats:{ NEU:2, VOL:3, SOM:1, CIN:2 },
-      skills:{ Empathie:1, Intimidation:1, Furtivite:1 },
-      atout:{ name:'Regard qui désarme', hint:'1 interaction sociale facile/scene' },
-      startItems:['Jeton d’écho','Feuillet-mica réglé']
-    },
-    CARTOGRAPHE: {
-      label:'Cartographe des Courants',
-      pitch:`Tu lis les flux muets: vents de couloir, tram qui hésite, câbles qui vibrent. Tu as cartographié des passages que les drones ignorent.`,
-      stats:{ NEU:3, VOL:2, SOM:1, CIN:2 },
-      skills:{ Cryptanalyse:1, Deduction:1, Mnemographie:1 },
-      atout:{ name:'Écoute directionnelle', hint:'1 relance mentale/scene' },
-      startItems:['Craie douce','Mic-corde sensible']
-    },
-    BIFFIN: {
-      label:'Biffin Ingénieur',
-      pitch:`Tu répares à main nue. Aux puces de la Place du Pont, on te confie les objets qui « préfèrent chuchoter ».`,
-      stats:{ NEU:2, VOL:1, SOM:3, CIN:2 },
-      skills:{ Mecafortune:1, Endurance:1, Reflexes:1 },
-      atout:{ name:'Atelier mobile', hint:'+2 au 1er test mécanique de la scène' },
-      startItems:['Trousse feutrée','Aimant‑algue']
-    }
+    ACCORDEUR: { label:'Accordeur de Bruit', pitch:`Tu calmes les emmerdes sans lever la voix. Une fois, t’as accordé un rideau métallique et la bagarre a fondu.`, stats:{ NEU:2,VOL:3,SOM:1,CIN:2 }, skills:{ Empathie:1,Intimidation:1,Furtivite:1 }, atout:{ name:'Regard qui désarme', hint:'1 interaction facile/scene' }, startItems:['Jeton d’écho','Feuillet-mica réglé'] },
+    CARTO: { label:'Cartographe des Courants', pitch:`Tu lis le vent des couloirs, les câbles qui vibrent, les silences qui poussent. Tu sais où la ville glisse.`, stats:{ NEU:3,VOL:2,SOM:1,CIN:2 }, skills:{ Cryptanalyse:1,Deduction:1,Mnemographie:1 }, atout:{ name:'Écoute directionnelle', hint:'1 relance mentale/scene' }, startItems:['Craie douce','Mic-corde sensible'] },
+    BIFFIN: { label:'Biffin Ingénieur', pitch:`Tu rafistoles ce qui a honte de grincer. Aux puces, on t’appelle quand tout foire.`, stats:{ NEU:2,VOL:1,SOM:3,CIN:2 }, skills:{ Mecafortune:1,Endurance:1,Reflexes:1 }, atout:{ name:'Atelier mobile', hint:'+2 au 1er test mécanique de la scène' }, startItems:['Trousse feutrée','Aimant‑algue'] }
   };
 
-  // ---------- Scenes (Guillotière) ----------
-  /*
-    Cadre: La Sourdine — Lyon amortit le monde. À la Guillotière, on vit à voix basse.
-    On évite tout cliché: on montre l’entraide, l’ingéniosité douce, les réseaux non violents.
-  */
+  // --------- Scenes (Guillotière sombre, réaliste) ---------
+  /* Ton: concret, direct. Légère vulgarité contrôlée. */
   const SCENES = {
     START:{
-      name:'Prologue — Guillotière',
-      art:'start',
-      text:`La pluie lave les tags en dégradé pastel sur les rideaux des boutiques. Les moteurs sont comme bâillonnés par <em>la Sourdine</em>. 
-            La ville n’avance qu’à l’élan doux. On t’attend ce soir à la <strong>Place du Pont</strong>, point zéro de l’histoire. 
-            Choisis ce que tu es ici, pour ne pas te perdre.`,
+      name:'Prologue — Guillotière', art:'start',
+      text: t(`La pluie rase les tags. Odeur de gras, de linge humide. Les moteurs bâillent: la <em>Sourdine</em> bouffe l’élan et tue les cris.
+      Place du Pont, fin d’aprèm. On t’a glissé un mot: « service propre, payé comptant ». 
+      Avant de bouger, décide qui tu es ici.`),
       choices:[
-        { text:'Devenir ACCORDEUR — voix basses, conflits apaisés', goto:'ARCH', flag:{key:'pick','val':'ACCORDEUR'} },
-        { text:'Devenir CARTOGRAPHE — lire les courants invisibles', goto:'ARCH', flag:{key:'pick','val':'CARTOGRAPHE'} },
-        { text:'Devenir BIFFIN — réparer, détourner, bricoler', goto:'ARCH', flag:{key:'pick','val':'BIFFIN'} }
+        { text:'Devenir ACCORDEUR — tenir les foules sans gueuler', goto:'ARCH', flag:{key:'pick',val:'ACCORDEUR'} },
+        { text:'Devenir CARTOGRAPHE — lire les courants invisibles', goto:'ARCH', flag:{key:'pick',val:'CARTO'} },
+        { text:'Devenir BIFFIN — réparer avec trois bouts de feutre', goto:'ARCH', flag:{key:'pick',val:'BIFFIN'} }
       ]
     },
-    ARCH:{
-      name:'Sélection d’archétype',
-      art:'arch',
-      text:`Chaque archétype arrive avec sa mémoire, ses outils, sa manière d’écouter la ville.`,
+    ARCH:{ name:'Sélection — Archétype', art:'arch', text:t(`Chaque profil vient avec ses cicatrices et ses outils. Pas de héros, juste quelqu’un qui tient.`), choices:[
+      { text:'Valider et commencer à la Place du Pont', goto:'G0', action:'applyArchetype' },
+      { text:'Retour au prologue', goto:'START' }
+    ]},
+
+    // Scene 1 — Establishing
+    G0:{ name:'Place du Pont — Point zéro', art:'pont',
+      text:t(`Tentes, tables, bricoles. Des réveils qui ne font plus tic. Des radios qui murmurent. Un pylône de voisins clignote.
+      Un feuillet de mica dépasse d’un câble. Si tu le frottes, il rendra peut‑être la mémoire de quelqu’un. Ou juste une migraine.`),
       choices:[
-        { text:'Valider et commencer à la Place du Pont', goto:'G0', action:'applyArchetype' },
-        { text:'Retour au prologue', goto:'START' }
+        { text:'Frotter le feuillet (NEU/Mnémographie)', test:{stat:'NEU',skill:'Mnemographie',dc:10}, success:{ log:t('Le motif se retourne dans ta tête. Tag « Motif_R ». Piste vers les Berges.'), tag:{k:'Motif_R',v:true}, goto:'G3' }, failure:{ log:t('Ça crisse dans ton crâne. +1 Stress.'), stress:-1, goto:'G1' } },
+        { text:'Canaliser la foule sans faire de bruit (VOL/Empathie)', test:{stat:'VOL',skill:'Empathie',dc:10}, success:{ log:t('Tu fais signe, tu ouvres une poche d’air. + Note‑pilote. Tag « Passage_Doux ». '), addItem:'Note‑pilote', tag:{k:'Passage_Doux',v:true}, goto:'G1' }, failure:{ log:t('Un gars te rentre dedans. « Regarde où tu vas. » Tag « Maladresse_Polie ». '), tag:{k:'Maladresse_Polie',v:true}, goto:'G1' } },
+        { text:'Bidouiller un sifflet pour capteurs (SOM/Mécanique DD12)', test:{stat:'SOM',skill:'Mecafortune',dc:12}, success:{ log:t('Sifflet muet prêt. +1 Flux.'), flux:+1, addItem:'Sifflet muet', goto:'G2' }, failure:{ log:t('Tu te coupes. Rien de dramatique. +1 Blessure.'), hp:-1, goto:'G2' } }
       ]
     },
-    G0:{
-      name:'Place du Pont — Biffe silencieuse',
-      art:'pont',
-      text:`Des étals nomades étalent des objets qui refusent de faire du bruit: réveils sans tic, radios en sourdine, couteaux qui ne sonnent pas. 
-            Un <em>pylône de voisins</em> clignote: quelqu’un cherche un messager pour la <strong>Friche Mazagran</strong>. 
-            Une vieille affiche parle d’un <em>jardin d’algues</em> sur les berges.`,
+
+    // Scene 2 — Mazagran
+    G2:{ name:'Friche Mazagran — Cour qui tient', art:'mazagran',
+      text:t(`Dans la cour, on tends des draps isolants entre deux fenêtres. Une femme t’attend sur un muret.
+      « Tu vas aux darses ? File ça à la Dame des Algues. Tu n’ouvres pas. Tu ne fais pas le malin. » Elle te pose une petite boîte scellée.`),
       choices:[
-        { text:'Répondre à la demande (VOL/Empathie DD10)', test:{ stat:'VOL', skill:'Empathie', dc:10 }, success:{ log:'Tu captes le besoin. Tu gagneras un relais humain à Mazagran.', flag:{key:'relaisMaz','val':true}, goto:'G2' }, failure:{ log:'Tu prends la demande de travers. Tu décideras sur place.', goto:'G2', stress:-1 } },
-        { text:'Observer les écoulements (NEU/Déduction DD10)', test:{ stat:'NEU', skill:'Deduction', dc:10 }, success:{ log:'Tu lis un passage sûr par la rue de Marseille → Berges.', flag:{key:'passageBerges','val':true}, goto:'G3' }, failure:{ log:'Le flux se brouille. Tu restes prudent·e.', goto:'G3' } },
-        { text:'Bidouiller un sifflet pour capteurs (SOM/Mécanique DD12)', test:{ stat:'SOM', skill:'Mecafortune', dc:12 }, success:{ log:'Sifflet muet prêt. +1 Flux', flux:+1, addItem:'Sifflet muet', goto:'G1' }, failure:{ log:'Micro-coupure. +1 Blessure.', hp:-1, goto:'G1' } }
+        { text:'Prendre la boîte et filer discret (CIN/Furtivité DD10)', test:{stat:'CIN',skill:'Furtivite',dc:10}, success:{ log:t('Tu dégages sans soulever d’air. +1 Flux.'), flux:+1, addItem:'Boîte scellée', goto:'G3' }, failure:{ log:t('Un drone hésite au-dessus. +1 Stress.'), stress:-1, addItem:'Boîte scellée', goto:'G3' } },
+        { text:'Ouvrir quand même (NEU/Cryptanalyse DD12)', test:{stat:'NEU',skill:'Cryptanalyse',dc:12}, success:{ log:t('Dedans: un Effaceur « doux ». Arme d’oubli locale. Tag « Effaceur_Doux ». '), tag:{k:'Effaceur_Doux',v:true}, addItem:'Effaceur doux (temporisé)', goto:'G3' }, failure:{ log:t('Sceau piquant. +1 Blessure.'), hp:-1, goto:'G3' } },
+        { text:'Demander « pourquoi elle »', goto:'G3', log:t('« Parce qu’elle ne vend pas la ville pour un café. »') }
       ]
     },
-    G1:{
-      name:'Cours Gambetta — Tram au pas',
-      art:'gambetta',
-      text:`Le T1 glisse comme une carpe. Des médiateurs de quartier peignent des lignes souples sur la chaussée. 
-            On échange des <em>notes‑pilotes</em> pour traverser sans heurter.`,
+
+    // Scene 3 — Berges Rhône
+    G3:{ name:'Berges — Darses', art:'berges',
+      text:t(`Sous le pont, taches d’algues, sacs poubelle noués serré. Une vieille veille la flotte. Elle te jauge : « Tu viens pour la boîte ? »`),
       choices:[
-        { text:'Apprendre la note locale (NEU/Mnémographie DD10)', test:{ stat:'NEU', skill:'Mnemographie', dc:10 }, success:{ log:'Ta mémoire retient la courbe. +1 à Furtivité (temp, 3 scènes).', tempSkill:{ key:'Furtivite', delta:+1, turns:3 }, goto:'G4' }, failure:{ log:'Ta tête bourdonne. +1 Stress.', stress:-1, goto:'G4' } },
-        { text:'Épauler un médiateur (VOL/Empathie DD10)', test:{ stat:'VOL', skill:'Empathie', dc:10 }, success:{ log:'Tu gagnes un <strong>Jeton d’écho</strong>.', addItem:'Jeton d’écho', goto:'G4' }, failure:{ log:'Mésentente polie. Rien de grave.', goto:'G4' } }
+        { text:'Donner la boîte sans cinéma', goto:'G4', log:t('Elle la glisse dans un seau. « Merci. Garde ta tête froide. » Tag « Confiance_Minimaliste ». '), tag:{k:'Confiance_Min',v:true} },
+        { text:'Parler du motif retourné (VOL/Empathie DD12)', test:{stat:'VOL',skill:'Empathie',dc:12}, success:{ log:t('Elle te file un Quitus de Passage. « Quand ça bloque, montre ça. »'), addItem:'Quitus de passage', goto:'G4' }, failure:{ log:t('Elle détourne juste le regard. Ok. On avance.'), goto:'G4' } },
+        { text:'Lire le flux de l’eau (NEU/Déduction DD10)', test:{stat:'NEU',skill:'Deduction',dc:10}, success:{ log:t('Tu repères un replat calme. Tag « Isthme ». '), tag:{k:'Isthme',v:true}, goto:'G4' }, failure:{ log:t('L’eau ment. Tu recules.'), goto:'G4' } }
       ]
     },
-    G2:{
-      name:'Friche Mazagran — Atelier des Ombres',
-      art:'mazagran',
-      text:`Dans la cour, on tisse des paravents acoustiques en soie recyclée. 
-            Une jeune femme te remet une boîte: « À la bergère d’algues. Dis-lui que le motif <em>retourne</em>. »`,
+
+    // Scene 4 — Pont
+    G4:{ name:'Pont de la Guill’ — Calme tendu', art:'pont2',
+      text:t(`Ça passe au ralenti. Deux flics regardent trop. Un scooter râle et s’éteint. Tu dois traverser sans faire d’histoire.`),
       choices:[
-        { text:'Accepter la boîte et filer (CIN/Furtivité DD10)', test:{ stat:'CIN', skill:'Furtivite', dc:10 }, success:{ log:'Livraison discrète activée. +1 Flux.', flux:+1, goto:'G3' }, failure:{ log:'Un drone hésite sur toi. +1 Stress.', stress:-1, goto:'G3' } },
-        { text:'Ouvrir la boîte (NEU/Cryptanalyse DD12)', test:{ stat:'NEU', skill:'Cryptanalyse', dc:12 }, success:{ log:'C’est un <em>Effaceur de Trame — Doux</em>, temporisé.', flag:{key:'effaceurDoux','val':true}, goto:'G3' }, failure:{ log:'Tu te piques au sceau. +1 Blessure.', hp:-1, goto:'G3' } }
+        { text:'Marcher à contre‑rythme (CIN/Furtivité DD12)', test:{stat:'CIN',skill:'Furtivite',dc:12}, success:{ log:t('Tes pas ne riment avec rien. Tu deviens personne. +1 Flux.'), flux:+1, goto:'G1' }, failure:{ log:t('Un regard s’accroche. +1 Stress.'), stress:-1, goto:'G1' } },
+        { text:'Regarder droit et court (VOL/Intimidation DD10)', test:{stat:'VOL',skill:'Intimidation',dc:10}, success:{ log:t('Tu imposes un calme sec. Ils te laissent filer.'), goto:'G1' }, failure:{ log:t('Trop sec. « Vos papiers ? » Rien ne sortira de leur bouche — Sourdine oblige — mais ça colle au sol.'), stress:-1, goto:'G1' } },
+        { text:'Montrer le Quitus (si tu l’as)', goto:'G1', requireTag:'Quitus', log:t('Ça passe. On te fout la paix.') }
       ]
     },
-    G3:{
-      name:'Berges — Jardins d’Algues',
-      art:'berges',
-      text:`Sous le pont, des bassins poussent des algues pastel qui filtrent l’eau et la mémoire courte. 
-            La bergère d’algues fredonne sans bouche. Elle attend un motif « retourné ».`,
+
+    // Scene 5 — Rue de Marseille / T1
+    G1:{ name:'Rue de Marseille — Vers la Sous‑station', art:'gambetta',
+      text:t(`Néons rincés, kebabs ouverts, regards qui pèsent mais aident si on respecte le pas. Tu coupes par une cour, débouches sur un local technique : Sous‑station T1.`),
       choices:[
-        { text:'Remettre la boîte honnêtement', goto:'G5', log:'Tu livres sans tricher. La bergère te fait confiance.' },
-        { text:'Parler du Mirage de Confluence (VOL/Empathie DD12)', test:{ stat:'VOL', skill:'Empathie', dc:12 }, success:{ log:'Elle t’accorde un <strong>Quitus de Passage</strong>.', addItem:'Quitus de passage', goto:'G5' }, failure:{ log:'Elle détourne le regard, poliment.', goto:'G5' } },
-        { text:'Lire les capteurs d’eau (NEU/Déduction DD10)', test:{ stat:'NEU', skill:'Deduction', dc:10 }, success:{ log:'Tu trouves un <em>isthme</em> calme sous le Pont de la Guill’.', flag:{key:'isthme','val':true}, goto:'G4' }, failure:{ log:'Les bulles brouillent la mesure.', goto:'G4' } }
-      ]
-    },
-    G4:{
-      name:'Pont de la Guillotière — Calme tendu',
-      art:'pont2',
-      text:`Des vélos passent au ralenti. On tape sur les garde‑corps pour signaler son désir de dépasser. 
-            Au loin, une patrouille cherche quelqu’un… qui te ressemble.`,
-      choices:[
-        { text:'Passer en contre‑rythme (CIN/Furtivité DD12)', test:{ stat:'CIN', skill:'Furtivite', dc:12 }, success:{ log:'Tu deviens une absence. +1 Flux.', flux:+1, goto:'G5' }, failure:{ log:'Un regard s’accroche. +1 Stress.', stress:-1, goto:'G5' } },
-        { text:'Détendre l’atmosphère (VOL/Intimidation DD10)', test:{ stat:'VOL', skill:'Intimidation', dc:10 }, success:{ log:'Tu imposes un silence cordial. La patrouille décroche.', goto:'G5' }, failure:{ log:'Trop sec. Ça durcit un peu.', goto:'G5', stress:-1 } }
-      ]
-    },
-    G5:{
-      name:'Sous‑station T1 — Roues fantômes',
-      art:'t1',
-      text:`Ici dorment des moteurs qui ne savent plus faire de bruit. Au mur, un schéma: <em>Trame Douce, Porte</em>. 
-            Tu comprends que la ville peut oublier ce qui la blesse — sans oublier ceux qu’elle aime.`,
-      choices:[
-        { text:'Programmer une Porte Douce (NEU/Cryptanalyse DD12)', test:{ stat:'NEU', skill:'Cryptanalyse', dc:12 }, success:{ log:'Tu ouvres une voie sûre. Fin douce.', goto:'END_A' }, failure:{ log:'La note fausse. +1 Stress.', stress:-1, goto:'G5' } },
-        { text:'Conclure un pacte de voisinage (VOL/Empathie DD12)', test:{ stat:'VOL', skill:'Empathie', dc:12 }, success:{ log:'Un réseau se serre autour de toi. Fin pacte.', goto:'END_B' }, failure:{ log:'La fatigue se lit. Un autre jour.', goto:'G5' } },
-        { text:'Piéger la violence (SOM/Mécanique DD12)', test:{ stat:'SOM', skill:'Mecafortune', dc:12 }, success:{ log:'Toute capture brutale deviendra image floue. Fin élégante.', goto:'END_C' }, failure:{ log:'Coupe sombre. +1 Blessure.', hp:-1, goto:'G5' } },
+        { text:'Programmer une « Porte Douce » (NEU/Cryptanalyse DD12)', test:{stat:'NEU',skill:'Cryptanalyse',dc:12}, success:{ log:t('Tu ouvres une voie propre pour le quartier. Fin « Porte Douce ». '), goto:'END_A' }, failure:{ log:t('La note fausse et se tait. +1 Stress.'), stress:-1, goto:'G5' } },
+        { text:'Conclure un pacte de voisinage (VOL/Empathie DD12)', test:{stat:'VOL',skill:'Empathie',dc:12}, success:{ log:t('On te file des yeux et des mains. Fin « Pacte ». '), goto:'END_B' }, failure:{ log:t('Trop de fatigue. Pas aujourd’hui.'), goto:'G5' } },
+        { text:'Piéger la violence (SOM/Mécanique DD12)', test:{stat:'SOM',skill:'Mecafortune',dc:12}, success:{ log:t('Toute capture brutale deviendra image floue. Fin élégante. '), goto:'END_C' }, failure:{ log:t('Coupe sombre. +1 Blessure.'), hp:-1, goto:'G5' } },
         { text:'S’éloigner en silence', goto:'END_D' }
       ]
     },
 
-    END_A:{ name:'Sortie — Porte Douce', art:'end', text:`Tu glisses par une porte sans angle. La Guill’ respire — assez pour une autre journée.`, choices:[ { text:'Rejouer (nouvelle seed)', goto:'RESTART' } ] },
-    END_B:{ name:'Sortie — Pacte', art:'end', text:`Le quartier t’adopte. Quand tu passes, la Sourdine te rend la voix juste assez.`, choices:[ { text:'Rejouer', goto:'RESTART' } ] },
-    END_C:{ name:'Sortie — Image Floue', art:'end', text:`Les prédations rebondiront tant qu’elles seront brutales. Tu laisses une défense douce.`, choices:[ { text:'Rejouer', goto:'RESTART' } ] },
-    END_D:{ name:'Sortie — Reflux', art:'end', text:`Tu repars lentement, avec l’idée que la douceur est une technologie.`, choices:[ { text:'Rejouer', goto:'RESTART' } ] }
+    // Fallback / Hub
+    G5:{ name:'Sous‑station T1 — Plans froissés', art:'t1',
+      text:t(`Schémas scotchés au mur. Quelqu’un a noté: « La douceur est une technologie. »`),
+      choices:[
+        { text:'Réessayer la Porte (si ratée)', goto:'G1' },
+        { text:'Respirer, puis sortir', goto:'END_D' }
+      ]
+    },
+
+    // Endings
+    END_A:{ name:'Sortie — Porte Douce', art:'end', text:t(`Tu offres au quartier un passage qui n’accroche pas. Ce n’est pas héroïque. C’est utile.`), choices:[{text:'Rejouer', goto:'RESTART'}]},
+    END_B:{ name:'Sortie — Pacte', art:'end', text:t(`Des numéros, des regards, des gestes. Quand tu passeras, on te laissera un bout de trottoir.`), choices:[{text:'Rejouer', goto:'RESTART'}]},
+    END_C:{ name:'Sortie — Image Floue', art:'end', text:t(`Le bruit rebondira. La violence aussi. Pas de sang, juste du flou. Assez pour aujourd’hui.`), choices:[{text:'Rejouer', goto:'RESTART'}]},
+    END_D:{ name:'Sortie — Reflux', art:'end', text:t(`Tu repars lentement, jurant dans ta barbe, mais plus droit que tout à l’heure.`), choices:[{text:'Rejouer', goto:'RESTART'}]}
   };
 
-  // ---------- Rendering ----------
-  const elStory = $('#story');
-  const elChoices = $('#choices');
-  const elStats = $('#stats');
-  const elHUD = $('#hud');
-  const elLog = $('#log');
-  const elASCII = $('#ascii');
-  const elArt = $('#art');
+  // --------- DOM refs ---------
+  const elStory=$('#story'), elChoices=$('#choices'), elStats=$('#stats'), elHUD=$('#hud'), elLog=$('#log'), elASCII=$('#ascii'), elArt=$('#art');
+  const diceOverlay=$('#diceOverlay'), d1=$('#d1'), d2=$('#d2'), diceText=$('#diceText');
 
-  function chip(label, content){ return `<span class="chip"><span class="ghost">${label}</span> ${content}</span>` }
-  function bar(val,max){ const pct=Math.max(0,Math.min(1,val/max)); return `<span class="bar" style="width:120px"><i style="width:${pct*100}%"></i></span>` }
-  function renderHUD(){ elHUD.innerHTML = chip('Stress',bar(state.stress,5))+chip('Blessures',bar(state.hp,5))+chip('Flux',`<strong>◆</strong> ${state.flux}`)+chip('Fragments',`<strong>✦</strong> ${state.fragments}`)+chip('Seed',`<span class="ghost">${state.seed}</span>`); }
+  // --------- UI helpers ---------
+  function chip(label,content){return `<span class="chip"><span class=\"ghost\">${label}</span> ${content}</span>`}
+  function bar(val,max){const pct=Math.max(0,Math.min(1,val/max));return `<span class="bar" style="width:120px"><i style="width:${pct*100}%"></i></span>`}
+  function renderHUD(){ elHUD.innerHTML = chip('Stress',bar(state.stress,5))+chip('Blessures',bar(state.hp,5))+chip('Flux',`<strong>◆</strong> ${state.flux}`)+chip('Fragments',`<strong>✦</strong> ${state.fragments}`)+chip('Seed',`<span class='ghost'>${state.seed}</span>`); }
   function renderStats(){ const S=state.stats; const rows=[["NEU","Neuro",S.NEU],["VOL","Volonté",S.VOL],["SOM","Somatique",S.SOM],["CIN","Cinétique",S.CIN]].map(([abbr,name,val])=>`<div class="stat" aria-label="${name}"><div class="abbr">${abbr}</div><div><div class="name">${name}</div><div class="ghost" style="font-size:11px">${skillTips(abbr)}</div></div><div class="val">${val}</div></div>`).join(''); elStats.innerHTML=rows; }
   function skillTips(abbr){ switch(abbr){ case 'NEU': return 'Cryptanalyse • Déduction • Mnémographie'; case 'VOL': return 'Empathie • Intimidation calme • Vigilance'; case 'SOM': return 'Mécanique • Endurance • Résistance'; case 'CIN': return 'Furtivité • Réflexes • Corps‑à‑corps'; } }
-  function renderMinimap(){ state.visited.forEach(id=>{ const n=$('#node-'+id); if(n) n&&n.classList.add('visited'); }); const cur=$('#node-'+state.scene); if(cur) cur.classList.add('visited'); }
+  function renderMinimap(){ state.visited.forEach(id=>{ const n=$('#node-'+id); if(n) n.classList.add('visited'); }); const cur=$('#node-'+state.scene); if(cur) cur.classList.add('visited'); }
+  function setArt(kind){ const arts={
+    start: `<svg viewBox='0 0 100 100'><defs><linearGradient id='p' x1='0' x2='1'><stop offset='0' stop-color='#bde0fe'/><stop offset='1' stop-color='#ffafcc'/></linearGradient></defs><rect width='100' height='100' rx='12' fill='url(#p)'/><g fill='#0b0f15' opacity='.12'><circle cx='20' cy='20' r='8'/><rect x='16' y='60' width='68' height='8' rx='4'/></g></svg>`,
+    arch:`<svg viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='#151d2b'/><g stroke='#b9fbc0' stroke-width='2' fill='none'><circle cx='30' cy='40' r='12'/><rect x='56' y='28' width='20' height='24' rx='4'/><path d='M12 78h76' /></g></svg>`,
+    pont:`<svg viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='#101725'/><path d='M10 60 Q50 30 90 60' stroke='#bde0fe' stroke-width='3' fill='none'/><rect x='10' y='60' width='80' height='10' fill='#b9fbc0' opacity='.2'/></svg>`,
+    gambetta:`<svg viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='#101725'/><path d='M15 55 h70' stroke='#ffd6a5' stroke-width='3'/><circle cx='40' cy='55' r='6' fill='#ffafcc'/></svg>`,
+    mazagran:`<svg viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='#101725'/><g fill='#b9fbc0'><rect x='18' y='60' width='20' height='12' rx='3'/><rect x='42' y='50' width='20' height='22' rx='3'/><rect x='66' y='58' width='16' height='14' rx='3'/></g></svg>`,
+    berges:`<svg viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='#101725'/><path d='M0 70 C20 60 40 80 60 72 C80 64 100 76 100 76 L100 100 L0 100 Z' fill='#bde0fe'/><circle cx='76' cy='36' r='10' fill='#b9fbc0' opacity='.5'/></svg>`,
+    pont2:`<svg viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='#101725'/><path d='M10 62 Q50 40 90 62' stroke='#ffafcc' stroke-width='2' fill='none'/><circle cx='24' cy='62' r='4' fill='#ffd6a5'/><circle cx='64' cy='62' r='4' fill='#b9fbc0'/></svg>`,
+    t1:`<svg viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='#101725'/><rect x='20' y='50' width='60' height='12' rx='6' fill='#b9fbc0'/><rect x='28' y='46' width='44' height='6' rx='3' fill='#bde0fe'/></svg>`,
+    end:`<svg viewBox='0 0 100 100'><defs><linearGradient id='e' x1='0' x2='1'><stop offset='0' stop-color='#b9fbc0'/><stop offset='1' stop-color='#ffd6a5'/></linearGradient></defs><rect width='100' height='100' rx='12' fill='url(#e)'/></svg>`
+  }; elArt.innerHTML = arts[kind]||arts.start; }
 
-  function setArt(kind){
-    // Placeholder sprites; replace innerHTML with <img src="..."> plus tard
-    const arts = {
-      start: `<svg viewBox='0 0 100 100'><defs><linearGradient id='p' x1='0' x2='1'><stop offset='0' stop-color='#bde0fe'/><stop offset='1' stop-color='#ffafcc'/></linearGradient></defs><rect width='100' height='100' rx='12' fill='url(#p)'/><g fill='#0c0f14' opacity='.12'><circle cx='20' cy='20' r='8'/><circle cx='80' cy='26' r='10'/><rect x='16' y='60' width='68' height='8' rx='4'/></g></svg>`,
-      arch: `<svg viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='#1a2132'/><g stroke='#b9fbc0' stroke-width='2' fill='none'><circle cx='30' cy='40' r='12'/><rect x='56' y='28' width='20' height='24' rx='4'/><path d='M12 78h76' /></g></svg>`,
-      pont: `<svg viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='#121826'/><path d='M10 60 Q50 30 90 60' stroke='#bde0fe' stroke-width='3' fill='none'/><rect x='10' y='60' width='80' height='10' fill='#b9fbc0' opacity='.2'/></svg>`,
-      gambetta:`<svg viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='#121826'/><path d='M15 55 h70' stroke='#ffd6a5' stroke-width='3'/><circle cx='40' cy='55' r='6' fill='#ffafcc'/></svg>`,
-      mazagran:`<svg viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='#121826'/><g fill='#b9fbc0'><rect x='18' y='60' width='20' height='12' rx='3'/><rect x='42' y='50' width='20' height='22' rx='3'/><rect x='66' y='58' width='16' height='14' rx='3'/></g></svg>`,
-      berges:`<svg viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='#121826'/><path d='M0 70 C20 60 40 80 60 72 C80 64 100 76 100 76 L100 100 L0 100 Z' fill='#bde0fe'/><circle cx='76' cy='36' r='10' fill='#b9fbc0' opacity='.5'/></svg>`,
-      pont2:`<svg viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='#121826'/><path d='M10 62 Q50 40 90 62' stroke='#ffafcc' stroke-width='2' fill='none'/><circle cx='24' cy='62' r='4' fill='#ffd6a5'/><circle cx='64' cy='62' r='4' fill='#b9fbc0'/></svg>`,
-      t1:`<svg viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='#121826'/><rect x='20' y='50' width='60' height='12' rx='6' fill='#b9fbc0'/><rect x='28' y='46' width='44' height='6' rx='3' fill='#bde0fe'/></svg>`,
-      end:`<svg viewBox='0 0 100 100'><defs><linearGradient id='e' x1='0' x2='1'><stop offset='0' stop-color='#b9fbc0'/><stop offset='1' stop-color='#ffd6a5'/></linearGradient></defs><rect width='100' height='100' rx='12' fill='url(#e)'/></svg>`
-    };
-    elArt.innerHTML = arts[kind]||arts.start;
+  // --------- ASCII HUD (avancé) ---------
+  function renderASCII(){ if(!state.flags.ascii){ elASCII.classList.remove('on'); return; } elASCII.classList.add('on'); const inv = state.inventory.join(' • ')||'—'; const sc=(SCENES[state.scene]||{}).name||state.scene; const a = state.archetype? ARCH[state.archetype].label : '—'; const tags = Object.keys(state.tags).filter(k=>state.tags[k]).join(', ')||'—'; const ascii = `
+╔══════════[ ATH — ${a} ]═══════════════════════════════════╗
+║ NEU ${state.stats.NEU}  VOL ${state.stats.VOL}  SOM ${state.stats.SOM}  CIN ${state.stats.CIN}
+║ Stress: ${"█".repeat(state.stress)}${"░".repeat(5-state.stress)}   Bless: ${"█".repeat(state.hp)}${"░".repeat(5-state.hp)}   Flux: ${"◆".repeat(state.flux)}   Frag: ${"✦".repeat(state.fragments)}
+║ Tags: ${tags}
+║ Inv:  ${inv}
+╟───────────────────────────────────────────────────────────╢
+║ Scène: ${sc}
+║ Carte: [Pont]─[Rue]─[Mazagran]─[Berges]─[T1]
+╟───────────────────────────────────────────────────────────╢
+║ Dernier jet: ${lastRollStr||'—'}
+╚═══════════════════════════════════════════════════════════╝`; elASCII.textContent = ascii; }
+  let lastRollStr = '';
+
+  // --------- Save/Load ----------
+  function autosave(){ if($('#t-autosave').checked){ localStorage.setItem('TRAME_GUILL_V3', JSON.stringify({...state, visited:[...state.visited]})); } }
+  function exportSave(){ const blob = new Blob([localStorage.getItem('TRAME_GUILL_V3')||JSON.stringify({...state, visited:[...state.visited]})], {type:'application/json'}); const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='trame_douce_guill_v3_save.json'; a.click(); URL.revokeObjectURL(url); }
+  function importSave(){ const inp=document.createElement('input'); inp.type='file'; inp.accept='application/json'; inp.onchange=()=>{ const f=inp.files[0]; if(!f) return; const fr=new FileReader(); fr.onload=()=>{ try{ const data=JSON.parse(fr.result); Object.assign(state,data); state.visited=new Set(data.visited||[]); rng = mulberry32(state.seed||Date.now()); renderAll(); }catch(e){ alert('Sauvegarde invalide'); } }; fr.readAsText(f); }; inp.click(); }
+  function restart(){ state.seed=Date.now(); rng=mulberry32(state.seed); Object.assign(state,{ scene:'START', visited:new Set(), stress:5, hp:5, flux:2, fragments:2, inventory:[], tags:{}, log:[], archetype:null, stats:{NEU:2,VOL:2,SOM:2,CIN:2} }); Object.keys(state.skills).forEach(k=> state.skills[k]=0); log('<span class="ghost">— Nouvelle run (Guill’) —</span>'); renderAll(); }
+
+  // --------- Language filter (cru on/off) ---------
+  function t(str){ return state && state.flags && state.flags.cru ? str : sanitize(str); }
+  function sanitize(s){ // bleep some words softly
+    return s.replace(/(emmerdes?|merde|con|fait chier)/gi, '—');
   }
 
-  // ---------- Rendering flow ----------
-  function renderHUD(){ elHUD.innerHTML = chip('Stress',bar(state.stress,5))+chip('Blessures',bar(state.hp,5))+chip('Flux',`<strong>◆</strong> ${state.flux}`)+chip('Fragments',`<strong>✦</strong> ${state.fragments}`)+chip('Seed',`<span class='ghost'>${state.seed}</span>`); }
-  function renderScene(){
-    const sc = SCENES[state.scene]; if(!sc){ elStory.innerHTML = `<p class='ghost'>Scène inconnue: ${state.scene}</p>`; elChoices.innerHTML=''; return; }
-    state.visited.add(state.scene); renderMinimap(); setArt(sc.art);
-    elStory.innerHTML = `<h3 style="margin:0 0 8px 0">${sc.name}</h3><p>${sc.text}</p>`;
-    elChoices.innerHTML = '';
+  // --------- Rendering ---------
+  function renderScene(){ const sc=SCENES[state.scene]; if(!sc){ elStory.innerHTML = `<p class='ghost'>Scène inconnue: ${state.scene}</p>`; elChoices.innerHTML=''; return; } state.visited.add(state.scene); renderMinimap(); setArt(sc.art); elStory.innerHTML = `<h3 style="margin:0 0 8px 0">${sc.name}</h3><p>${sc.text}</p>`; elChoices.innerHTML=''; if(state.scene==='ARCH'){ renderArchetypeCards(); }
+    (sc.choices||[]).forEach((ch,idx)=>{ if(ch.requireTag && !hasTag(ch.requireTag)) return; const btn=document.createElement('button'); btn.className='btn'; btn.setAttribute('role','option'); btn.innerHTML = `<span>${idx+1}. ${ch.text}</span>` + meta(ch); btn.addEventListener('click',()=>choose(ch)); elChoices.appendChild(btn); }); renderASCII(); autosave(); }
 
-    if(state.scene==='ARCH'){ renderArchetypeCards(); }
-
-    (sc.choices||[]).forEach((ch,idx)=>{
-      const btn = document.createElement('button'); btn.className='btn'; btn.setAttribute('role','option');
-      btn.innerHTML = `<span>${(idx+1)}. ${ch.text}</span>` + meta(ch);
-      btn.addEventListener('click', ()=> choose(ch)); elChoices.appendChild(btn);
-    });
-
-    renderASCII(); autosave();
-  }
-  function meta(ch){
-    const tags=[]; if(ch.test){ const {stat,skill,dc}=ch.test; tags.push(`<span class='tag'>${stat}/${prettySkill(skill)} DD${dc}</span>`); tags.push(`<span class='tag'>Pousser: +2 (si échec: +1 Stress)</span>`); if(['Furtivite','Cryptanalyse'].includes(skill)) tags.push(`<span class='tag'>◆ Flux: +2</span>`); }
-    return `<span class='meta'>${tags.join('')}</span>`
-  }
+  function meta(ch){ const tags=[]; if(ch.test){ const {stat,skill,dc}=ch.test; tags.push(`<span class='tag'>${stat}/${prettySkill(skill)} DD${dc}</span>`); tags.push(`<span class='tag'>Pousser: +2 (si échec: +1 Stress)</span>`); if(['Furtivite','Cryptanalyse'].includes(ch.test.skill)) tags.push(`<span class='tag'>◆ Flux: +2</span>`); } return `<span class='meta'>${tags.join('')}</span>` }
   function prettySkill(s){ return ({ Empathie:'Empathie', Intimidation:'Intimidation', Furtivite:'Furtivité', Cryptanalyse:'Cryptanalyse', Deduction:'Déduction', Mnemographie:'Mnémographie', Endurance:'Endurance', Resistance:'Résistance', Mecafortune:'Mécanique', Reflexes:'Réflexes', CAC:'Corps‑à‑corps' }[s]||s) }
 
-  // Archetype cards
-  function renderArchetypeCards(){
-    const wrap = document.createElement('div'); wrap.style.display='grid'; wrap.style.gridTemplateColumns='repeat(auto-fit,minmax(220px,1fr))'; wrap.style.gap='10px';
-    Object.entries(ARCH).forEach(([key,a])=>{
-      const card = document.createElement('div'); card.className='btn'; card.style.minHeight='120px';
-      const picked = (state.flags.pick===key);
-      card.innerHTML = `<div><strong>${a.label}</strong><br><span class='ghost'>${a.pitch}</span></div><span class='tag'>NEU ${a.stats.NEU} • VOL ${a.stats.VOL} • SOM ${a.stats.SOM} • CIN ${a.stats.CIN}</span>`;
-      card.addEventListener('click', ()=>{ state.flags.pick=key; renderScene(); });
-      wrap.appendChild(card);
-    });
-    elChoices.prepend(wrap);
-  }
+  // Archetype selection
+  function renderArchetypeCards(){ const wrap=document.createElement('div'); wrap.style.display='grid'; wrap.style.gridTemplateColumns='repeat(auto-fit,minmax(240px,1fr))'; wrap.style.gap='10px'; Object.entries(ARCH).forEach(([key,a])=>{ const card=document.createElement('div'); card.className='btn'; card.style.minHeight='120px'; card.innerHTML = `<div><strong>${a.label}</strong><br><span class='ghost'>${a.pitch}</span></div><span class='tag'>NEU ${a.stats.NEU} • VOL ${a.stats.VOL} • SOM ${a.stats.SOM} • CIN ${a.stats.CIN}</span>`; card.addEventListener('click',()=>{ state.flags.pick=key; renderScene(); }); wrap.appendChild(card); }); elChoices.prepend(wrap); }
+  function applyArchetype(){ const pick = state.flags.pick || 'ACCORDEUR'; const a=ARCH[pick]; if(!a) return; state.archetype=pick; state.stats={...a.stats}; Object.assign(state.skills,a.skills); a.startItems.forEach(addItem); log(`<span class='ok'>Archétype: ${a.label} — Atout: ${a.atout.name}</span>`); }
 
-  function applyArchetype(){
-    const pick = state.flags.pick || 'ACCORDEUR'; const a = ARCH[pick]; if(!a) return;
-    state.archetype = pick; state.stats = {...a.stats};
-    Object.assign(state.skills, a.skills); a.startItems.forEach(addItem);
-    state.inventory = Array.from(new Set(state.inventory));
-    log(`<span class='ok'>Archétype: ${a.label} — Atout: ${a.atout.name}</span>`);
-  }
-
-  // ---------- Choice resolution ----------
-  function choose(ch){
-    if(ch.action==='applyArchetype'){ applyArchetype(); }
-    if(!ch.test){ if(ch.visit) state.visited.add(ch.visit); if(ch.addItem) addItem(ch.addItem); if(ch.flag) state.flags[ch.flag.key]=ch.flag.val; if(ch.goto==='RESTART'){ restart(); return; } state.scene = ch.goto||state.scene; log(`→ ${ch.text}`); renderScene(); return; }
+  // Choosing & tests
+  function choose(ch){ if(ch.action==='applyArchetype'){ applyArchetype(); }
+    if(!ch.test){ applyOutcome(ch); return; }
     resolveTest(ch);
   }
 
-  function resolveTest(ch){
-    const {stat,skill,dc} = ch.test; const useFlux = (['Furtivite','Cryptanalyse'].includes(skill) && state.flux>0) ? confirm('Dépenser ◆ Flux pour +2 ?') : false; const push = confirm('Pousser ta chance pour +2 ? (échec → +1 Stress)');
-    const r = roll2d6(); const mods = (state.stats[stat]||0) + (state.skills[skill]||0) + (useFlux?2:0) + (push?2:0);
-    const total = r.sum + mods; const ok = total>=dc; const line = `Test ${stat}/${prettySkill(skill)} (DD${dc}) — ${r.a}+${r.b}=${r.sum} + mods ${(mods>=0?'+':'')}${mods} = <strong>${total}</strong> → ${ok?'<span class="ok">Réussite</span>':'<span class="bad">Échec</span>'}${r.doubles? ' <span class="ghost">(Doubles)</span>':''}`;
-    log(line);
-    if(useFlux) state.flux=Math.max(0,state.flux-1); if(!ok && push) state.stress=Math.max(0,state.stress-1);
-    const outcome = ok? ch.success : ch.failure; if(!outcome){ log('<span class="ghost">(Pas de branche définie)</span>'); return; }
-    if(outcome.log) log(outcome.log); if(outcome.stress) state.stress=clamp(state.stress+outcome.stress,0,5); if(outcome.hp) state.hp=clamp(state.hp+outcome.hp,0,5); if(outcome.flux) state.flux=Math.max(0,state.flux+outcome.flux); if(outcome.tempSkill) applyTempSkill(outcome.tempSkill); if(outcome.addItem) addItem(outcome.addItem); if(outcome.flag) state.flags[outcome.flag.key]=outcome.flag.val; if(outcome.visit) state.visited.add(outcome.visit); if(outcome.goto){ if(outcome.goto==='RESTART'){ restart(); return; } state.scene=outcome.goto; }
-    if(state.stress===0){ log('<span class="bad">STRESS 0 → arrêt doux. Tu te poses.</span>'); state.stress=3; }
-    if(state.hp===0){ log('<span class="bad">BLESSURES 0 → corps dit non. Pause.</span>'); state.hp=3; }
-    renderHUD(); renderScene();
+  function resolveTest(ch){ const {stat,skill,dc} = ch.test; const useFlux=(['Furtivite','Cryptanalyse'].includes(skill) && state.flux>0)? confirm('Dépenser ◆ Flux pour +2 ?'):false; const push = confirm('Pousser ta chance pour +2 ? (échec → +1 Stress)');
+    rollAnimated().then(r=>{ const mods=(state.stats[stat]||0)+(state.skills[skill]||0)+(useFlux?2:0)+(push?2:0); const total=r.sum+mods; const ok=total>=dc; lastRollStr = `${stat}/${prettySkill(skill)} DD${dc} — ${r.a}+${r.b}=${r.sum} + ${(mods>=0?'+':'')}${mods} = ${total} → ${ok?'OK':'KO'}${r.doubles?' (doubles)':''}`; log(`Test ${stat}/${prettySkill(skill)} (DD${dc}) — ${r.a}+${r.b}=${r.sum} + mods ${(mods>=0?'+':'')}${mods} = <strong>${total}</strong> → ${ok?'<span class="ok">Réussite</span>':'<span class="bad">Échec</span>'}${r.doubles? ' <span class="ghost">(Doubles)</span>':''}`); if(useFlux) state.flux=Math.max(0,state.flux-1); if(!ok && push) state.stress=Math.max(0,state.stress-1);
+      const outcome = ok? ch.success : ch.failure; if(!outcome){ log('<span class="ghost">(Pas de branche définie)</span>'); renderASCII(); return; }
+      applyOutcome(outcome);
+    });
   }
 
-  function applyTempSkill({key,delta,turns}){ state.skills[key]=(state.skills[key]||0)+delta; log(`<span class='ok'>Bonus ${prettySkill(key)} ${delta>0?'+':''}${delta} (${turns} scènes)</span>`); state.flags['temp_'+key]=(state.flags['temp_'+key]||0)+turns; }
-  function tickTempSkills(){ Object.keys(state.flags).forEach(f=>{ if(f.startsWith('temp_')){ const k=f.replace('temp_',''); state.flags[f]--; if(state.flags[f]<=0){ state.skills[k]=(state.skills[k]||0)-1; delete state.flags[f]; log(`<span class='ghost'>Le bonus ${prettySkill(k)} s’estompe.</span>`); } } }); }
+  function applyOutcome(out){ if(out.log) log(out.log); if(out.stress) state.stress=clamp(state.stress+out.stress,0,5); if(out.hp) state.hp=clamp(state.hp+out.hp,0,5); if(out.flux) state.flux=Math.max(0,state.flux+out.flux); if(out.addItem) addItem(out.addItem); if(out.tag) state.tags[out.tag.k]=out.tag.v; if(out.flag) state.tags[out.flag.key]=out.flag.val; if(out.visit) state.visited.add(out.visit); if(out.goto){ if(out.goto==='RESTART'){ restart(); return; } state.scene=out.goto; }
+    if(state.stress===0){ log('<span class="bad">STRESS 0 → arrêt doux. Tu te poses.</span>'); state.stress=3; }
+    if(state.hp===0){ log('<span class="bad">BLESSURES 0 → corps dit non. Pause.</span>'); state.hp=3; }
+    renderHUD(); renderScene(); renderASCII(); }
 
+  // Dice animation
+  function rollAnimated(){ return new Promise(res=>{ const r1=()=>Math.floor(Math.random()*6)+1; const r2=()=>Math.floor(Math.random()*6)+1; let t=0; diceOverlay.style.display='flex'; d1.classList.add('rolling'); d2.classList.add('rolling'); beep(220,120); const iv=setInterval(()=>{ d1.textContent= r1(); d2.textContent= r2(); t+=80; }, state.flags.reduced? 160: 80); setTimeout(()=>{ clearInterval(iv); d1.classList.remove('rolling'); d2.classList.remove('rolling'); const r = roll2d6(); d1.textContent=r.a; d2.textContent=r.b; diceText.innerHTML = `Résultat: <strong>${r.a}</strong> + <strong>${r.b}</strong> = <strong>${r.sum}</strong>`; beep(300,120); setTimeout(()=>{ diceOverlay.style.display='none'; diceText.textContent=''; res(r); }, 500); }, state.flags.reduced? 600: 1100); }); }
+
+  // Utils
+  function hasTag(k){ return !!state.tags[k] || (k==='Quitus' && state.inventory.includes('Quitus de passage')); }
   function addItem(name){ if(!state.inventory.includes(name)) state.inventory.push(name); log(`<span class='ok'>+ Objet: ${name}</span>`); }
-  function log(html){ state.log.push(html); const div=document.createElement('div'); div.className='entry'; div.innerHTML=html; elLog.prepend(div); }
   function clamp(v,min,max){ return Math.max(min,Math.min(max,v)); }
+  function log(html){ state.log.push(html); const div=document.createElement('div'); div.className='entry'; div.innerHTML=html; elLog.prepend(div); }
 
-  // ---------- ASCII HUD ----------
-  function renderASCII(){ if(!state.flags.ascii){ elASCII.classList.remove('on'); return; } elASCII.classList.add('on'); const inv = state.inventory.join(' • '); const sc=(SCENES[state.scene]||{}).name||state.scene; const a = state.archetype? ARCH[state.archetype].label : '—'; const ascii = `
-╔══════════[ ATH — ${a} ]══════════╗
-║ NEU ${state.stats.NEU}  VOL ${state.stats.VOL}  SOM ${state.stats.SOM}  CIN ${state.stats.CIN}
-║ Stress: ${"█".repeat(state.stress)}${"░".repeat(5-state.stress)}   Bless: ${"█".repeat(state.hp)}${"░".repeat(5-state.hp)}   Flux: ${"◆".repeat(state.flux)}   Frag: ${"✦".repeat(state.fragments)}
-║ Inventaire: ${inv||'—'}
-║ Scène: ${sc}
-╚══════════════════════════════════╝`; elASCII.textContent = ascii; }
-
-  // ---------- Save/Load ----------
-  function autosave(){ if($('#t-autosave').checked){ localStorage.setItem('TRAME_DOUCE_GUILL_SAVE', JSON.stringify({...state, visited:[...state.visited]})); } }
-  function exportSave(){ const blob = new Blob([localStorage.getItem('TRAME_DOUCE_GUILL_SAVE')||JSON.stringify({...state, visited:[...state.visited]})], {type:'application/json'}); const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='trame_douce_guill_save.json'; a.click(); URL.revokeObjectURL(url); }
-  function importSave(){ const inp=document.createElement('input'); inp.type='file'; inp.accept='application/json'; inp.onchange=()=>{ const f=inp.files[0]; if(!f) return; const fr=new FileReader(); fr.onload=()=>{ try{ const data=JSON.parse(fr.result); Object.assign(state,data); state.visited=new Set(data.visited||[]); rng = mulberry32(state.seed||Date.now()); renderAll(); }catch(e){ alert('Sauvegarde invalide'); } }; fr.readAsText(f); }; inp.click(); }
-  function restart(){ state.seed=Date.now(); rng=mulberry32(state.seed); state.scene='START'; state.visited=new Set(); state.stress=5; state.hp=5; state.flux=2; state.fragments=2; state.inventory=[]; state.log=[]; state.archetype=null; state.stats={NEU:2,VOL:2,SOM:2,CIN:2}; Object.keys(state.skills).forEach(k=> state.skills[k]=0); log('<span class="ghost">— Nouvelle run (Guill’) —</span>'); renderAll(); }
-
-  // ---------- Events ----------
-  $('#t-reduced').addEventListener('change', e=>{ state.flags.reduced = e.target.checked; document.body.style.scrollBehavior = state.flags.reduced? 'auto' : 'smooth'; });
-  $('#t-ascii').addEventListener('change', e=>{ state.flags.ascii = e.target.checked; renderASCII(); });
+  // Settings listeners
+  $('#t-reduced').addEventListener('change',e=>{ state.flags.reduced=e.target.checked; document.body.style.scrollBehavior = state.flags.reduced? 'auto':'smooth'; });
+  $('#t-ascii').addEventListener('change',e=>{ state.flags.ascii=e.target.checked; renderASCII(); });
+  $('#t-sound').addEventListener('change',e=>{ state.flags.sound=e.target.checked; if(state.flags.sound && ctx && ctx.state==='suspended'){ ctx.resume(); } });
+  $('#t-cru').addEventListener('change',e=>{ state.flags.cru=e.target.checked; renderScene(); });
+  $('#fontRange').addEventListener('input',e=>{ document.documentElement.style.setProperty('--fs', e.target.value); });
   $('#btn-save').addEventListener('click', exportSave);
   $('#btn-load').addEventListener('click', importSave);
-  document.addEventListener('keydown', e=>{ if(e.key.toLowerCase()==='h'){ const t=$('#t-ascii'); t.checked=!t.checked; state.flags.ascii=t.checked; renderASCII(); return; } const n=parseInt(e.key,10); if(!isNaN(n)){ const btn=$('#choices').querySelectorAll('.btn')[n-1]; if(btn) btn.click(); } });
 
-  // ---------- Initial render ----------
-  function renderAll(){ renderHUD(); renderStats(); renderMinimap(); tickTempSkills(); renderScene(); }
+  // Keyboard
+  document.addEventListener('keydown',e=>{ if(e.key.toLowerCase()==='h'){ const t=$('#t-ascii'); t.checked=!t.checked; state.flags.ascii=t.checked; renderASCII(); return; } const n=parseInt(e.key,10); if(!isNaN(n)){ const btn=$('#choices').querySelectorAll('.btn')[n-1]; if(btn) btn.click(); }});
+
+  // Initial render
+  function renderAll(){ renderHUD(); renderStats(); renderMinimap(); renderScene(); }
   renderAll();
 })();
 </script>
