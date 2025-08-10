@@ -1,201 +1,454 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Topo Bauges 2025 – Roadbook Outdoor</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="style.css" rel="stylesheet">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TRAME DOUCE — Guillotière Edition (Proto v2)</title>
+<style>
+  /* ==========================================================
+     DIRECTION ARTISTIQUE — Pastel‑Punk Guill’ (codes couleur)
+     ----------------------------------------------------------
+     Fond      : #0c0f14  (noir bleu nuit)
+     Panneaux  : #141a25  (bleu nuit doux)
+     Texte     : #e9f1ff  (glace lune)
+     Atténué   : #b7c6de  (brume acier)
+     Accents   : menthe #b9fbc0 • pêche #ffd6a5 • bleu #bde0fe • rose #ffafcc
+     Alerte    : #ff6b6b  •  Succès : #7bf1a8  •  Avert.: #ffe066
+     Typo (suggestion) : « Space Grotesk »/« Söhne » (titres), « Inter » (texte),
+                         « JetBrains Mono » (HUD ASCII). Remplaçables.
+     Sprites   : conteneurs <figure.sprite> (placeholders SVG à remplacer)
+     ========================================================== */
+  :root{
+    --bg:#0c0f14; --panel:#141a25; --muted:#1a2132; --ink:#e9f1ff; --ink-dim:#b7c6de;
+    --accent:#b9fbc0; --accent-2:#ffd6a5; --accent-3:#bde0fe; --accent-4:#ffafcc;
+    --danger:#ff6b6b; --good:#7bf1a8; --warn:#ffe066; --border:#263146;
+    --radius:16px; --shadow:0 10px 30px rgba(189,224,254,.08);
+  }
+  *{ box-sizing:border-box }
+  html,body{ height:100% }
+  body{
+    margin:0; font:16px/1.45 system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial;
+    letter-spacing:.2px; color:var(--ink);
+    background:
+      radial-gradient(1200px 800px at 10% -10%, rgba(255,175,204,.08), transparent 60%),
+      radial-gradient(1400px 900px at 120% 0%, rgba(189,224,254,.06), transparent 60%),
+      radial-gradient(1200px 900px at 50% 120%, rgba(185,251,192,.07), transparent 60%),
+      var(--bg);
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+  }
+  .app{ display:grid; grid-template-columns: 320px 1fr 360px; grid-template-rows:auto 1fr auto; gap:14px; max-width:1400px; margin:0 auto; padding:16px 18px 18px; }
+  header{ grid-column:1/4; background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:10px 12px; position:sticky; top:0; z-index:10; backdrop-filter:saturate(1.1) blur(8px) }
+  header .row{ display:flex; gap:10px; align-items:center; justify-content:space-between }
+  .brand{ display:flex; align-items:center; gap:12px; font-weight:650; letter-spacing:.5px }
+  .dot{ width:10px; height:10px; border-radius:50%; background: conic-gradient(var(--accent-4),var(--accent-3),var(--accent),var(--accent-2)); box-shadow:0 0 16px rgba(255,175,204,.35) }
+  .hud{ display:flex; gap:8px; flex-wrap:wrap }
+  .chip{ background:var(--muted); border:1px solid var(--border); border-radius:999px; padding:6px 10px; display:inline-flex; align-items:center; gap:8px; color:var(--ink-dim) }
+  .chip strong{ color:var(--ink) }
+  .bar{ height:8px; background:#101522; border-radius:6px; overflow:hidden; box-shadow: inset 0 0 0 1px var(--border) }
+  .bar > i{ display:block; height:100%; background:linear-gradient(90deg, var(--accent-3), var(--accent-4)); }
+
+  .left,.center,.right{ background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); }
+  .left{ padding:14px } .center{ padding:18px } .right{ padding:14px }
+  .panel-title{ font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-dim); margin-bottom:10px }
+
+  .stats{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px }
+  .stat{ background:linear-gradient(180deg, rgba(189,224,254,.05), transparent 60%); border:1px solid var(--border); border-radius:14px; padding:10px; display:grid; grid-template-columns:auto 1fr auto; gap:10px; align-items:center }
+  .stat .abbr{ font-weight:700; color:var(--accent-3); letter-spacing:.08em }
+  .stat .name{ color:var(--ink-dim); font-size:12px } .stat .val{ font-weight:700 }
+
+  .mini-map{ height:220px; border:1px dashed var(--border); border-radius:14px; padding:10px; position:relative; overflow:hidden }
+  .node{ position:absolute; padding:6px 8px; border-radius:10px; border:1px solid var(--border); background:rgba(26,32,48,.6); color:var(--ink-dim); font-size:12px }
+  .node.visited{ color:var(--ink); box-shadow:0 0 0 1px #3b4760 inset; background:rgba(26,32,48,.9) }
+  .node::after{ content:""; position:absolute; width:6px; height:6px; right:-3px; top:50%; transform:translateY(-50%); border-radius:50%; background:var(--accent-4); box-shadow:0 0 12px rgba(255,175,204,.6) }
+
+  .story{ min-height:260px; font-size:17px }
+  .choice-list{ display:grid; gap:10px; margin-top:8px }
+  .btn{ background:linear-gradient(180deg, rgba(185,251,192,.08), rgba(189,224,254,.06)); border:1px solid var(--border); color:var(--ink); padding:12px 14px; border-radius:12px; text-align:left; cursor:pointer; display:flex; justify-content:space-between; gap:10px; transition:transform .08s ease, box-shadow .2s ease; }
+  .btn:hover{ transform:translateY(-1px); box-shadow:var(--shadow) }
+  .btn:focus-visible{ outline:none; box-shadow:0 0 0 3px rgba(189,224,254,.4) }
+  .meta{ color:var(--ink-dim); font-size:12px; display:flex; gap:10px; align-items:center }
+  .tag{ border:1px solid var(--border); background:var(--muted); border-radius:999px; padding:3px 8px; font-size:11px; color:var(--ink-dim) }
+
+  .log{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "JetBrains Mono", monospace; background:linear-gradient(180deg, rgba(255,214,165,.06), transparent 50%); border:1px solid var(--border); border-radius:14px; padding:10px; height:340px; overflow:auto }
+  .log .entry{ border-bottom:1px dashed var(--border); padding:6px 0 }
+  .log .ok{ color:var(--good) } .log .bad{ color:var(--danger) }
+
+  .toggles{ display:flex; gap:8px; flex-wrap:wrap; align-items:center }
+  .toggle{ display:inline-flex; align-items:center; gap:8px; border:1px solid var(--border); background:var(--muted); border-radius:999px; padding:6px 10px; cursor:pointer }
+  .toggle input{ accent-color: var(--accent-3) }
+
+  .ascii{ display:none; white-space:pre; font-family: ui-monospace, Menlo, Consolas, monospace; background:#0a0d12; border:1px solid var(--border); border-radius:14px; padding:12px; color:#c3cee4 }
+  .ascii.on{ display:block }
+
+  .sprite{ width:100%; height:180px; border:1px dashed var(--border); border-radius:14px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, rgba(185,251,192,.05), rgba(255,175,204,.06)); color:var(--ink-dim) }
+  .sprite svg{ width:120px; height:120px; opacity:.7 }
+
+  footer{ grid-column:1/4; display:flex; gap:10px; align-items:center; justify-content:space-between; padding:10px 4px; color:var(--ink-dim) }
+  .kbd{ font-family: ui-monospace, Menlo, Consolas, monospace; border:1px solid var(--border); border-bottom-width:3px; background:var(--muted); padding:2px 6px; border-radius:6px }
+  .ghost{ color:var(--ink-dim) }
+  @media (max-width: 1100px){ .app{ grid-template-columns:1fr } }
+</style>
 </head>
 <body>
-  <header>
-    <div class="container">
-      <h1>Topo & Roadbook<br><span class="sous-titre">Massif des Bauges</span></h1>
-      <nav id="menu">
-        <a href="#profil">Profil</a>
-        <a href="#itineraire">Itinéraire</a>
-        <a href="#bivouac">Bivouacs</a>
-        <a href="#eau">Eau</a>
-        <a href="#nourriture">Nourriture</a>
-        <a href="#materiel">Matériel</a>
-        <a href="#info">Infos</a>
-        <a href="#contacts">Contacts</a>
-      </nav>
-    </div>
-  </header>
-  <main class="container">
+  <div class="app" role="application" aria-label="TRAME DOUCE — Guillotière Edition">
+    <header aria-live="polite">
+      <div class="row">
+        <div class="brand"><span class="dot" aria-hidden="true"></span> TRAME DOUCE — <span class="ghost">Guillotière (post‑apo doux)</span></div>
+        <div class="hud" id="hud"></div>
+      </div>
+    </header>
 
-    <section id="profil">
-      <h2>Profil altimétrique</h2>
-      <div class="profil-alt">
-        <svg viewBox="0 0 330 90" width="100%" height="60">
-          <polyline fill="none" stroke="#46815f" stroke-width="3"
-            points="0,80 22,27 35,10 70,34 100,54 140,41 175,32 205,32 235,18 270,35 330,80"/>
-          <text x="5" y="88" class="tick">0</text>
-          <text x="70" y="88" class="tick">5 km</text>
-          <text x="140" y="88" class="tick">15 km</text>
-          <text x="235" y="88" class="tick">25 km</text>
-          <text x="0" y="15" class="tick">1930m</text>
-          <text x="0" y="80" class="tick">935m</text>
+    <aside class="left" aria-label="Panneau gauche">
+      <div class="panel-title">Profil</div>
+      <div class="stats" id="stats"></div>
+      <div style="height:10px"></div>
+      <div class="panel-title">Mini‑carte (Guill’)</div>
+      <div class="mini-map" id="minimap" aria-label="Mini-carte de la Guillotière">
+        <div class="node" id="node-G0" style="left:18px; top:36px">Place du Pont</div>
+        <div class="node" id="node-G1" style="left:190px; top:28px">Cours Gambetta</div>
+        <div class="node" id="node-G2" style="left:86px; top:122px">Friche Mazagran</div>
+        <div class="node" id="node-G3" style="left:236px; top:120px">Berges — Jardins d’Algues</div>
+        <div class="node" id="node-G4" style="left:34px; top:178px">Pont de la Guill’</div>
+        <div class="node" id="node-G5" style="left:208px; top:176px">Sous‑station T1</div>
+      </div>
+      <div style="height:10px"></div>
+      <div class="panel-title">Préférences</div>
+      <div class="toggles">
+        <label class="toggle"><input type="checkbox" id="t-reduced" /> Réduire les animations</label>
+        <label class="toggle"><input type="checkbox" id="t-ascii" /> HUD ASCII (<span class="kbd">H</span>)</label>
+        <label class="toggle"><input type="checkbox" id="t-autosave" checked /> Sauvegarde auto</label>
+      </div>
+      <div style="height:10px"></div>
+      <button class="btn" id="btn-save">Export sauvegarde</button>
+      <button class="btn" id="btn-load">Importer sauvegarde</button>
+    </aside>
+
+    <section class="center" aria-live="polite" aria-label="Narration et choix">
+      <div class="panel-title">Histoire</div>
+      <figure class="sprite" id="art" aria-label="Illustration de scène">
+        <!-- Placeholder SVG to replace later -->
+        <svg viewBox="0 0 100 100" role="img" aria-label="sprite">
+          <defs>
+            <linearGradient id="g" x1="0" x2="1">
+              <stop offset="0" stop-color="#bde0fe"/>
+              <stop offset="1" stop-color="#ffafcc"/>
+            </linearGradient>
+          </defs>
+          <circle cx="50" cy="50" r="40" fill="url(#g)"/>
+          <rect x="18" y="62" width="64" height="10" rx="5" fill="#b9fbc0"/>
         </svg>
-        <div class="profil-legend">Doucy-en-Bauges → Dent des Portes → Charbon → Bonverdan → Orgeval</div>
-      </div>
+      </figure>
+      <div id="story" class="story"></div>
+      <div class="choice-list" id="choices" role="listbox" aria-label="Choix disponibles"></div>
+      <div class="ascii" id="ascii"></div>
     </section>
 
-    <section id="itineraire">
-      <h2>Itinéraire jour par jour</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Jour</th>
-            <th>Parcours</th>
-            <th>Distance / D+</th>
-            <th>Durée</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Jeudi 29/05</td>
-            <td>Parking Les Cornes (935 m) → Dent des Portes → Chalet du Charbon (1660 m)</td>
-            <td>8,5 km<br>+900 m</td>
-            <td>≈ 4 h 30</td>
-          </tr>
-          <tr>
-            <td>Vendredi 30/05</td>
-            <td>Charbon → Combe d’Ire → Pas de l’Ours → Bonverdan (1580 m)</td>
-            <td>13 km<br>+1 000 m</td>
-            <td>≈ 5 h 30</td>
-          </tr>
-          <tr>
-            <td>Samedi 31/05</td>
-            <td>Bonverdan → Col d’Orgeval → Chalets d’Orgeval (bivouac) → Nant Fourchu</td>
-            <td>8,8 km<br>+476 m</td>
-            <td>≈ 4 h</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
+    <aside class="right" aria-label="Journal & dés">
+      <div class="panel-title">Journal des dés</div>
+      <div class="log" id="log" aria-live="polite"></div>
+      <div style="height:10px"></div>
+      <div class="panel-title">Aides</div>
+      <div class="ghost">• Raccourcis <span class="kbd">1‑9</span> pour choisir. <br>• <span class="kbd">H</span> : HUD ASCII. <br>• « Pousser sa chance » et « Flux » proposés sur les tests.</div>
+    </aside>
 
-    <section id="bivouac">
-      <h2>Spots de bivouac : terrain, confort, réglementation</h2>
+    <footer>
+      <div>© Proto v2 — « Pastel‑punk Guill’ » — UI/UX accessible (remplaçable)</div>
+      <div class="ghost">Fichier unique. Sprites/images <em>placeholders</em> à remplacer.</div>
+    </footer>
+  </div>
 
-      <h3>Nuit 1 : <b>Chalet du Charbon (1660 m)</b></h3>
-      <ul>
-        <li><b>Emplacement :</b> Pelouse alpine plane, à moins de 50 m du refuge (réglementation), herbeux, abrité du vent en partie. Attention à l'exposition orageuse par météo instable.</li>
-        <li><b>Refuge :</b> Chalet non gardé, 15-16 places sur matelas, poêle à bois, table intérieure, latrines rustiques. Possible d’entrer si mauvais temps (fréquentation forte en WE).</li>
-        <li><b>Fréquentation :</b> Site populaire, souvent complet en été/week-end ; ambiance conviviale, partage obligatoire.</li>
-        <li><b>Troupeaux/Patous :</b> Présence fréquente l’été, chiens de protection parfois proches : contournez les animaux, gardez calme, installez-vous près du refuge.</li>
-        <li><b>Conseils :</b> Arriver tôt pour avoir le choix d’emplacement. Si trop de monde, redescendre 100 m pour s'isoler.</li>
-      </ul>
+<script>
+/* =============================================================
+   TRAME DOUCE — Micro moteur (Disco‑like) — Guillotière Edition
+   — Archetypes avec histoires propres
+   — Scènes centrées sur la Guillotière (sans clichés ni misérabilisme)
+   — DA pastel‑punk + HUD ASCII optionnel
+   ============================================================= */
+(function(){
+  const $ = sel => document.querySelector(sel);
+  const $$ = sel => Array.from(document.querySelectorAll(sel));
 
-      <h3>Nuit 2 : <b>Refuge de Bonverdan (1580 m)</b></h3>
-      <ul>
-        <li><b>Emplacement :</b> Un seul replat plat sous l’auvent du refuge (max 3p), sinon mini-plateformes en sous-bois, terrain limité. Ambiance forêt, peu de vue, très calme.</li>
-        <li><b>Refuge :</b> Cabane bois/tôle minuscule, 4 places (matelas), poêle neuf, table, quelques ustensiles, pas de couvertures, terrasse couverte. Pas de latrines.</li>
-        <li><b>Fréquentation :</b> Lieu isolé : calme en semaine, saturé parfois le week-end. Si plein, bivouac discret 20 min plus bas vers Combe d’Ire.</li>
-        <li><b>Nuisibles :</b> Souris nombreuses, suspendre ou enfermer la nourriture (crochets et boîte à l’intérieur).</li>
-        <li><b>Conseils :</b> Prévoir de l’eau pour la nuit ; auvent pratique en cas de pluie, forêt utilisable comme abri temporaire.</li>
-      </ul>
+  // ---------- Core State ----------
+  const state = {
+    seed: Date.now(),
+    scene: 'START',
+    visited: new Set(),
+    archetype: null,
+    stats: { NEU:2, VOL:2, SOM:2, CIN:2 }, // baseline before pick
+    skills: { Empathie:0, Intimidation:0, Furtivite:0, Cryptanalyse:0, Deduction:0, Mnemographie:0, Endurance:0, Resistance:0, Mecafortune:0, Reflexes:0, CAC:0 },
+    stress: 5, hp: 5,
+    flux: 2, fragments: 2,
+    inventory: [],
+    flags: { ascii:false, reduced:false },
+    log: []
+  };
 
-      <h3>Nuit 3 : <b>Chalets d’Orgeval / Col d’Orgeval (env. 1700 m)</b></h3>
-      <ul>
-        <li><b>Emplacement :</b> Replats herbeux près du refuge fermé (réglementairement interdit, mais toléré si discret du coucher au lever du soleil). Vaste alpage, vue panoramique, exposé au vent.</li>
-        <li><b>Refuge :</b> Ancien gîte fermé (pas d’accès), quelques bancs dehors. Possibilité d'utiliser les murs comme coupe-vent, aucune solution d'abri en cas de tempête.</li>
-        <li><b>Fréquentation :</b> Vallon animé en journée, très calme la nuit. Tranquillité assurée sauf passage troupeaux/vaches.</li>
-        <li><b>Troupeaux :</b> Vaches en estive, pas de patous. Éviter les clôtures électriques et points d’eau utilisés par le bétail.</li>
-        <li><b>Conseils :</b> Si météo mauvaise, redescendre vers Nant Fourchu (forêt abritée) ou contourner vers le chalet de Coutarse côté Seythenex. Bivouac strictement interdit hors cabanes dans le cœur de réserve (prenez vos responsabilités).</li>
-      </ul>
-    </section>
+  // Save/Load
+  try{ const saved = JSON.parse(localStorage.getItem('TRAME_DOUCE_GUILL_SAVE')||'null'); if(saved && saved.scene){ Object.assign(state, saved); state.visited = new Set(saved.visited||[]); } }catch(e){}
 
-    <section id="eau">
-      <h2>Points d’eau – accès, fiabilité, conseils terrain</h2>
-      <ul>
-        <li><b>Chalet du Charbon :</b> Source captée, robinet extérieur en général fonctionnel (attention sécheresse l'été). Eau à filtrer ou traiter. Plan B : source à 50 m en amont.</li>
-        <li><b>Combe d’Ire (jour 2, descente) :</b> Torrent permanent, idéal pour remplir tous les contenants (filtration recommandée).</li>
-        <li><b>Bonverdan :</b> Pas d’eau sur place : fontaine à sec. Petit ruisseau parfois coulant 200 m nord (débit très variable, rarement fiable l’été). Faites le plein à la Combe d’Ire ou à Orgeval le lendemain.</li>
-        <li><b>Chalets/col d’Orgeval :</b> Source captée avec robinet-fontaine, débit fiable au printemps/début été. Eau potable mais filtrer conseillé en cas de doute. Abreuvoir en contrebas comme solution de secours.</li>
-      </ul>
-      <div class="encadre">
-        <b>Conseil terrain :</b> Prévoyez au moins 2–3 L par personne chaque jour, filtre/pastilles indispensables, et remplissez systématiquement dès qu’une source sûre se présente.
-      </div>
-    </section>
+  // RNG
+  function mulberry32(a){ return function(){ let t = a += 0x6D2B79F5; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296 } }
+  let rng = mulberry32(state.seed);
+  function d6(){ return Math.floor(rng()*6)+1 }
+  function roll2d6(){ const a=d6(), b=d6(); return {a,b,sum:a+b, doubles:(a===b)} }
 
-    <section id="nourriture">
-      <h2>Plan nourriture (par personne)</h2>
-      <ul>
-        <li>Petit-déj ×3 : flocons avoine + lait poudre + fruits secs (600 kcal/j).</li>
-        <li>Déjeuners ×3 : wraps + fromage sec + chorizo (700 kcal/j).</li>
-        <li>Dîners ×3 : plats lyophilisés + soupe (800 kcal/j).</li>
-        <li>Snacks : 200 g noix/barres (500 kcal/j).</li>
-        <li><b>Total ≈ 9 000 kcal (≈ 3 kg sur 3 jours).</b></li>
-      </ul>
-    </section>
+  // ---------- Archetypes ----------
+  const ARCH = {
+    ACCORDEUR: {
+      label:'Accordeur de Bruit',
+      pitch:`Tu calmes les foules par gestes et timbres. À la Guill’, on te connaît pour avoir arrêté une rixe en accordant un rideau métallique.`,
+      stats:{ NEU:2, VOL:3, SOM:1, CIN:2 },
+      skills:{ Empathie:1, Intimidation:1, Furtivite:1 },
+      atout:{ name:'Regard qui désarme', hint:'1 interaction sociale facile/scene' },
+      startItems:['Jeton d’écho','Feuillet-mica réglé']
+    },
+    CARTOGRAPHE: {
+      label:'Cartographe des Courants',
+      pitch:`Tu lis les flux muets: vents de couloir, tram qui hésite, câbles qui vibrent. Tu as cartographié des passages que les drones ignorent.`,
+      stats:{ NEU:3, VOL:2, SOM:1, CIN:2 },
+      skills:{ Cryptanalyse:1, Deduction:1, Mnemographie:1 },
+      atout:{ name:'Écoute directionnelle', hint:'1 relance mentale/scene' },
+      startItems:['Craie douce','Mic-corde sensible']
+    },
+    BIFFIN: {
+      label:'Biffin Ingénieur',
+      pitch:`Tu répares à main nue. Aux puces de la Place du Pont, on te confie les objets qui « préfèrent chuchoter ».`,
+      stats:{ NEU:2, VOL:1, SOM:3, CIN:2 },
+      skills:{ Mecafortune:1, Endurance:1, Reflexes:1 },
+      atout:{ name:'Atelier mobile', hint:'+2 au 1er test mécanique de la scène' },
+      startItems:['Trousse feutrée','Aimant‑algue']
+    }
+  };
 
-    <section id="materiel">
-      <h2>Matériel collectif</h2>
-      <ul class="checklist" id="collectif">
-        <li><input type="checkbox"> Tente 3 saisons &lt;2,5 kg + footprint &amp; piquets solides</li>
-        <li><input type="checkbox"> Réchaud gaz + cartouche 450 g</li>
-        <li><input type="checkbox"> Popote 1,5 L + 0,8 L, éponge &amp; liquide biodégradable</li>
-        <li><input type="checkbox"> Filtre Sawyer ou gravité + 2 L poches eau</li>
-        <li><input type="checkbox"> Carte IGN 3432 OT + boussole + trace GPX hors-ligne</li>
-        <li><input type="checkbox"> Trousse secours (bande, ibuprofène, steri‑strip…)</li>
-        <li><input type="checkbox"> Powerbank 10 000 mAh, frontales + piles</li>
-        <li><input type="checkbox"> GPS/SOS si dispo (zone blanche J2)</li>
-      </ul>
-      <h2>Matériel individuel</h2>
-      <ul class="checklist" id="individuel">
-        <li><input type="checkbox"> Sac de couchage confort −5 °C, matelas isolant R≥3</li>
-        <li><input type="checkbox"> Veste imper (10 000 mm) + doudoune légère</li>
-        <li><input type="checkbox"> Pantalon rando, collant nuit, t‑shirt mérinos ×2</li>
-        <li><input type="checkbox"> Polaire fine, bonnet léger, gants</li>
-        <li><input type="checkbox"> Chaussures tige haute, micro‑crampons</li>
-        <li><input type="checkbox"> Lunettes cat.3, crème solaire SPF 50</li>
-        <li><input type="checkbox"> Couverts, gobelet, couteau</li>
-        <li><input type="checkbox"> Sac poubelle zip (leave no trace)</li>
-      </ul>
-    </section>
+  // ---------- Scenes (Guillotière) ----------
+  /*
+    Cadre: La Sourdine — Lyon amortit le monde. À la Guillotière, on vit à voix basse.
+    On évite tout cliché: on montre l’entraide, l’ingéniosité douce, les réseaux non violents.
+  */
+  const SCENES = {
+    START:{
+      name:'Prologue — Guillotière',
+      art:'start',
+      text:`La pluie lave les tags en dégradé pastel sur les rideaux des boutiques. Les moteurs sont comme bâillonnés par <em>la Sourdine</em>. 
+            La ville n’avance qu’à l’élan doux. On t’attend ce soir à la <strong>Place du Pont</strong>, point zéro de l’histoire. 
+            Choisis ce que tu es ici, pour ne pas te perdre.`,
+      choices:[
+        { text:'Devenir ACCORDEUR — voix basses, conflits apaisés', goto:'ARCH', flag:{key:'pick','val':'ACCORDEUR'} },
+        { text:'Devenir CARTOGRAPHE — lire les courants invisibles', goto:'ARCH', flag:{key:'pick','val':'CARTOGRAPHE'} },
+        { text:'Devenir BIFFIN — réparer, détourner, bricoler', goto:'ARCH', flag:{key:'pick','val':'BIFFIN'} }
+      ]
+    },
+    ARCH:{
+      name:'Sélection d’archétype',
+      art:'arch',
+      text:`Chaque archétype arrive avec sa mémoire, ses outils, sa manière d’écouter la ville.`,
+      choices:[
+        { text:'Valider et commencer à la Place du Pont', goto:'G0', action:'applyArchetype' },
+        { text:'Retour au prologue', goto:'START' }
+      ]
+    },
+    G0:{
+      name:'Place du Pont — Biffe silencieuse',
+      art:'pont',
+      text:`Des étals nomades étalent des objets qui refusent de faire du bruit: réveils sans tic, radios en sourdine, couteaux qui ne sonnent pas. 
+            Un <em>pylône de voisins</em> clignote: quelqu’un cherche un messager pour la <strong>Friche Mazagran</strong>. 
+            Une vieille affiche parle d’un <em>jardin d’algues</em> sur les berges.`,
+      choices:[
+        { text:'Répondre à la demande (VOL/Empathie DD10)', test:{ stat:'VOL', skill:'Empathie', dc:10 }, success:{ log:'Tu captes le besoin. Tu gagneras un relais humain à Mazagran.', flag:{key:'relaisMaz','val':true}, goto:'G2' }, failure:{ log:'Tu prends la demande de travers. Tu décideras sur place.', goto:'G2', stress:-1 } },
+        { text:'Observer les écoulements (NEU/Déduction DD10)', test:{ stat:'NEU', skill:'Deduction', dc:10 }, success:{ log:'Tu lis un passage sûr par la rue de Marseille → Berges.', flag:{key:'passageBerges','val':true}, goto:'G3' }, failure:{ log:'Le flux se brouille. Tu restes prudent·e.', goto:'G3' } },
+        { text:'Bidouiller un sifflet pour capteurs (SOM/Mécanique DD12)', test:{ stat:'SOM', skill:'Mecafortune', dc:12 }, success:{ log:'Sifflet muet prêt. +1 Flux', flux:+1, addItem:'Sifflet muet', goto:'G1' }, failure:{ log:'Micro-coupure. +1 Blessure.', hp:-1, goto:'G1' } }
+      ]
+    },
+    G1:{
+      name:'Cours Gambetta — Tram au pas',
+      art:'gambetta',
+      text:`Le T1 glisse comme une carpe. Des médiateurs de quartier peignent des lignes souples sur la chaussée. 
+            On échange des <em>notes‑pilotes</em> pour traverser sans heurter.`,
+      choices:[
+        { text:'Apprendre la note locale (NEU/Mnémographie DD10)', test:{ stat:'NEU', skill:'Mnemographie', dc:10 }, success:{ log:'Ta mémoire retient la courbe. +1 à Furtivité (temp, 3 scènes).', tempSkill:{ key:'Furtivite', delta:+1, turns:3 }, goto:'G4' }, failure:{ log:'Ta tête bourdonne. +1 Stress.', stress:-1, goto:'G4' } },
+        { text:'Épauler un médiateur (VOL/Empathie DD10)', test:{ stat:'VOL', skill:'Empathie', dc:10 }, success:{ log:'Tu gagnes un <strong>Jeton d’écho</strong>.', addItem:'Jeton d’écho', goto:'G4' }, failure:{ log:'Mésentente polie. Rien de grave.', goto:'G4' } }
+      ]
+    },
+    G2:{
+      name:'Friche Mazagran — Atelier des Ombres',
+      art:'mazagran',
+      text:`Dans la cour, on tisse des paravents acoustiques en soie recyclée. 
+            Une jeune femme te remet une boîte: « À la bergère d’algues. Dis-lui que le motif <em>retourne</em>. »`,
+      choices:[
+        { text:'Accepter la boîte et filer (CIN/Furtivité DD10)', test:{ stat:'CIN', skill:'Furtivite', dc:10 }, success:{ log:'Livraison discrète activée. +1 Flux.', flux:+1, goto:'G3' }, failure:{ log:'Un drone hésite sur toi. +1 Stress.', stress:-1, goto:'G3' } },
+        { text:'Ouvrir la boîte (NEU/Cryptanalyse DD12)', test:{ stat:'NEU', skill:'Cryptanalyse', dc:12 }, success:{ log:'C’est un <em>Effaceur de Trame — Doux</em>, temporisé.', flag:{key:'effaceurDoux','val':true}, goto:'G3' }, failure:{ log:'Tu te piques au sceau. +1 Blessure.', hp:-1, goto:'G3' } }
+      ]
+    },
+    G3:{
+      name:'Berges — Jardins d’Algues',
+      art:'berges',
+      text:`Sous le pont, des bassins poussent des algues pastel qui filtrent l’eau et la mémoire courte. 
+            La bergère d’algues fredonne sans bouche. Elle attend un motif « retourné ».`,
+      choices:[
+        { text:'Remettre la boîte honnêtement', goto:'G5', log:'Tu livres sans tricher. La bergère te fait confiance.' },
+        { text:'Parler du Mirage de Confluence (VOL/Empathie DD12)', test:{ stat:'VOL', skill:'Empathie', dc:12 }, success:{ log:'Elle t’accorde un <strong>Quitus de Passage</strong>.', addItem:'Quitus de passage', goto:'G5' }, failure:{ log:'Elle détourne le regard, poliment.', goto:'G5' } },
+        { text:'Lire les capteurs d’eau (NEU/Déduction DD10)', test:{ stat:'NEU', skill:'Deduction', dc:10 }, success:{ log:'Tu trouves un <em>isthme</em> calme sous le Pont de la Guill’.', flag:{key:'isthme','val':true}, goto:'G4' }, failure:{ log:'Les bulles brouillent la mesure.', goto:'G4' } }
+      ]
+    },
+    G4:{
+      name:'Pont de la Guillotière — Calme tendu',
+      art:'pont2',
+      text:`Des vélos passent au ralenti. On tape sur les garde‑corps pour signaler son désir de dépasser. 
+            Au loin, une patrouille cherche quelqu’un… qui te ressemble.`,
+      choices:[
+        { text:'Passer en contre‑rythme (CIN/Furtivité DD12)', test:{ stat:'CIN', skill:'Furtivite', dc:12 }, success:{ log:'Tu deviens une absence. +1 Flux.', flux:+1, goto:'G5' }, failure:{ log:'Un regard s’accroche. +1 Stress.', stress:-1, goto:'G5' } },
+        { text:'Détendre l’atmosphère (VOL/Intimidation DD10)', test:{ stat:'VOL', skill:'Intimidation', dc:10 }, success:{ log:'Tu imposes un silence cordial. La patrouille décroche.', goto:'G5' }, failure:{ log:'Trop sec. Ça durcit un peu.', goto:'G5', stress:-1 } }
+      ]
+    },
+    G5:{
+      name:'Sous‑station T1 — Roues fantômes',
+      art:'t1',
+      text:`Ici dorment des moteurs qui ne savent plus faire de bruit. Au mur, un schéma: <em>Trame Douce, Porte</em>. 
+            Tu comprends que la ville peut oublier ce qui la blesse — sans oublier ceux qu’elle aime.`,
+      choices:[
+        { text:'Programmer une Porte Douce (NEU/Cryptanalyse DD12)', test:{ stat:'NEU', skill:'Cryptanalyse', dc:12 }, success:{ log:'Tu ouvres une voie sûre. Fin douce.', goto:'END_A' }, failure:{ log:'La note fausse. +1 Stress.', stress:-1, goto:'G5' } },
+        { text:'Conclure un pacte de voisinage (VOL/Empathie DD12)', test:{ stat:'VOL', skill:'Empathie', dc:12 }, success:{ log:'Un réseau se serre autour de toi. Fin pacte.', goto:'END_B' }, failure:{ log:'La fatigue se lit. Un autre jour.', goto:'G5' } },
+        { text:'Piéger la violence (SOM/Mécanique DD12)', test:{ stat:'SOM', skill:'Mecafortune', dc:12 }, success:{ log:'Toute capture brutale deviendra image floue. Fin élégante.', goto:'END_C' }, failure:{ log:'Coupe sombre. +1 Blessure.', hp:-1, goto:'G5' } },
+        { text:'S’éloigner en silence', goto:'END_D' }
+      ]
+    },
 
-    <section id="info">
-      <h2>Météo & conditions (mai 2025)</h2>
-      <div class="encadre">
-        <ul>
-          <li><b>Jeudi :</b> averses le matin, 13 °C à 1 800 m ; soleil l’aprèm</li>
-          <li><b>Vendredi & samedi :</b> temps sec, max 20 °C, UV forts</li>
-          <li>Névés sous la Chaurionde : micro‑crampons utiles</li>
-          <li>Risque avalanche limité &lt;2 000 m (restez sur l’itinéraire)</li>
-        </ul>
-      </div>
-      <h2>Réglementation</h2>
-      <div class="encadre">
-        <ul>
-          <li>Bivouac <b>autorisé uniquement</b> près des cabanes existantes (<50 m, coucher–lever du soleil)</li>
-          <li>Feux interdits (utilisez un réchaud)</li>
-          <li>Respectez faune/flore, chiens strictement interdits</li>
-          <li>Ramenez tous vos déchets</li>
-        </ul>
-      </div>
-      <h2>Logistique</h2>
-      <ul>
-        <li>Aller : TGV Paris 06 h 55 → Chambéry 10 h 33, taxi Chambéry → Les Cornes (~45 min)</li>
-        <li>Retour : taxi Nant Fourchu → Doucy (25 min) ou Chambéry (1 h). Pas de bus hors saison.</li>
-      </ul>
-    </section>
+    END_A:{ name:'Sortie — Porte Douce', art:'end', text:`Tu glisses par une porte sans angle. La Guill’ respire — assez pour une autre journée.`, choices:[ { text:'Rejouer (nouvelle seed)', goto:'RESTART' } ] },
+    END_B:{ name:'Sortie — Pacte', art:'end', text:`Le quartier t’adopte. Quand tu passes, la Sourdine te rend la voix juste assez.`, choices:[ { text:'Rejouer', goto:'RESTART' } ] },
+    END_C:{ name:'Sortie — Image Floue', art:'end', text:`Les prédations rebondiront tant qu’elles seront brutales. Tu laisses une défense douce.`, choices:[ { text:'Rejouer', goto:'RESTART' } ] },
+    END_D:{ name:'Sortie — Reflux', art:'end', text:`Tu repars lentement, avec l’idée que la douceur est une technologie.`, choices:[ { text:'Rejouer', goto:'RESTART' } ] }
+  };
 
-    <section id="contacts">
-      <h2>Contacts utiles</h2>
-      <ul>
-        <li><b>Taxi des Bauges</b> : +33 4 79 54 84 87</li>
-        <li><b>Alp’Taxis</b> : +33 6 08 92 05 33</li>
-        <li><b>Secours montagne</b> : 112</li>
-      </ul>
-    </section>
+  // ---------- Rendering ----------
+  const elStory = $('#story');
+  const elChoices = $('#choices');
+  const elStats = $('#stats');
+  const elHUD = $('#hud');
+  const elLog = $('#log');
+  const elASCII = $('#ascii');
+  const elArt = $('#art');
 
-  </main>
-  <footer>
-    <div class="container">
-      <span>Topo Bauges 2025 – Fait par l’équipe · Partage libre</span>
-    </div>
-  </footer>
-  <script src="script.js"></script>
+  function chip(label, content){ return `<span class="chip"><span class="ghost">${label}</span> ${content}</span>` }
+  function bar(val,max){ const pct=Math.max(0,Math.min(1,val/max)); return `<span class="bar" style="width:120px"><i style="width:${pct*100}%"></i></span>` }
+  function renderHUD(){ elHUD.innerHTML = chip('Stress',bar(state.stress,5))+chip('Blessures',bar(state.hp,5))+chip('Flux',`<strong>◆</strong> ${state.flux}`)+chip('Fragments',`<strong>✦</strong> ${state.fragments}`)+chip('Seed',`<span class="ghost">${state.seed}</span>`); }
+  function renderStats(){ const S=state.stats; const rows=[["NEU","Neuro",S.NEU],["VOL","Volonté",S.VOL],["SOM","Somatique",S.SOM],["CIN","Cinétique",S.CIN]].map(([abbr,name,val])=>`<div class="stat" aria-label="${name}"><div class="abbr">${abbr}</div><div><div class="name">${name}</div><div class="ghost" style="font-size:11px">${skillTips(abbr)}</div></div><div class="val">${val}</div></div>`).join(''); elStats.innerHTML=rows; }
+  function skillTips(abbr){ switch(abbr){ case 'NEU': return 'Cryptanalyse • Déduction • Mnémographie'; case 'VOL': return 'Empathie • Intimidation calme • Vigilance'; case 'SOM': return 'Mécanique • Endurance • Résistance'; case 'CIN': return 'Furtivité • Réflexes • Corps‑à‑corps'; } }
+  function renderMinimap(){ state.visited.forEach(id=>{ const n=$('#node-'+id); if(n) n&&n.classList.add('visited'); }); const cur=$('#node-'+state.scene); if(cur) cur.classList.add('visited'); }
+
+  function setArt(kind){
+    // Placeholder sprites; replace innerHTML with <img src="..."> plus tard
+    const arts = {
+      start: `<svg viewBox='0 0 100 100'><defs><linearGradient id='p' x1='0' x2='1'><stop offset='0' stop-color='#bde0fe'/><stop offset='1' stop-color='#ffafcc'/></linearGradient></defs><rect width='100' height='100' rx='12' fill='url(#p)'/><g fill='#0c0f14' opacity='.12'><circle cx='20' cy='20' r='8'/><circle cx='80' cy='26' r='10'/><rect x='16' y='60' width='68' height='8' rx='4'/></g></svg>`,
+      arch: `<svg viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='#1a2132'/><g stroke='#b9fbc0' stroke-width='2' fill='none'><circle cx='30' cy='40' r='12'/><rect x='56' y='28' width='20' height='24' rx='4'/><path d='M12 78h76' /></g></svg>`,
+      pont: `<svg viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='#121826'/><path d='M10 60 Q50 30 90 60' stroke='#bde0fe' stroke-width='3' fill='none'/><rect x='10' y='60' width='80' height='10' fill='#b9fbc0' opacity='.2'/></svg>`,
+      gambetta:`<svg viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='#121826'/><path d='M15 55 h70' stroke='#ffd6a5' stroke-width='3'/><circle cx='40' cy='55' r='6' fill='#ffafcc'/></svg>`,
+      mazagran:`<svg viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='#121826'/><g fill='#b9fbc0'><rect x='18' y='60' width='20' height='12' rx='3'/><rect x='42' y='50' width='20' height='22' rx='3'/><rect x='66' y='58' width='16' height='14' rx='3'/></g></svg>`,
+      berges:`<svg viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='#121826'/><path d='M0 70 C20 60 40 80 60 72 C80 64 100 76 100 76 L100 100 L0 100 Z' fill='#bde0fe'/><circle cx='76' cy='36' r='10' fill='#b9fbc0' opacity='.5'/></svg>`,
+      pont2:`<svg viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='#121826'/><path d='M10 62 Q50 40 90 62' stroke='#ffafcc' stroke-width='2' fill='none'/><circle cx='24' cy='62' r='4' fill='#ffd6a5'/><circle cx='64' cy='62' r='4' fill='#b9fbc0'/></svg>`,
+      t1:`<svg viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='#121826'/><rect x='20' y='50' width='60' height='12' rx='6' fill='#b9fbc0'/><rect x='28' y='46' width='44' height='6' rx='3' fill='#bde0fe'/></svg>`,
+      end:`<svg viewBox='0 0 100 100'><defs><linearGradient id='e' x1='0' x2='1'><stop offset='0' stop-color='#b9fbc0'/><stop offset='1' stop-color='#ffd6a5'/></linearGradient></defs><rect width='100' height='100' rx='12' fill='url(#e)'/></svg>`
+    };
+    elArt.innerHTML = arts[kind]||arts.start;
+  }
+
+  // ---------- Rendering flow ----------
+  function renderHUD(){ elHUD.innerHTML = chip('Stress',bar(state.stress,5))+chip('Blessures',bar(state.hp,5))+chip('Flux',`<strong>◆</strong> ${state.flux}`)+chip('Fragments',`<strong>✦</strong> ${state.fragments}`)+chip('Seed',`<span class='ghost'>${state.seed}</span>`); }
+  function renderScene(){
+    const sc = SCENES[state.scene]; if(!sc){ elStory.innerHTML = `<p class='ghost'>Scène inconnue: ${state.scene}</p>`; elChoices.innerHTML=''; return; }
+    state.visited.add(state.scene); renderMinimap(); setArt(sc.art);
+    elStory.innerHTML = `<h3 style="margin:0 0 8px 0">${sc.name}</h3><p>${sc.text}</p>`;
+    elChoices.innerHTML = '';
+
+    if(state.scene==='ARCH'){ renderArchetypeCards(); }
+
+    (sc.choices||[]).forEach((ch,idx)=>{
+      const btn = document.createElement('button'); btn.className='btn'; btn.setAttribute('role','option');
+      btn.innerHTML = `<span>${(idx+1)}. ${ch.text}</span>` + meta(ch);
+      btn.addEventListener('click', ()=> choose(ch)); elChoices.appendChild(btn);
+    });
+
+    renderASCII(); autosave();
+  }
+  function meta(ch){
+    const tags=[]; if(ch.test){ const {stat,skill,dc}=ch.test; tags.push(`<span class='tag'>${stat}/${prettySkill(skill)} DD${dc}</span>`); tags.push(`<span class='tag'>Pousser: +2 (si échec: +1 Stress)</span>`); if(['Furtivite','Cryptanalyse'].includes(skill)) tags.push(`<span class='tag'>◆ Flux: +2</span>`); }
+    return `<span class='meta'>${tags.join('')}</span>`
+  }
+  function prettySkill(s){ return ({ Empathie:'Empathie', Intimidation:'Intimidation', Furtivite:'Furtivité', Cryptanalyse:'Cryptanalyse', Deduction:'Déduction', Mnemographie:'Mnémographie', Endurance:'Endurance', Resistance:'Résistance', Mecafortune:'Mécanique', Reflexes:'Réflexes', CAC:'Corps‑à‑corps' }[s]||s) }
+
+  // Archetype cards
+  function renderArchetypeCards(){
+    const wrap = document.createElement('div'); wrap.style.display='grid'; wrap.style.gridTemplateColumns='repeat(auto-fit,minmax(220px,1fr))'; wrap.style.gap='10px';
+    Object.entries(ARCH).forEach(([key,a])=>{
+      const card = document.createElement('div'); card.className='btn'; card.style.minHeight='120px';
+      const picked = (state.flags.pick===key);
+      card.innerHTML = `<div><strong>${a.label}</strong><br><span class='ghost'>${a.pitch}</span></div><span class='tag'>NEU ${a.stats.NEU} • VOL ${a.stats.VOL} • SOM ${a.stats.SOM} • CIN ${a.stats.CIN}</span>`;
+      card.addEventListener('click', ()=>{ state.flags.pick=key; renderScene(); });
+      wrap.appendChild(card);
+    });
+    elChoices.prepend(wrap);
+  }
+
+  function applyArchetype(){
+    const pick = state.flags.pick || 'ACCORDEUR'; const a = ARCH[pick]; if(!a) return;
+    state.archetype = pick; state.stats = {...a.stats};
+    Object.assign(state.skills, a.skills); a.startItems.forEach(addItem);
+    state.inventory = Array.from(new Set(state.inventory));
+    log(`<span class='ok'>Archétype: ${a.label} — Atout: ${a.atout.name}</span>`);
+  }
+
+  // ---------- Choice resolution ----------
+  function choose(ch){
+    if(ch.action==='applyArchetype'){ applyArchetype(); }
+    if(!ch.test){ if(ch.visit) state.visited.add(ch.visit); if(ch.addItem) addItem(ch.addItem); if(ch.flag) state.flags[ch.flag.key]=ch.flag.val; if(ch.goto==='RESTART'){ restart(); return; } state.scene = ch.goto||state.scene; log(`→ ${ch.text}`); renderScene(); return; }
+    resolveTest(ch);
+  }
+
+  function resolveTest(ch){
+    const {stat,skill,dc} = ch.test; const useFlux = (['Furtivite','Cryptanalyse'].includes(skill) && state.flux>0) ? confirm('Dépenser ◆ Flux pour +2 ?') : false; const push = confirm('Pousser ta chance pour +2 ? (échec → +1 Stress)');
+    const r = roll2d6(); const mods = (state.stats[stat]||0) + (state.skills[skill]||0) + (useFlux?2:0) + (push?2:0);
+    const total = r.sum + mods; const ok = total>=dc; const line = `Test ${stat}/${prettySkill(skill)} (DD${dc}) — ${r.a}+${r.b}=${r.sum} + mods ${(mods>=0?'+':'')}${mods} = <strong>${total}</strong> → ${ok?'<span class="ok">Réussite</span>':'<span class="bad">Échec</span>'}${r.doubles? ' <span class="ghost">(Doubles)</span>':''}`;
+    log(line);
+    if(useFlux) state.flux=Math.max(0,state.flux-1); if(!ok && push) state.stress=Math.max(0,state.stress-1);
+    const outcome = ok? ch.success : ch.failure; if(!outcome){ log('<span class="ghost">(Pas de branche définie)</span>'); return; }
+    if(outcome.log) log(outcome.log); if(outcome.stress) state.stress=clamp(state.stress+outcome.stress,0,5); if(outcome.hp) state.hp=clamp(state.hp+outcome.hp,0,5); if(outcome.flux) state.flux=Math.max(0,state.flux+outcome.flux); if(outcome.tempSkill) applyTempSkill(outcome.tempSkill); if(outcome.addItem) addItem(outcome.addItem); if(outcome.flag) state.flags[outcome.flag.key]=outcome.flag.val; if(outcome.visit) state.visited.add(outcome.visit); if(outcome.goto){ if(outcome.goto==='RESTART'){ restart(); return; } state.scene=outcome.goto; }
+    if(state.stress===0){ log('<span class="bad">STRESS 0 → arrêt doux. Tu te poses.</span>'); state.stress=3; }
+    if(state.hp===0){ log('<span class="bad">BLESSURES 0 → corps dit non. Pause.</span>'); state.hp=3; }
+    renderHUD(); renderScene();
+  }
+
+  function applyTempSkill({key,delta,turns}){ state.skills[key]=(state.skills[key]||0)+delta; log(`<span class='ok'>Bonus ${prettySkill(key)} ${delta>0?'+':''}${delta} (${turns} scènes)</span>`); state.flags['temp_'+key]=(state.flags['temp_'+key]||0)+turns; }
+  function tickTempSkills(){ Object.keys(state.flags).forEach(f=>{ if(f.startsWith('temp_')){ const k=f.replace('temp_',''); state.flags[f]--; if(state.flags[f]<=0){ state.skills[k]=(state.skills[k]||0)-1; delete state.flags[f]; log(`<span class='ghost'>Le bonus ${prettySkill(k)} s’estompe.</span>`); } } }); }
+
+  function addItem(name){ if(!state.inventory.includes(name)) state.inventory.push(name); log(`<span class='ok'>+ Objet: ${name}</span>`); }
+  function log(html){ state.log.push(html); const div=document.createElement('div'); div.className='entry'; div.innerHTML=html; elLog.prepend(div); }
+  function clamp(v,min,max){ return Math.max(min,Math.min(max,v)); }
+
+  // ---------- ASCII HUD ----------
+  function renderASCII(){ if(!state.flags.ascii){ elASCII.classList.remove('on'); return; } elASCII.classList.add('on'); const inv = state.inventory.join(' • '); const sc=(SCENES[state.scene]||{}).name||state.scene; const a = state.archetype? ARCH[state.archetype].label : '—'; const ascii = `
+╔══════════[ ATH — ${a} ]══════════╗
+║ NEU ${state.stats.NEU}  VOL ${state.stats.VOL}  SOM ${state.stats.SOM}  CIN ${state.stats.CIN}
+║ Stress: ${"█".repeat(state.stress)}${"░".repeat(5-state.stress)}   Bless: ${"█".repeat(state.hp)}${"░".repeat(5-state.hp)}   Flux: ${"◆".repeat(state.flux)}   Frag: ${"✦".repeat(state.fragments)}
+║ Inventaire: ${inv||'—'}
+║ Scène: ${sc}
+╚══════════════════════════════════╝`; elASCII.textContent = ascii; }
+
+  // ---------- Save/Load ----------
+  function autosave(){ if($('#t-autosave').checked){ localStorage.setItem('TRAME_DOUCE_GUILL_SAVE', JSON.stringify({...state, visited:[...state.visited]})); } }
+  function exportSave(){ const blob = new Blob([localStorage.getItem('TRAME_DOUCE_GUILL_SAVE')||JSON.stringify({...state, visited:[...state.visited]})], {type:'application/json'}); const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='trame_douce_guill_save.json'; a.click(); URL.revokeObjectURL(url); }
+  function importSave(){ const inp=document.createElement('input'); inp.type='file'; inp.accept='application/json'; inp.onchange=()=>{ const f=inp.files[0]; if(!f) return; const fr=new FileReader(); fr.onload=()=>{ try{ const data=JSON.parse(fr.result); Object.assign(state,data); state.visited=new Set(data.visited||[]); rng = mulberry32(state.seed||Date.now()); renderAll(); }catch(e){ alert('Sauvegarde invalide'); } }; fr.readAsText(f); }; inp.click(); }
+  function restart(){ state.seed=Date.now(); rng=mulberry32(state.seed); state.scene='START'; state.visited=new Set(); state.stress=5; state.hp=5; state.flux=2; state.fragments=2; state.inventory=[]; state.log=[]; state.archetype=null; state.stats={NEU:2,VOL:2,SOM:2,CIN:2}; Object.keys(state.skills).forEach(k=> state.skills[k]=0); log('<span class="ghost">— Nouvelle run (Guill’) —</span>'); renderAll(); }
+
+  // ---------- Events ----------
+  $('#t-reduced').addEventListener('change', e=>{ state.flags.reduced = e.target.checked; document.body.style.scrollBehavior = state.flags.reduced? 'auto' : 'smooth'; });
+  $('#t-ascii').addEventListener('change', e=>{ state.flags.ascii = e.target.checked; renderASCII(); });
+  $('#btn-save').addEventListener('click', exportSave);
+  $('#btn-load').addEventListener('click', importSave);
+  document.addEventListener('keydown', e=>{ if(e.key.toLowerCase()==='h'){ const t=$('#t-ascii'); t.checked=!t.checked; state.flags.ascii=t.checked; renderASCII(); return; } const n=parseInt(e.key,10); if(!isNaN(n)){ const btn=$('#choices').querySelectorAll('.btn')[n-1]; if(btn) btn.click(); } });
+
+  // ---------- Initial render ----------
+  function renderAll(){ renderHUD(); renderStats(); renderMinimap(); tickTempSkills(); renderScene(); }
+  renderAll();
+})();
+</script>
 </body>
 </html>
