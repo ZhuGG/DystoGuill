@@ -138,7 +138,7 @@ a{color:var(--a)}
   <section class="col mid">
     <div class="pad">
       <div class="storyImage">
-        <img id="storyImg" loading="lazy" src="https://images.unsplash.com/photo-1529101091764-c3526daf38fe?q=80&w=1400&auto=format&fit=crop" alt="">
+        <img id="storyImg" loading="lazy" src="https://cdn.midjourney.com/2dad9bcd-090b-477d-915d-6fc46c5cc0ad/0_1.png" alt="">
         <div class="legend" id="imgLegend">Guillotière — nuit en pente fine</div>
       </div>
       <div class="row"><span class="badge">Objectif: <span id="objectiveText">Atteindre T1 sans casser les vivants.</span></span></div>
@@ -216,22 +216,22 @@ a{color:var(--a)}
 <script>
 /* ======= DATA ======= */
 const ARCH=[
- {id:'noor',name:'Noor — Dormeuse du pont',img:'https://images.unsplash.com/photo-1500099817043-86d46000d58f?q=80&w=1400&auto=format&fit=crop',
+ {id:'noor',name:'Noor — Dormeuse du pont',img:'https://cdn.midjourney.com/a3b1416e-ee0e-4c20-930a-7ffd8a11813f/0_0.png',
   back:'Tu dors sous le tablier quand il fait doux. Tu sais écouter quand les autres parlent trop.',
   stats:{NEU:2,VOL:3,SOM:1,CIN:3},skills:{Furtivité:1,Empathie:1},start:['Feuillet-mica','Cutter','Gants usés']},
- {id:'milo',name:'Milo — Revendeur d’appoint',img:'https://images.unsplash.com/photo-1553867745-e018f36c1f42?q=80&w=1400&auto=format&fit=crop',
+ {id:'milo',name:'Milo — Revendeur d’appoint',img:'https://cdn.midjourney.com/80762336-8ec1-4cc1-8c37-7c4107864bab/0_2.png',
   back:'Piles refondues, médocs, rumeurs. Tu parles cash et sens la merde à quinze mètres.',
   stats:{NEU:3,VOL:3,SOM:1,CIN:2},skills:{Intimidation:1,Déduction:1},start:['Lampe plate','Note marquée','Briquet']},
- {id:'rayan',name:'Rayan — Électricien clandestin',img:'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1400&auto=format&fit=crop',
+ {id:'rayan',name:'Rayan — Électricien clandestin',img:'https://cdn.midjourney.com/0e627014-f83a-41bd-9c3f-e4d828a9e555/0_3.png',
   back:'Tu connais les coffrets et les gaines qui chantent. Tu parles au cuivre comme à un gosse têtu.',
   stats:{NEU:3,VOL:2,SOM:3,CIN:2},skills:{Mécanique:1,Cryptanalyse:1},start:['Tournevis isolé','Aimant-alu','Ruban textile']}
 ];
-const IMG={pro:{src:'https://images.unsplash.com/photo-1529101091764-c3526daf38fe?q=80&w=1400&auto=format&fit=crop',lg:'Souterrain — goutte à goutte'},
+const IMG={pro:{src:'https://cdn.midjourney.com/56285542-dbca-4ce6-b483-253548e35fd2/0_3.png',lg:'Souterrain — goutte à goutte'},
  place:{src:'https://cdn.midjourney.com/eaaf9643-3d4c-44b1-9ed1-7c243133a5c5/0_0.png',lg:'Place du Pont — pluie sur bitume'},
- maz:{src:'https://images.unsplash.com/photo-1519681395355-94c6f1e1b6a7?q=80&w=1400&auto=format&fit=crop',lg:'Friche Mazagran — murs qui boivent'},
- ber:{src:'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?q=80&w=1400&auto=format&fit=crop',lg:'Berges — darses envasées'},
- pon:{src:'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1400&auto=format&fit=crop',lg:'Pont de la Guill’ — courant bas'},
- t1:{src:'https://images.unsplash.com/photo-1517511620798-cec17d428bc0?q=80&w=1400&auto=format&fit=crop',lg:'Sous-station T1 — panneaux griffés'}
+ maz:{src:'https://cdn.midjourney.com/b418e0bc-0e86-496e-a2d8-0eb310dbe984/0_0.png',lg:'Friche Mazagran — murs qui boivent'},
+ ber:{src:'https://cdn.midjourney.com/9422d8a5-60dd-441f-9007-32d0dc57f3a5/0_0.png',lg:'Berges — darses envasées'},
+ pon:{src:'https://cdn.midjourney.com/bb9836dc-9370-41d6-9df7-08fc0f2a9a78/0_2.png',lg:'Pont de la Guill’ — courant bas'},
+ t1:{src:'https://cdn.midjourney.com/d62c2fce-31b6-4c23-8437-2d27d6a9eab8/0_1.png',lg:'Sous-station T1 — panneaux griffés'}
 };
 const ST={arch:null,stats:{NEU:2,VOL:2,SOM:2,CIN:2},skills:{},stress:2,hp:5,flux:2,frag:2,
  inv:[],tags:new Set(),scene:'prologue',objective:'Atteindre T1',objLog:[],visited:new Set(),ascii:true};
