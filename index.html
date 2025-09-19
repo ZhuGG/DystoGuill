@@ -353,6 +353,52 @@ const IMG={pro:{src:'https://cdn.midjourney.com/56285542-dbca-4ce6-b483-253548e3
 };
 const ST={arch:null,stats:{NEU:2,VOL:2,SOM:2,CIN:2},skills:{},stress:2,hp:5,flux:2,frag:2,
  inv:[],tags:new Set(),scene:'prologue',objective:'Tracer une voie sûre vers T1.',objLog:[],visited:new Set(),ascii:true};
+const VISIT_KEYS=[
+ {key:'prologue',match:s=>s==='prologue'},
+ {key:'place',match:s=>s.startsWith('place_')},
+ {key:'collectif',match:s=>s==='place_collectif'},
+ {key:'maz',match:s=>s.startsWith('maz_')},
+ {key:'atelier',match:s=>s==='maz_atelier'},
+ {key:'ber',match:s=>s.startsWith('ber_')},
+ {key:'patrouille',match:s=>s==='ber_patrouille'},
+ {key:'pon',match:s=>s.startsWith('pon_')},
+ {key:'ombre',match:s=>s==='pon_shadow'},
+ {key:'t1',match:s=>s.startsWith('t1_')},
+ {key:'perimetre',match:s=>s==='t1_overlook'}
+];
+function markVisited(scene){
+  VISIT_KEYS.forEach(entry=>{ if(entry.match(scene)) ST.visited.add(entry.key); });
+}
+function clearEndingTags(){ ['End_Social','End_Infil','End_Tech','End_Contournement','End_Noise','End_Soft'].forEach(t=>ST.tags.delete(t)); }
+function markEndingApproach(){
+  if(ST.tags.has('Pont_Escorte')||ST.tags.has('Collectif_Favor')||ST.tags.has('T1_Soutien')) ST.tags.add('End_Social');
+  if(ST.tags.has('Pont_Souterrain')||ST.tags.has('T1_Grille')) ST.tags.add('End_Infil');
+  if(ST.tags.has('BadgeTech')||ST.tags.has('BadgeTech_Used')||ST.tags.has('Acces_Tech')||ST.tags.has('T1_Silence')) ST.tags.add('End_Tech');
+}
+function pickEnding(mode){
+  const social=ST.tags.has('End_Social');
+  const infiltr=ST.tags.has('End_Infil');
+  const tech=ST.tags.has('End_Tech');
+  if(mode==='cont'){
+    if(tech) return 'ep_cont_tech';
+    if(social) return 'ep_cont_social';
+    if(infiltr) return 'ep_cont_shadow';
+    return 'ep_cont';
+  }
+  if(mode==='noise'){
+    if(tech) return 'ep_noise_tech';
+    if(infiltr) return 'ep_noise_shadow';
+    if(social) return 'ep_noise_social';
+    return 'ep_noise';
+  }
+  if(mode==='soft'){
+    if(social) return 'ep_soft_collectif';
+    if(infiltr) return 'ep_soft_shadow';
+    if(tech) return 'ep_soft_tech';
+    return 'ep_soft';
+  }
+  return 'ep_silent';
+}
 const SAVE='td_v6_4';
 
 /* ======= HELPERS ======= */
@@ -400,7 +446,18 @@ function renderAscii(){ if(!ST.ascii){$('#asciiHud').textContent='(désactivé)'
 ╚════════════════════════════════════════════════╝`; renderMiniMap(); }
 function renderMiniMap(){const v=s=>ST.visited.has(s)?'●':'○';
  $('#miniMap').textContent=`[Guillotière]
-  ${v('prologue')} Prologue ─ ${v('place')} Place ─ ${v('maz')} Mazagran ─ ${v('ber')} Berges ─ ${v('pon')} Pont ─ ${v('t1')} T1`; }
+  ${v('prologue')} Prologue
+  ├─ ${v('place')} Place du Pont
+  │   └─ ${v('collectif')} Assemblée couverte
+  ├─ ${v('maz')} Mazagran
+  │   └─ ${v('atelier')} Atelier de fortune
+  ├─ ${v('ber')} Berges
+  │   └─ ${v('patrouille')} Patrouille fluviale
+  ├─ ${v('pon')} Pont de la Guill’
+  │   └─ ${v('ombre')} Contre-voie
+  └─ ${v('t1')} T1
+      └─ ${v('perimetre')} Périmètre interne
+`; }
 function renderTimeline(){const T=$('#timeline');T.innerHTML='';ST.objLog.slice().reverse().forEach(o=>{const d=document.createElement('div');d.className='item';d.innerHTML=`<div>${o.text}</div><div class="when">${new Date(o.t).toLocaleTimeString()}</div>`;T.appendChild(d)})}
 function save(){localStorage.setItem(SAVE,JSON.stringify({a:ST.arch?.id,s:ST.stats,k:ST.skills,st:ST.stress,h:ST.hp,f:ST.flux,g:ST.frag,i:ST.inv,t:[...ST.tags],sc:ST.scene,o:ST.objective,ol:ST.objLog,v:[...ST.visited],as:ST.ascii}))}
 function load(){try{const d=JSON.parse(localStorage.getItem(SAVE)||'null');if(!d)return;ST.arch=ARCH.find(x=>x.id===d.a)||null; if(ST.arch){ST.stats={...ST.arch.stats};ST.skills={...ST.arch.skills};ST.inv=[...ST.arch.start]}
@@ -427,7 +484,8 @@ const SC={
   <p>Elle ouvrira la voie si tu récupères <b>son sac</b> oublié à <b>Mazagran</b>.</p>`,
   choices:[
     {label:'Accepter et récupérer son sac',hint:'Nouvel objectif : ramener le sac de Noor',immediate:s=>{s.tags.add('Noor');s.objective='Ramener le sac de Noor pour ouvrir la voie des caves.';addObj('Nouvel objectif : rapporter le sac de Noor.');},go:'maz_noor'},
-    {label:'Refuser mais prendre son indice',hint:'Indice de trappe sans accompagnement',immediate:s=>{s.tags.add('Indice_Trappe');s.objective='Trouver la trappe technique indiquée par Noor.';addObj('Indice obtenu : emplacement de la trappe.');},go:'maz_common'}
+    {label:'Refuser mais prendre son indice',hint:'Indice de trappe sans accompagnement',immediate:s=>{s.tags.add('Indice_Trappe');s.objective='Trouver la trappe technique indiquée par Noor.';addObj('Indice obtenu : emplacement de la trappe.');},go:'maz_common'},
+    {label:'Rester sur la Place et observer',hint:'Ouvrir d’autres approches sous l’auvent',go:'place_return'}
   ]
  },
  place_milo:{
@@ -436,7 +494,8 @@ const SC={
   <p>Le deal est clair : tu rapportes le coffret, il parle aux guetteurs.</p>`,
   choices:[
     {label:'Accepter le deal du coffret',hint:'Passe-droit à gagner si tu réussis',immediate:s=>{s.tags.add('Milo');s.objective='Ramener le coffret scellé à Milo pour obtenir le passe.';addObj('Nouvel objectif : récupérer le coffret de Milo.');},go:'maz_milo'},
-    {label:'Refuser et rester indépendant·e',hint:'Route neutre vers Mazagran',immediate:s=>{s.objective='Chercher un passage neutre par Mazagran.';},go:'maz_common'}
+    {label:'Refuser et rester indépendant·e',hint:'Route neutre vers Mazagran',immediate:s=>{s.objective='Chercher un passage neutre par Mazagran.';},go:'maz_common'},
+    {label:'Explorer la Place par soi-même',hint:'Observer les assemblées abritées',go:'place_return'}
   ]
  },
  place_solo:{
@@ -445,7 +504,60 @@ const SC={
   <p>Reste à décider si tu suis le courant ou si tu forces un passage direct.</p>`,
   choices:[
     {label:'Suivre le flux jusqu’à Mazagran',hint:'Collecter des indices avant les Berges',go:'maz_common'},
-    {label:'Forcer un passage vers les Berges',hint:'Contourner la friche sans aide',go:'ber_entry'}
+    {label:'Forcer un passage vers les Berges',hint:'Contourner la friche sans aide',go:'ber_entry'},
+    {label:'Se glisser sous l’auvent du Collectif',hint:'Voie sociale potentielle',go:'place_collectif'}
+  ]
+ },
+
+ place_return:{
+  img:IMG.place,title:'Place du Pont — Carrefour sous la Sourdine',text:()=>{
+   const notes=[];
+   if(ST.tags.has('Noor_Sac')&&!ST.tags.has('Noor_Trust')){notes.push('Noor surveille ton sac, prête à filer vers les caves.');}
+   else if(ST.tags.has('Noor_Trust')){notes.push('Noor garde la trappe entrouverte, signe discret de confiance.');}
+   if(ST.tags.has('Coffret_Milo')&&!ST.tags.has('Milo_Pass')){notes.push('Milo attend le coffret, parapluie battant.');}
+   else if(ST.tags.has('Milo_Pass')){notes.push('Le laissez-passer de Milo luit brièvement sous la pluie.');}
+   if(ST.tags.has('Collectif_Favor')&&!ST.tags.has('Collectif_Pret')){notes.push('Le Collectif suit chacun de tes gestes, prêt à te couvrir jusqu’au Pont.');}
+   else if(ST.tags.has('Collectif_Pret')){notes.push('L’escorte du Collectif attend un signe pour t’accompagner au Pont.');}
+   if(ST.inv.includes('Badge maintenance')){notes.push('Un badge de maintenance pulse dans ta poche, promesse d’un accès technique.');}
+   const extra=notes.join(' ')||'Les regards glissent vers Mazagran, vers le Pont, vers ceux qui bricolent leur survie.';
+   return `<p>La Place du Pont clignote sous la Sourdine, les bâches claquent au rythme des pas.</p><p>${extra}</p>`;
+  },
+  choices:()=>{
+   const arr=[];
+   if(ST.tags.has('Noor')&&ST.tags.has('Noor_Sac')&&!ST.tags.has('Noor_Trust')){
+    arr.push({label:'Remettre le sac à Noor',hint:'Voie sociale vers les caves',immediate:s=>{s.tags.delete('Noor_Sac');s.tags.add('Noor_Trust');s.objective='Suivre Noor par les caves vers les Berges.';addObj('Noor récupère son sac et t’offre la trappe des caves.');},go:'place_return'});
+   }
+   if(ST.tags.has('Milo')&&ST.tags.has('Coffret_Milo')&&!ST.tags.has('Milo_Pass')){
+    arr.push({label:'Livrer le coffret à Milo',hint:'Passe-droit vers le Pont',immediate:s=>{s.tags.delete('Coffret_Milo');s.tags.add('Milo_Pass');s.inv=s.inv.filter(it=>it!=='Coffret (Milo)');s.objective='Utiliser le laissez-passer de Milo pour franchir le Pont.';addObj('Milo tamponne ton laissez-passer et te fait un clin d’œil.');},go:'place_return'});
+   }
+   if(ST.tags.has('Collectif_Favor')&&!ST.tags.has('Collectif_Pret')){
+    arr.push({label:'Prévenir le Collectif de ton départ',hint:'Prépare une escorte sociale',immediate:s=>{s.tags.add('Collectif_Pret');s.objective='Rejoindre le Pont avec l’appui du Collectif.';addObj('Le Collectif prépare une escorte pour le Pont.');},go:'place_return'});
+   }
+   arr.push({label:'Rejoindre l’assemblée sous l’auvent',hint:'Chercher des appuis sociaux',go:'place_collectif'});
+   arr.push({label:'Retourner vers Mazagran',hint:'Explorer la friche encore humide',go:'maz_common'});
+   arr.push({label:'Descendre vers les Berges',hint:'Retrouver la trappe technique',go:'ber_entry'});
+   arr.push({label:'S’approcher du Pont',hint:'Tester les contrôles en place',go:'pon_pass'});
+   return arr;
+  }
+ },
+ place_collectif:{
+  img:IMG.place,title:'Place du Pont — Assemblée couverte',text:()=>`
+  <p>Sous l’auvent, des tables pliantes croulent sous les radios démontées. Les membres du Collectif griffonnent des plans pour contourner la Sourdine.</p>
+  <p>Ils peuvent fournir escortes, rumeurs ou accès techniques si tu prouves ta valeur.</p>`,
+  choices:[
+    {label:'Partager ton itinéraire',hint:'VOL/Empathie (10) — obtenir une escorte',when:()=>!ST.tags.has('Collectif_Favor'),test:{stat:'VOL',skill:'Empathie',dd:10,
+      ok:s=>{s.tags.add('Collectif_Favor');s.objective='Le Collectif peut préparer une escorte vers le Pont.';addObj('Le Collectif accepte de couvrir ton passage.');},
+      ko:s=>{s.stress=Math.min(5,s.stress+1);log('La discussion s’échauffe. +1 Stress.');}
+    },goOK:'place_return',goKO:'place_collectif'},
+    {label:'Écouter sans être vu',hint:'CIN/Furtivité (11) — récupérer le planning des guetteurs',when:()=>!ST.tags.has('Collectif_Dossier'),test:{stat:'CIN',skill:'Furtivité',dd:11,
+      ok:s=>{s.tags.add('Collectif_Dossier');s.objective='Exploiter le planning des guetteurs pour traverser le Pont.';addObj('Planning des guetteurs mémorisé.');},
+      ko:s=>{s.stress=Math.min(5,s.stress+1);log('Un regard te fixe. +1 Stress.');}
+    },goOK:'place_return',goKO:'place_collectif'},
+    {label:'Rétablir leur relais radio',hint:'NEU/Mécanique (11) — badge de maintenance',when:()=>!ST.tags.has('BadgeTech'),test:{stat:'NEU',skill:'Mécanique',dd:11,
+      ok:s=>{if(!s.inv.includes('Badge maintenance'))s.inv.push('Badge maintenance');s.tags.add('BadgeTech');s.objective='Utiliser le badge pour contourner la surveillance du Pont.';addObj('Badge de maintenance prêt pour les contrôles.');},
+      ko:s=>{s.hp=Math.max(0,s.hp-1);log('Une étincelle te mord. +1 Blessure.');}
+    },goOK:'place_return',goKO:'place_collectif'},
+    {label:'Revenir vers la Place principale',hint:'Faire le point avec tes contacts',go:'place_return'}
   ]
  },
  maz_common:{
@@ -455,7 +567,9 @@ const SC={
     {label:'Lire le feuillet annoté',hint:'NEU/Mnémographie (10) — repérer la trappe',test:{stat:'NEU',skill:'Mnémographie',dd:10,
       ok:s=>{s.tags.add('Motif_R');s.objective='Atteindre la trappe technique depuis les Berges.';addObj('Indice : localisation de la trappe technique vers T1.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Le motif te vrille. +1 Stress.')}}},
     {label:'Saisir le coffret scellé',hint:'Ajouter l’objet à ton inventaire',immediate:s=>{s.inv.push('Coffret scellé');s.objective='Transporter le coffret sans attirer l’attention.';addObj('Coffret scellé rangé dans ton sac.');}},
-    {label:'Descendre vers les Berges',hint:'Prendre la cave jusqu’aux darses',go:'ber_entry'}
+    {label:'Descendre vers les Berges',hint:'Prendre la cave jusqu’aux darses',go:'ber_entry'},
+    {label:'Se faufiler vers l’atelier latéral',hint:'Rencontrer les ouvriers de la friche',go:'maz_atelier'},
+    {label:'Retourner vers la Place du Pont',hint:'Faire le point avec Noor, Milo ou le Collectif',go:'place_return'}
   ]
  },
  maz_noor:{
@@ -467,7 +581,9 @@ const SC={
       ok:s=>{s.tags.add('Noor_Sac');s.objective='Ramener le sac à Noor sur la Place du Pont.';addObj('Sac de Noor récupéré.');},ko:s=>{s.hp=Math.max(0,s.hp-1);log('Tu t’écorches sur le métal. +1 Blessure.')}}},
     {label:'Passer par la cave',hint:'CIN/Furtivité (10) — ressortir sans alerter',test:{stat:'CIN',skill:'Furtivité',dd:10,
       ok:s=>{s.tags.add('Sortie_Discrète');log('Personne ne t’a vu.');},ko:s=>{log('Lampe qui claque. Pas de dégâts.')}}},
-    {label:'Filer aux Berges',hint:'Rejoindre les darses sans perdre de temps',go:'ber_entry'}
+    {label:'Filer aux Berges',hint:'Rejoindre les darses sans perdre de temps',go:'ber_entry'},
+    {label:'Investir l’atelier voisin',hint:'Tenter un détour social ou technique',go:'maz_atelier'},
+    {label:'Retourner à la Place du Pont',hint:'Remettre le sac ou chercher du soutien',go:'place_return'}
   ]
  },
  maz_milo:{
@@ -475,43 +591,163 @@ const SC={
   <p>Le coffret frappé du sceau de Milo est sanglé à un crochet. Le plomb est déjà ébréché ; tu évites d’y jeter un œil.</p>`,
   choices:[
     {label:'Détacher le coffret pour Milo',hint:'Prépare le passe au Pont',immediate:s=>{s.tags.add('Coffret_Milo');s.inv.push('Coffret (Milo)');s.objective='Apporter le coffret à Milo pour obtenir le laissez-passer.';addObj('Coffret de Milo sécurisé.');}},
-    {label:'Prendre la cave vers les Berges',hint:'Continuer vers la trappe technique',go:'ber_entry'}
+    {label:'Prendre la cave vers les Berges',hint:'Continuer vers la trappe technique',go:'ber_entry'},
+    {label:'Se glisser vers l’atelier latéral',hint:'Approcher les ouvriers en douce',go:'maz_atelier'},
+    {label:'Retourner vers la Place du Pont',hint:'Négocier le laissez-passer avec Milo',go:'place_return'}
+  ]
+ },
+
+ maz_atelier:{
+  img:IMG.maz,title:'Mazagran — Atelier latéral',text:()=>`
+  <p>À l’intérieur, des ouvriers alignent des batteries sur des palettes et recalent une <b>nacelle</b> suspendue au-dessus de la vase.</p>
+  <p>Ils cherchent des bras, des infos ou un coup de main technique.</p>`,
+  choices:[
+    {label:'Négocier avec la contremaîtresse',hint:'VOL/Empathie (10) — obtenir leur confiance',when:()=>!ST.tags.has('Atelier_Allie'),test:{stat:'VOL',skill:'Empathie',dd:10,
+      ok:s=>{s.tags.add('Atelier_Allie');s.objective='Les ouvriers peuvent couvrir ton passage jusqu’aux Berges.';addObj('Les ouvriers de Mazagran te reconnaissent comme allié.');},
+      ko:s=>{s.stress=Math.min(5,s.stress+1);log('On te jauge froidement. +1 Stress.');}
+    },goOK:'maz_atelier',goKO:'maz_atelier'},
+    {label:'Forcer le casier technique',hint:'CIN/Furtivité (10) — récupérer un badge',when:()=>!ST.tags.has('BadgeTech'),test:{stat:'CIN',skill:'Furtivité',dd:10,
+      ok:s=>{if(!s.inv.includes('Badge maintenance'))s.inv.push('Badge maintenance');s.tags.add('BadgeTech');s.objective='Utiliser le badge pour traverser les contrôles du Pont.';addObj('Badge de maintenance subtilisé.');},
+      ko:s=>{s.stress=Math.min(5,s.stress+1);log('Un crochet grince. +1 Stress.');}
+    },goOK:'maz_atelier',goKO:'maz_atelier'},
+    {label:'Calibrer leur génératrice',hint:'NEU/Mécanique (10) — stabiliser la nacelle',when:()=>!ST.tags.has('Berges_Stable'),test:{stat:'NEU',skill:'Mécanique',dd:10,
+      ok:s=>{s.tags.add('Berges_Stable');s.objective='Descendre par la nacelle stabilisée vers les Berges.';addObj('La génératrice cale la nacelle : accès plus stable.');},
+      ko:s=>{s.hp=Math.max(0,s.hp-1);log('Courant récalcitrant. +1 Blessure.');}
+    },goOK:'maz_atelier',goKO:'maz_atelier'},
+    {label:'Retourner à la cour de Mazagran',hint:'Revenir vers les autres pistes',go:'maz_common'},
+    {label:'Descendre vers les Berges',hint:'Suivre la voie préparée',go:'ber_entry'}
   ]
  },
  ber_entry:{
  img:IMG.ber,title:'Berges — Darses',text:()=>`
   <p>La vase masque une trappe d’entretien. À chaque contact, le métal grince et vibre.</p>`,
+  choices:()=>{
+    const arr=[
+      {label:'Décrocher la trappe technique',hint:'NEU/Cryptanalyse (10) — ouvrir l’accès vers T1',test:{stat:'NEU',skill:'Cryptanalyse',dd:10,
+        ok:s=>{s.tags.add('Acces_Tech');s.objective='Descendre vers T1 par la trappe technique.';addObj('Trappe vers T1 ouverte.');},ko:s=>{log('Contacts oxydés : il faudra insister.')}}},
+      {label:'Remonter vers le Pont',hint:'Avec le coffret de Milo : passe-droit assuré',go:'pon_pass'}
+    ];
+    if(ST.tags.has('Atelier_Allie')&&ST.tags.has('Berges_Stable')){
+      arr.push({label:'Appeler la nacelle des ouvriers',hint:'Voie technique sécurisée',immediate:s=>{s.tags.add('Acces_Tech');s.tags.add('T1_Soutien');s.objective='Suivre la nacelle stabilisée jusqu’au périmètre de T1.';addObj('La nacelle de Mazagran t’abaisse vers la sous-station.');},go:'t1_overlook'});
+    }
+    arr.push({label:'Suivre la patrouille fluviale',hint:'Déployer un détour social ou furtif',go:'ber_patrouille'});
+    if(ST.tags.has('Collectif_Dossier')){
+      arr.push({label:'Rediriger les rondes grâce au planning volé',hint:'Créer une diversion sur le Pont',immediate:s=>{s.tags.delete('Collectif_Dossier');s.tags.add('Pont_Distrait');addObj('Tu détournes une patrouille loin du Pont.');},go:'ber_patrouille'});
+    }
+    arr.push({label:'Retourner vers la Place du Pont',hint:'Faire le point sur les alliances',go:'place_return'});
+    return arr;
+  }
+ },
+
+ ber_patrouille:{
+  img:IMG.ber,title:'Berges — Patrouille fluviale',text:()=>`
+  <p>Une barge grince contre les pieux. La patrouille fluviale tient les accès secondaires et jauge ton approche.</p>`,
   choices:[
-    {label:'Décrocher la trappe technique',hint:'NEU/Cryptanalyse (10) — ouvrir l’accès vers T1',test:{stat:'NEU',skill:'Cryptanalyse',dd:10,
-      ok:s=>{s.tags.add('Acces_Tech');s.objective='Descendre vers T1 par la trappe technique.';addObj('Trappe vers T1 ouverte.');},ko:s=>{log('Contacts oxydés : il faudra insister.')}}},
-    {label:'Remonter vers le Pont',hint:'Avec le coffret de Milo : passe-droit assuré',go:'pon_pass'}
+    {label:'Négocier un couloir sûr',hint:'VOL/Empathie (10) — obtenir une escorte',test:{stat:'VOL',skill:'Empathie',dd:10,
+      ok:s=>{s.tags.add('Pont_Escorte');s.objective='Traverser le Pont escorté par la patrouille.';addObj('La patrouille fluviale t’offre un passage encadré.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('On te renvoie vers la vase. +1 Stress.');}},goOK:'ber_entry',goKO:'ber_patrouille'},
+    {label:'Suivre la patrouille à distance',hint:'CIN/Furtivité (11) — repérer la contre-voie',test:{stat:'CIN',skill:'Furtivité',dd:11,
+      ok:s=>{s.tags.add('Pont_Souterrain');s.objective='Passer sous le pont par la contre-voie.';addObj('Itinéraire sous le tablier repéré.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Un projecteur t’accroche. +1 Stress.');}},goOK:'pon_shadow',goKO:'ber_patrouille'},
+    {label:'Saboter le relais de détection',hint:'NEU/Cryptanalyse (11) — détourner les capteurs',test:{stat:'NEU',skill:'Cryptanalyse',dd:11,
+      ok:s=>{s.tags.add('Pont_Distrait');s.objective='Profiter de la confusion pour franchir le Pont.';addObj('Les capteurs du Pont partent en boucle.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Les alarmes grincent. +1 Stress.');}},goOK:'ber_entry',goKO:'ber_patrouille'},
+    {label:'Revenir vers les darses',hint:'Changer de stratégie',go:'ber_entry'}
   ]
  },
  pon_pass:{
   img:IMG.pon,title:'Pont de la Guill’ — Passage',text:()=>`
   <p>Deux guetteurs s’abritent sous le pont. Ils filtrent les passages et attendent un signe convaincant.</p>`,
   choices:()=>{
-    const a=[]; if(ST.tags.has('Coffret_Milo')){
+    const a=[];
+    if(ST.tags.has('Milo_Pass')){
+      a.push({label:'Montrer le laissez-passer de Milo',hint:'Passe-droit négocié',immediate:s=>{s.objective='Traverser le Pont et atteindre T1.';log('Le laissez-passer de Milo claque, les guetteurs s’écartent.');},go:'t1_entry'});
+    }else if(ST.tags.has('Coffret_Milo')){
       a.push({label:'Montrer le coffret — franchir le Pont',hint:'Passe-droit négocié avec Milo',immediate:s=>{s.objective='Traverser le Pont et atteindre T1.';log('« C’est pour Milo. » On te laisse filer.');},go:'t1_entry'});
-    }else{
-      a.push({label:'Parler sec aux guetteurs',hint:'VOL/Intimidation (10) — passer par la parole',test:{stat:'VOL',skill:'Intimidation',dd:10,
-        ok:s=>{s.objective='Traverser le Pont et atteindre T1.';log('Ça passe. Personne n’a envie d’histoires.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('On te balade. +1 Stress.')}} ,go:'t1_entry'});
-      a.push({label:'Se glisser le long des barrières',hint:'CIN/Furtivité (12) — contour discret',test:{stat:'CIN',skill:'Furtivité',dd:12,
-        ok:s=>{s.objective='Traverser le Pont et atteindre T1.';log('Tu files comme une ombre.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Repéré·e, tu forces. +1 Stress.')}} ,go:'t1_entry'});
     }
+    if(ST.tags.has('Collectif_Pret')&&!ST.tags.has('Pont_Escorte')){
+      a.push({label:'Appeler l’escorte du Collectif',hint:'Voie sociale préparée',immediate:s=>{s.tags.add('Pont_Escorte');s.objective='Traverser le Pont escorté par le Collectif.';addObj('Le Collectif t’encadre jusqu’au tablier.');},go:'t1_entry'});
+    }
+    if(ST.tags.has('Pont_Escorte')){
+      a.push({label:'Suivre l’escorte jusqu’à T1',hint:'Route sociale sécurisée',immediate:s=>{s.objective='Laisser l’escorte te mener au périmètre de T1.';},go:'t1_entry'});
+    }
+    if(ST.tags.has('Collectif_Dossier')){
+      a.push({label:'Révéler le planning volé',hint:'Mettre la pression sur les guetteurs',immediate:s=>{s.tags.delete('Collectif_Dossier');s.tags.add('Pont_Distrait');addObj('Les guetteurs lâchent du lest face aux preuves.');},go:'pon_pass'});
+    }
+    if(ST.inv.includes('Badge maintenance')){
+      a.push({label:'Badger la console de service',hint:'NEU/Mécanique (10) — accès technique',test:{stat:'NEU',skill:'Mécanique',dd:10,
+        ok:s=>{s.tags.add('BadgeTech_Used');s.tags.add('Acces_Tech');s.inv=s.inv.filter(it=>it!=='Badge maintenance');s.objective='Remonter le couloir technique vers T1.';addObj('Badge de maintenance accepté sur le Pont.');},
+        ko:s=>{s.stress=Math.min(5,s.stress+1);log('Le lecteur clignote rouge. +1 Stress.');}
+      },goOK:'t1_entry',goKO:'pon_pass'});
+    }
+    if(ST.tags.has('Pont_Distrait')){
+      a.push({label:'Profiter des capteurs en boucle',hint:'Glisser pendant la confusion',go:'pon_shadow'});
+    }
+    if(!ST.tags.has('Milo_Pass')){
+      a.push({label:'Parler sec aux guetteurs',hint:'VOL/Intimidation (10) — passer par la parole',test:{stat:'VOL',skill:'Intimidation',dd:10,
+        ok:s=>{s.objective='Traverser le Pont et atteindre T1.';log('Ça passe. Personne n’a envie d’histoires.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('On te balade. +1 Stress.');}
+      },go:'t1_entry'});
+      a.push({label:'Se glisser le long des barrières',hint:'CIN/Furtivité (12) — contour discret',test:{stat:'CIN',skill:'Furtivité',dd:12,
+        ok:s=>{s.objective='Traverser le Pont et atteindre T1.';log('Tu files comme une ombre.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Repéré·e, tu forces. +1 Stress.');}
+      },go:'t1_entry'});
+    }
+    a.push({label:'Descendre sous le tablier',hint:'Voie d’infiltration vers la contre-voie',go:'pon_shadow'});
+    a.push({label:'Revenir vers la Place',hint:'Changer d’approche',go:'place_return'});
     return a;
   }
+},
+
+ pon_shadow:{
+  img:IMG.pon,title:'Pont de la Guill’ — Contre-voie',text:()=>`
+  <p>Sous le tablier, l’eau gifle les piliers. Des câbles pendent et une grille d’inspection bat au vent.</p>`,
+  choices:[
+    {label:'Ramper jusqu’à la grille',hint:'CIN/Furtivité (10) — baliser une infiltration',when:()=>!ST.tags.has('T1_Grille'),test:{stat:'CIN',skill:'Furtivité',dd:10,
+      ok:s=>{s.tags.add('Pont_Souterrain');s.tags.add('T1_Grille');s.objective='Atteindre le périmètre de T1 par la grille d’inspection.';addObj('Chemin sous le tablier balisé.');},
+      ko:s=>{s.stress=Math.min(5,s.stress+1);log('Une éclaboussure bruyante trahit ta présence. +1 Stress.');}},goOK:'t1_overlook',goKO:'pon_shadow'},
+    {label:'Pirater le relais de surveillance',hint:'NEU/Cryptanalyse (11) — déclencher une boucle',test:{stat:'NEU',skill:'Cryptanalyse',dd:11,
+      ok:s=>{s.tags.add('Pont_Distrait');addObj('Les capteurs du pont se remettent à zéro dans un grésillement.');},
+      ko:s=>{s.stress=Math.min(5,s.stress+1);log('Le relais claque et t’oblige à reculer. +1 Stress.');}},goOK:'pon_pass',goKO:'pon_shadow'},
+    {label:'Revenir vers les Berges',hint:'Retenter depuis les darses',go:'ber_entry'},
+    {label:'Remonter vers la Place',hint:'Reprendre son souffle sous l’auvent',go:'place_return'}
+  ]
  },
  t1_entry:{
  img:IMG.t1,title:'Sous-station T1 — Plans froissés',text:()=>`
   <p>« La douceur est une technologie », griffonné à la craie sur le béton. La porte principale tremble ; la grille renvoie un souffle tiède.</p>`,
+  choices:()=>{
+    const arr=[
+      {label:'Déverrouiller la porte principale',hint:'NEU/Cryptanalyse (12) — ouvrir l’accès frontal',test:{stat:'NEU',skill:'Cryptanalyse',dd:12,
+        ok:s=>{s.tags.add('T1_Ouverte');s.objective='Stabiliser le cœur de T1.';addObj('Porte principale de T1 ouverte.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Le ton faux te vrille. +1 Stress.');}}},
+      {label:'Se glisser par la grille',hint:'CIN/Furtivité (10) — infiltration par le bas',test:{stat:'CIN',skill:'Furtivité',dd:10,
+        ok:s=>{s.tags.add('T1_Grille');s.objective='Stabiliser le cœur de T1.';addObj('Tu t’infiltres par la grille.');},ko:s=>{log('Une vis tinte. Tu attends.');}}}
+    ];
+    if(ST.tags.has('Noor_Trust')){
+      arr.push({label:'Noor entrouvre la porte',hint:'Voie sociale depuis les caves',immediate:s=>{s.objective='Stabiliser le cœur de T1.';addObj('Noor te fait entrer par la cave.');}});
+    }
+    if(ST.tags.has('Pont_Escorte')&&!ST.tags.has('T1_Soutien')){
+      arr.push({label:'Laisser l’escorte sécuriser l’entrée',hint:'Appui social pour tenir le périmètre',immediate:s=>{s.tags.add('T1_Soutien');s.objective='Stabiliser le cœur de T1 avec l’appui de l’escorte.';addObj('L’escorte verrouille l’entrée de T1.');},go:'t1_entry'});
+    }
+    if(ST.tags.has('Acces_Tech')||ST.tags.has('T1_Silence')){
+      arr.push({label:'Suivre le couloir technique',hint:'Contourner par la passerelle',go:'t1_overlook'});
+    }
+    arr.push({label:'Contourner par la passerelle extérieure',hint:'Explorer le périmètre avant d’agir',go:'t1_overlook'});
+    arr.push({label:'Revenir vers le Pont',hint:'Changer d’approche',go:'pon_pass'});
+    arr.push({label:'Accéder au cœur',hint:'Disponible si une entrée est ouverte',when:()=>ST.tags.has('T1_Ouverte')||ST.tags.has('T1_Grille')||ST.tags.has('Noor_Trust')||ST.tags.has('T1_Soutien'),go:'t1_core'});
+    return arr;
+  }
+ },
+
+ t1_overlook:{
+  img:IMG.t1,title:'Sous-station T1 — Périmètre',text:()=>`
+  <p>La passerelle technique contourne le bâtiment. Des capteurs clignotent, certains arrachés par la Sourdine.</p>`,
   choices:[
-    {label:'Déverrouiller la porte principale',hint:'NEU/Cryptanalyse (12) — ouvrir l’accès frontal',test:{stat:'NEU',skill:'Cryptanalyse',dd:12,
-      ok:s=>{s.tags.add('T1_Ouverte');s.objective='Stabiliser le cœur de T1.';addObj('Porte principale de T1 ouverte.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Le ton faux te vrille. +1 Stress.')}}},
-    {label:'Se glisser par la grille',hint:'CIN/Furtivité (10) — infiltration par le bas',test:{stat:'CIN',skill:'Furtivité',dd:10,
-      ok:s=>{s.tags.add('T1_Grille');s.objective='Stabiliser le cœur de T1.';addObj('Tu t’infiltres par la grille.');},ko:s=>{log('Une vis tinte. Tu attends.')}}},
-    {label:'Si Noor_Sac → elle t’ouvre de l’intérieur',when:()=>ST.tags.has('Noor_Sac'),immediate:s=>{s.tags.add('Noor_Trust');s.objective='Stabiliser le cœur de T1.';addObj('Noor entrouvre la porte depuis l’intérieur.');}},
-    {label:'Accéder au cœur',hint:'Disponible si une entrée est ouverte',when:()=>ST.tags.has('T1_Ouverte')||ST.tags.has('T1_Grille')||ST.tags.has('Noor_Trust'),go:'t1_core'}
+    {label:'Se faufiler dans la gaine',hint:'CIN/Furtivité (10) — se positionner près du cœur',when:()=>!ST.tags.has('T1_Grille'),test:{stat:'CIN',skill:'Furtivité',dd:10,
+      ok:s=>{s.tags.add('T1_Grille');s.objective='Stabiliser le cœur de T1 depuis la grille interne.';addObj('Gaine d’accès sécurisée.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Un rivet claque. +1 Stress.');}},goOK:'t1_entry',goKO:'t1_overlook'},
+    {label:'Synchroniser les capteurs',hint:'NEU/Cryptanalyse (11) — imposer un silence technique',when:()=>!ST.tags.has('T1_Silence'),test:{stat:'NEU',skill:'Cryptanalyse',dd:11,
+      ok:s=>{s.tags.add('T1_Silence');s.tags.add('Acces_Tech');s.objective='Stabiliser le cœur de T1 à partir du périmètre sécurisé.';addObj('Capteurs synchronisés : la Sourdine se fait plus douce.');},
+      ko:s=>{s.stress=Math.min(5,s.stress+1);log('Le réseau résiste. +1 Stress.');}},goOK:'t1_entry',goKO:'t1_overlook'},
+    {label:'Coordonner l’escorte',hint:'VOL/Empathie (10) — utiliser l’appui social',when:()=>ST.tags.has('Pont_Escorte')&&!ST.tags.has('T1_Soutien'),test:{stat:'VOL',skill:'Empathie',dd:10,
+      ok:s=>{s.tags.add('T1_Soutien');s.objective='Stabiliser le cœur de T1 avec un périmètre tenu par tes alliés.';addObj('L’escorte verrouille les issues autour de T1.');},
+      ko:s=>{s.stress=Math.min(5,s.stress+1);log('La coordination déraille. +1 Stress.');}},goOK:'t1_entry',goKO:'t1_overlook'},
+    {label:'Revenir à l’entrée principale',hint:'Retenter les accès frontaux',go:'t1_entry'},
+    {label:'Rejoindre le Pont',hint:'Changer de stratégie',go:'pon_pass'}
   ]
  },
  t1_core:{
@@ -519,26 +755,47 @@ const SC={
   <p>Le cœur de T1 vibre. Trois leviers bricolés clignotent : <b>Contournement</b>, <b>Relance</b>, <b>Trame douce</b>. Chaque option a son prix.</p>`,
   choices:[
     {label:'Contournement — gagner du temps',hint:'SOM/Mécanique (10) — détourner les flux (+1 Flux)',test:{stat:'SOM',skill:'Mécanique',dd:10,
-      ok:s=>{s.flux=Math.max(0,s.flux+1);s.objective='Quitter la zone avant la prochaine alerte.';addObj('Contournement posé : la nuit tiendra un peu plus.');},ko:s=>{s.hp=Math.max(0,s.hp-1);log('Coup de jus. +1 Blessure.')}} ,goOK:'ep_cont',goKO:'ep_silent'},
+      ok:s=>{s.flux=Math.max(0,s.flux+1);s.objective='Quitter la zone avant la prochaine alerte.';addObj('Contournement posé : la nuit tiendra un peu plus.');clearEndingTags();markEndingApproach();s.tags.add('End_Contournement');},ko:s=>{s.hp=Math.max(0,s.hp-1);log('Coup de jus. +1 Blessure.')}} ,goOK:()=>pickEnding('cont'),goKO:'ep_silent'},
     {label:'Relance — plus risqué',hint:'NEU/Déduction (12) — redémarrage bruyant',test:{stat:'NEU',skill:'Déduction',dd:12,
-      ok:s=>{s.tags.add('Relance');addObj('Relance réussie : T1 repart en claquant.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Tu recules. +1 Stress.')}} ,goOK:'ep_noise',goKO:'ep_silent'},
+      ok:s=>{s.tags.add('Relance');addObj('Relance réussie : T1 repart en claquant.');clearEndingTags();markEndingApproach();s.tags.add('End_Noise');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Tu recules. +1 Stress.')}} ,goOK:()=>pickEnding('noise'),goKO:'ep_silent'},
     {label:'Trame douce — protéger les souvenirs',hint:'VOL/Empathie (12) + ✦ — apaiser la Sourdine',test:{stat:'VOL',skill:'Empathie',dd:12,needsFrag:true,
-      ok:s=>{s.tags.add('Trame_Douce');s.frag=Math.max(0,s.frag-1);addObj('Voile tiré : les mémoires restent en place.');},ko:s=>{log('Tu n’oses pas. Rien ne casse.')}} ,goOK:'ep_soft',goKO:'ep_silent'}
+      ok:s=>{s.tags.add('Trame_Douce');s.frag=Math.max(0,s.frag-1);addObj('Voile tiré : les mémoires restent en place.');clearEndingTags();markEndingApproach();s.tags.add('End_Soft');},ko:s=>{log('Tu n’oses pas. Rien ne casse.')}} ,goOK:()=>pickEnding('soft'),goKO:'ep_silent'}
   ]
  },
  ep_cont:{img:IMG.t1,title:'Épilogue — Contournement',text:()=>`
   <p>Le quartier respire encore. Ce n’est pas brillant, mais tu as gagné quelques heures.</p>`,choices:[{label:'Recommencer (retour Prologue)',go:'prologue'}]},
+
+ ep_cont_social:{img:IMG.t1,title:'Épilogue — Contournement collectif',text:()=>`
+  <p>Le contournement reste discret grâce aux relais du quartier. Les escortes bloquent les curieux et entretiennent la dérivation.</p>`,choices:[{label:'Recommencer',go:'prologue'}]},
+ ep_cont_shadow:{img:IMG.t1,title:'Épilogue — Contournement clandestin',text:()=>`
+  <p>Sous le tablier, tu maintiens la dérivation sans qu’aucun guetteur ne comprenne comment tu as filé.</p>`,choices:[{label:'Recommencer',go:'prologue'}]},
+ ep_cont_tech:{img:IMG.t1,title:'Épilogue — Contournement technique',text:()=>`
+  <p>Les capteurs stabilisés guident le flux de réserve. T1 ronronne à bas bruit, mais tu sais où surveiller les prochains points chauds.</p>`,choices:[{label:'Recommencer',go:'prologue'}]},
  ep_noise:{img:IMG.t1,title:'Épilogue — Relance',text:()=>`
   <p>T1 claque comme une ampoule neuve. Certains applaudiront, d’autres t’en voudront pour le vacarme.</p>`,choices:[{label:'Recommencer',go:'prologue'}]},
+
+ ep_noise_social:{img:IMG.t1,title:'Épilogue — Relance soutenue',text:()=>`
+  <p>Le vacarme de T1 est couvert par les chants et les slogans. Les collectifs assument le bruit et revendiquent la relance.</p>`,choices:[{label:'Recommencer',go:'prologue'}]},
+ ep_noise_shadow:{img:IMG.t1,title:'Épilogue — Relance fantôme',text:()=>`
+  <p>La relance tonne, mais tu disparais déjà sur la contre-voie. On ne sait pas qui a rendu la lumière.</p>`,choices:[{label:'Recommencer',go:'prologue'}]},
+ ep_noise_tech:{img:IMG.t1,title:'Épilogue — Relance calibrée',text:()=>`
+  <p>Les transformateurs claquent en cadence. Tu laisses derrière toi des diagnostics détaillés et des alarmes maîtrisées.</p>`,choices:[{label:'Recommencer',go:'prologue'}]},
  ep_soft:{img:IMG.t1,title:'Épilogue — Trame douce',text:()=>`
   <p>La Sourdine se relâche. Des visages se souviennent mieux. Tu laisses la nuit respirer.</p>`,choices:[{label:'Recommencer',go:'prologue'}]},
+
+ ep_soft_collectif:{img:IMG.t1,title:'Épilogue — Trame douce partagée',text:()=>`
+  <p>Les souvenirs se solidarisent sur la Place. Le Collectif transmet ce qu’il a appris pour maintenir la douceur.</p>`,choices:[{label:'Recommencer',go:'prologue'}]},
+ ep_soft_shadow:{img:IMG.t1,title:'Épilogue — Trame douce furtive',text:()=>`
+  <p>Tu quittes T1 sans bruit. Derrière toi, la Sourdine se calme le long du passage souterrain.</p>`,choices:[{label:'Recommencer',go:'prologue'}]},
+ ep_soft_tech:{img:IMG.t1,title:'Épilogue — Trame douce synchronisée',text:()=>`
+  <p>Les capteurs alignés diffusent un voile stable. Les habitants respirent enfin sans craindre l’oubli immédiat.</p>`,choices:[{label:'Recommencer',go:'prologue'}]},
  ep_silent:{img:IMG.t1,title:'Épilogue — Silence',text:()=>`
   <p>T1 se tait. Tu coupes proprement et promets de revenir avec plus de temps.</p>`,choices:[{label:'Recommencer',go:'prologue'}]}
 };
 
 /* ======= RENDER ENGINE ======= */
 function render(){
-  ST.visited.add(ST.scene.includes('maz_')?'maz':ST.scene.includes('ber_')?'ber':ST.scene.includes('pon_')?'pon':ST.scene.includes('t1')?'t1':ST.scene.includes('place')?'place':ST.scene);
+  markVisited(ST.scene);
   const sc=SC[ST.scene]; if(!sc) return;
   if(ST.scene==='prologue'){ST.objective='Tracer une voie sûre vers T1.';}
   $('#storyTitle').textContent=sc.title;
@@ -558,12 +815,28 @@ function render(){
   bars(); renderStats(); renderAscii(); $('#objectiveText').textContent=ST.objective;
 }
 let pending=null, roll=null, pendingOutcome=null;
+function resolveSceneTarget(target,outcome){
+  if(typeof target==='function'){
+    return target(ST,outcome)||null;
+  }
+  return target||null;
+}
 function handleChoice(c){
   const immediateOnly = !!c.immediate && !c.go && !c.test;
   if(c.immediate) c.immediate(ST);
-  if(c.go && !c.test){ ST.scene=c.go; addObj('Déplacement: '+SC[ST.scene].title); save(); render(); return; }
+  if(c.go && !c.test){
+    const target=resolveSceneTarget(c.go);
+    if(target){
+      ST.scene=target;
+      const nextSc=SC[ST.scene];
+      addObj('Déplacement: '+(nextSc?nextSc.title:ST.scene));
+      save(); render();
+      return;
+    }
+  }
   if(c.test){ pending=c; showTest(c); return; }
   if(immediateOnly){ save(); render(); return; }
+  if(c.immediate){ save(); render(); }
 }
 function showTest(c){
   $('#testPanel').style.display='block';
@@ -750,10 +1023,15 @@ function resolveRoll(){
   const c=pending, outcome=pendingOutcome;
   if(outcome.spendFlux){ST.flux--;}
   if(outcome.spendFrag){ST.frag--;ST.stress=Math.min(5,ST.stress+1);log('Le fragment te mord. +1 Stress.');}
-  const next=outcome.ok ? (c.goOK||c.go) : (c.goKO||c.go);
   log(`${c.test.stat}/${c.test.skill||'-'} DD${outcome.dd} — ${roll.a}+${roll.b}=${roll.sum} + ${outcome.mod} = ${outcome.total} → ${outcome.ok?'Réussite':'Échec'}`);
-  if(outcome.ok && c.test.ok) c.test.ok(ST);
-  if(!outcome.ok && c.test.ko) c.test.ko(ST);
+  let next=null;
+  if(outcome.ok){
+    if(c.test.ok) c.test.ok(ST);
+    next=resolveSceneTarget(c.goOK||c.go,outcome);
+  }else{
+    if(c.test.ko) c.test.ko(ST);
+    next=resolveSceneTarget(c.goKO||c.go,outcome);
+  }
   const resultBox=$('#testResult');
   if(resultBox){
     resultBox.textContent=`${outcome.ok?'Réussite':'Échec'} — ${outcome.total} (DD ${outcome.dd})`;
@@ -766,7 +1044,12 @@ function resolveRoll(){
   if(stop){stop.disabled=false;}
   if(cont){cont.style.display='none';}
   $('#diceOverlay').style.display='none';
-  if(next){ ST.scene=next; addObj('Déplacement: '+SC[next].title); $('#testPanel').style.display='none'; }
+  if(next){
+    ST.scene=next;
+    const nextSc=SC[next];
+    addObj('Déplacement: '+(nextSc?nextSc.title:next));
+    $('#testPanel').style.display='none';
+  }
   else { $('#testPanel').style.display='block'; }
   save(); render();
 }
