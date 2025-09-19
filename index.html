@@ -13,10 +13,21 @@
 }
 *{box-sizing:border-box} html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;line-height:1.55}
 a{color:var(--a)}
-.header{position:sticky;top:0;z-index:20;display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:calc(10px + env(safe-area-inset-top,0px)) 12px 10px;border-bottom:1px solid var(--line);
+.header{position:sticky;top:0;z-index:20;display:flex;flex-direction:column;gap:12px;padding:calc(10px + env(safe-area-inset-top,0px)) 12px 10px;border-bottom:1px solid var(--line);
   background:linear-gradient(180deg,rgba(15,20,34,.92),rgba(15,20,34,.65));backdrop-filter:blur(8px)}
+.headerTop{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .header .row{display:flex;gap:8px;flex-wrap:wrap}
-.header .title{font-weight:800;letter-spacing:.5px}
+.header .title{font-weight:800;letter-spacing:.5px;flex:1}
+.headerControls{display:flex;align-items:center;gap:8px;margin-left:auto}
+.headerBadges{gap:8px;flex-wrap:wrap;width:100%}
+.viewBadge{background:rgba(255,255,255,.04);border-style:dashed;color:var(--ink);font-weight:600}
+.btn.ghost{background:rgba(13,20,33,.6);border-style:dashed;color:var(--ink)}
+.iconBtn{padding:0 12px;height:38px;border:1px solid #2a3a58;background:linear-gradient(180deg,#161f31,#0f1624);border-radius:12px;color:var(--ink);font-size:20px;cursor:pointer;display:grid;place-items:center;font-weight:700;min-width:38px}
+.menuWrap{position:relative}
+.menuWrap.open .iconBtn{outline:2px solid var(--a)}
+.navMenu{display:none;position:absolute;right:0;top:calc(100% + 8px);background:var(--p2);border:1px solid var(--line);border-radius:12px;padding:8px;min-width:180px;box-shadow:var(--sh);flex-direction:column;gap:6px}
+.menuWrap.open .navMenu{display:flex}
+.navMenu .tabbtn{width:100%;text-align:left}
 .tabbtn,.btn{padding:10px 12px;border:1px solid #2a3a58;background:linear-gradient(180deg,#141f33,#223355);border-radius:12px;color:var(--ink);cursor:pointer;font-weight:700}
 .tabbtn[aria-pressed="true"],.btn.primary{outline:2px solid var(--a)}
 .badge{display:inline-flex;align-items:center;gap:6px;border:1px solid #2a3a58;background:var(--p2);color:var(--mut);padding:2px 8px;border-radius:999px;font-size:12px}
@@ -41,8 +52,10 @@ a{color:var(--a)}
   .storyImage img{height:200px}
   .header{position:sticky;gap:12px}
   .header .title{font-size:18px}
-  .header .row{width:100%;justify-content:flex-start}
-  .header .row:last-child{margin-left:0}
+  .headerTop{align-items:flex-start}
+  .headerControls{margin-left:0;width:100%;justify-content:flex-start;flex-wrap:wrap}
+  .headerControls .btn,.headerControls .iconBtn{width:auto}
+  .headerBadges{width:100%;justify-content:flex-start}
 }
 .storyImage .legend{position:absolute;left:10px;bottom:10px;background:rgba(10,14,19,.7);padding:6px 8px;border-radius:8px;border:1px solid var(--line);color:var(--mut);font-size:12px}
 .storyBody{background:var(--p2);border:1px solid var(--line);border-radius:14px;padding:14px}
@@ -55,6 +68,11 @@ a{color:var(--a)}
 .attr-NEU{border-left:4px solid var(--neu)} .attr-VOL{border-left:4px solid var(--vol)} .attr-SOM{border-left:4px solid var(--som)} .attr-CIN{border-left:4px solid var(--cin)}
 /* tests */
 .testPanel{margin-top:12px;border:1px dashed #2a3a58;border-radius:12px;padding:10px 12px;background:rgba(255,255,255,.02)}
+.testControls label{flex:1 1 160px}
+.testResult{display:none;margin-top:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.03);font-weight:700}
+.testResult.show{display:block}
+.testResult.success{border-color:var(--good);color:var(--good)}
+.testResult.fail{border-color:var(--bad);color:var(--bad)}
 .btn{padding:10px 12px;border:1px solid #2a3a58;background:linear-gradient(180deg,#151e31,#233355);border-radius:12px;color:var(--ink);cursor:pointer}
 .btn[disabled]{opacity:.4;cursor:not-allowed}
 /* right */
@@ -68,6 +86,14 @@ a{color:var(--a)}
 .diceWrap{background:var(--p);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:300px;text-align:center}
 .cubes{display:flex;gap:16px;justify-content:center;margin:10px 0 4px 0}
 .cube{width:72px;height:72px;border-radius:12px;background:linear-gradient(180deg,#1b2330,#0b1017);border:1px solid #273243;display:grid;place-items:center;font-size:40px;color:#fff}
+.diceActions{gap:10px;margin-top:12px;justify-content:center;flex-wrap:wrap}
+.diceActions .btn{min-width:120px}
+#diceInfo{margin-top:10px;color:var(--mut);line-height:1.5}
+.diceSummary{font-weight:600;color:var(--ink)}
+.diceBreakdown{margin-top:6px;font-size:13px;color:var(--mut)}
+.diceStatus{margin-top:8px;font-weight:700}
+.diceStatus.success{color:var(--good)}
+.diceStatus.fail{color:var(--bad)}
 @media (prefers-reduced-motion: reduce){ .cube{animation:none!important} }
 .anim{animation:roll 1s ease-in-out infinite}
 @keyframes roll{0%{transform:rotate(0)}33%{transform:rotate(12deg)}66%{transform:rotate(-9deg)}100%{transform:rotate(0)}}
@@ -106,7 +132,10 @@ a{color:var(--a)}
   body{font-size:14px}
   .header{padding:12px 10px;gap:10px}
   .header .title{font-size:16px;line-height:1.25}
-  .header .row{gap:6px}
+  .headerTop{gap:8px}
+  .headerControls{gap:6px}
+  .headerBadges{gap:6px}
+  .viewBadge{font-size:10px}
   .badge{font-size:10px}
   .tabbtn,.btn{font-size:14px;padding:10px}
   .storyImage img{height:170px}
@@ -136,19 +165,27 @@ a{color:var(--a)}
 </head>
 <body data-view="all">
 <header class="header">
-  <div class="title">⟡ TRAME DOUCE — <span id="loc">Guillotière</span></div>
-  <div class="row">
+  <div class="headerTop">
+    <div class="title">⟡ TRAME DOUCE — <span id="loc">Guillotière</span></div>
+    <div class="headerControls">
+      <span class="badge viewBadge" id="viewIndicator">Vue : Tous</span>
+      <button class="btn ghost" id="asciiBtn">HUD ASCII ✓</button>
+      <div class="menuWrap" id="navWrap">
+        <button class="iconBtn" id="navToggle" aria-haspopup="true" aria-expanded="false" aria-label="Changer de vue">⋯</button>
+        <div class="navMenu" id="navMenu" role="menu">
+          <button class="tabbtn" data-viewto="all" aria-pressed="true" role="menuitem">Tous</button>
+          <button class="tabbtn" data-viewto="story" role="menuitem">Histoire</button>
+          <button class="tabbtn" data-viewto="profile" role="menuitem">Profil</button>
+          <button class="tabbtn" data-viewto="journal" role="menuitem">Journal</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row headerBadges">
     <span class="badge"><img class="icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Heart_coraz%C3%B3n.svg/32px-Heart_coraz%C3%B3n.svg.png"> Stress <span id="stressVal">2</span>/5</span>
     <span class="badge"><img class="icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/OOjs_UI_icon_firstaid-ltr.svg/32px-OOjs_UI_icon_firstaid-ltr.svg.png"> Blessures <span id="hpVal">5</span>/5</span>
     <span class="badge"><img class="icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Circle-icons-bulb.svg/32px-Circle-icons-bulb.svg.png"> Flux ◆ <span id="fluxVal">2</span></span>
     <span class="badge"><img class="icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Noun_Project_document_icon_1409169_cc.svg/32px-Noun_Project_document_icon_1409169_cc.svg.png"> Fragments ✦ <span id="fragVal">2</span></span>
-  </div>
-  <div class="row" style="margin-left:auto">
-    <button class="tabbtn" data-viewto="all" aria-pressed="true">Tous</button>
-    <button class="tabbtn" data-viewto="story">Histoire</button>
-    <button class="tabbtn" data-viewto="profile">Profil</button>
-    <button class="tabbtn" data-viewto="journal">Journal</button>
-    <button class="tabbtn" id="asciiBtn">HUD ASCII ✓</button>
   </div>
 </header>
 
@@ -182,9 +219,9 @@ a{color:var(--a)}
     <div class="pad">
       <div class="storyImage">
         <img id="storyImg" loading="lazy" src="https://cdn.midjourney.com/2dad9bcd-090b-477d-915d-6fc46c5cc0ad/0_1.png" alt="">
-        <div class="legend" id="imgLegend">Guillotière — nuit en pente fine</div>
+        <div class="legend" id="imgLegend">Guillotière — pluie sous la Sourdine</div>
       </div>
-      <div class="row"><span class="badge">Objectif: <span id="objectiveText">Atteindre T1 sans casser les vivants.</span></span></div>
+      <div class="row"><span class="badge">Objectif: <span id="objectiveText">Tracer une voie sûre vers T1.</span></span></div>
       <div class="storyBody">
         <h2 id="storyTitle">Prologue</h2>
         <div id="storyText"></div>
@@ -195,13 +232,14 @@ a{color:var(--a)}
             <span class="badge">DD <span id="testDD">10</span></span>
             <div style="margin-left:auto"></div>
           </div>
-          <div class="row" style="align-items:center;margin-top:6px">
+          <div class="row testControls" style="align-items:center;margin-top:6px">
             <label class="badge"><input type="checkbox" id="useFlux"> +2 Flux</label>
             <label class="badge"><input type="checkbox" id="usePush"> +2 Pousser sa chance</label>
             <label class="badge"><input type="checkbox" id="useFrag"> ✦ Fragment (indice fort, +1 Stress)</label>
             <button class="btn primary" id="rollBtn">Lancer les dés</button>
           </div>
           <div class="small" id="testHint"></div>
+          <div class="testResult" id="testResult" role="status" aria-live="polite"></div>
         </div>
       </div>
     </div>
@@ -230,16 +268,19 @@ a{color:var(--a)}
 <div id="diceOverlay"><div class="diceWrap">
   <div>2d6 — maintien = animation</div>
   <div class="cubes"><div class="cube anim" id="d1">•</div><div class="cube anim" id="d2">•</div></div>
-  <div class="row" style="justify-content:center"><button class="btn primary" id="btnStopDice">Arrêter</button></div>
-  <div id="diceInfo" class="small"></div>
+  <div class="row diceActions" style="justify-content:center">
+    <button class="btn primary" id="btnStopDice">Arrêter</button>
+    <button class="btn" id="btnResolveDice" style="display:none">Continuer</button>
+  </div>
+  <div id="diceInfo" class="small" aria-live="polite"></div>
 </div></div>
 
 <!-- Intro -->
 <div id="introModal" class="modalScreen">
   <div class="modalBox" style="max-width:900px">
     <h2>TRAME DOUCE — Présentation</h2>
-    <p style="color:var(--mut)">Lyon a appris à parler bas. <i>La Sourdine</i> écrase les cris et froisse les souvenirs. La sous-station <b>T1</b> vacille : si elle tombe, la Guill’ s’éteint.</p>
-    <p style="color:var(--mut)">Choisis comment exister ici, puis trouve une route propre jusqu’à T1. Chaque détour a un coût.</p>
+    <p style="color:var(--mut)">La Guillotière vit sous <i>la Sourdine</i>, un bourdonnement qui étouffe voix et souvenirs. La sous-station <b>T1</b> décroche : si elle cède, le quartier perdra la lumière.</p>
+    <p style="color:var(--mut)">Choisis ton archétype, négocie avec le quartier et trace un chemin fiable jusqu’à T1. Chaque service rendu ouvre une route, chaque refus en ferme une autre.</p>
     <div class="row" style="justify-content:flex-end"><button class="btn primary" id="btnChooseArch">Choisir un archétype</button></div>
   </div>
 </div>
@@ -277,20 +318,34 @@ const IMG={pro:{src:'https://cdn.midjourney.com/56285542-dbca-4ce6-b483-253548e3
  t1:{src:'https://cdn.midjourney.com/d62c2fce-31b6-4c23-8437-2d27d6a9eab8/0_1.png',lg:'Sous-station T1 — panneaux griffés'}
 };
 const ST={arch:null,stats:{NEU:2,VOL:2,SOM:2,CIN:2},skills:{},stress:2,hp:5,flux:2,frag:2,
- inv:[],tags:new Set(),scene:'prologue',objective:'Atteindre T1',objLog:[],visited:new Set(),ascii:true};
+ inv:[],tags:new Set(),scene:'prologue',objective:'Tracer une voie sûre vers T1.',objLog:[],visited:new Set(),ascii:true};
 const SAVE='td_v6_4';
 
 /* ======= HELPERS ======= */
+const VIEW_LABELS={all:'Tous',story:'Histoire',profile:'Profil',journal:'Journal'};
 const $=q=>document.querySelector(q);
+const navWrap=document.getElementById('navWrap');
+const navToggle=document.getElementById('navToggle');
+const navMenu=document.getElementById('navMenu');
+
+function updateViewIndicator(v){const badge=$('#viewIndicator'); if(badge){badge.textContent='Vue : '+(VIEW_LABELS[v]||'Tous');}}
+function openNavMenu(){if(!navWrap)return;navWrap.classList.add('open');if(navToggle)navToggle.setAttribute('aria-expanded','true');}
+function closeNavMenu(){if(!navWrap)return;navWrap.classList.remove('open');if(navToggle)navToggle.setAttribute('aria-expanded','false');}
+function toggleNavMenu(){if(navWrap?.classList.contains('open')){closeNavMenu();}else{openNavMenu();}}
+updateViewIndicator(document.body.getAttribute('data-view')||'all');
+if(navToggle){navToggle.addEventListener('click',e=>{e.stopPropagation();toggleNavMenu();});}
+document.addEventListener('click',e=>{if(navWrap&&!navWrap.contains(e.target)){closeNavMenu();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeNavMenu();}});
 function log(t){const L=$('#log');const d=document.createElement('div');d.className='line';d.textContent=t;L.prepend(d)}
 function addObj(t){ST.objLog.push({t:Date.now(),text:t}); renderTimeline() }
 function setView(v){
   document.body.setAttribute('data-view',v);
   document.querySelectorAll('[data-viewto]').forEach(b=>b.setAttribute('aria-pressed', b.getAttribute('data-viewto')===v ? 'true' : 'false'));
+  updateViewIndicator(v);
 }
 function setupNav(){
   document.querySelectorAll('[data-viewto]').forEach(b=>{
-    b.addEventListener('click', e=>{ setView(b.getAttribute('data-viewto')); });
+    b.addEventListener('click', e=>{ setView(b.getAttribute('data-viewto')); closeNavMenu(); });
   });
 }
 $('#asciiBtn').addEventListener('click',()=>{ST.ascii=!ST.ascii;renderAscii();$('#asciiBtn').textContent='HUD ASCII '+(ST.ascii?'✓':'✗')});
@@ -324,130 +379,134 @@ $('#btnImport').addEventListener('click',()=>{const i=document.createElement('in
 const SC={
  prologue:{
   img:IMG.pro,title:'Prologue — La Sourdine',text:()=>`
-  <p>La ville parle bas. <b>La Sourdine</b> aplatit les cris, chiffonne les souvenirs. Sous la pluie tiède, la Place du Pont refoule une odeur de fer et de friture froide.</p>
-  <p>On dit que la sous-station <b>T1</b> décroche. Si elle tombe, la Guill’ s’éteint. Trois pistes s’offrent à toi : <i>Noor</i>, <i>Milo</i>, ou la foule elle-même.</p>`,
+  <p>La pluie plaque les enseignes de la Place du Pont. Sous <b>la Sourdine</b>, les voix deviennent feutrées et les souvenirs glissent. La sous-station <b>T1</b> décroche : si elle lâche, la Guill’ s’assombrit.</p>
+  <p>Il te faut un itinéraire sûr. <i>Noor</i> connaît les caves, <i>Milo</i> négocie avec les guetteurs, ou tu peux lire seul·e le courant de la foule.</p>`,
   choices:[
-    {label:'Chercher Noor — dormeuse du pont',hint:'Route planquée (furtivité)',go:'place_noor'},
-    {label:'Trouver Milo — revendeur d’appoint',hint:'Passe-droit (négociation)',go:'place_milo'},
-    {label:'Observer seul·e le flot',hint:'Lire la foule',go:'place_solo'}
+    {label:'Retrouver Noor, la dormeuse du pont',hint:'Guide discret vers les Berges (furtivité)',go:'place_noor'},
+    {label:'Marcher vers Milo, le revendeur',hint:'Passe-droit potentiel au Pont',go:'place_milo'},
+    {label:'Observer la foule par toi-même',hint:'Tracer une route sans allié',go:'place_solo'}
   ]
  },
  place_noor:{
-  img:IMG.place,title:'Place du Pont — Noor',text:()=>`
-  <p>Noor fume sous une bâche. Regard sans colère, mais tranchant. Elle sait longer les caves jusqu’aux <b>Berges</b>.</p>
-  <p>Prix : récupérer <b>son sac</b> à <b>Mazagran</b>.</p>`,
+ img:IMG.place,title:'Place du Pont — Noor',text:()=>`
+  <p>Noor s’abrite sous une bâche plastique. Regard calme mais précis. Elle connaît les caves qui mènent aux <b>Berges</b>.</p>
+  <p>Elle ouvrira la voie si tu récupères <b>son sac</b> oublié à <b>Mazagran</b>.</p>`,
   choices:[
-    {label:'Accepter — filer à Mazagran',hint:'+ objectif + confiance de Noor',immediate:s=>{s.tags.add('Noor');addObj('Aider Noor: récupérer le sac.');},go:'maz_noor'},
-    {label:'Refuser — elle t’indique quand même la trappe',hint:'Indice mineur',immediate:s=>{s.tags.add('Indice_Trappe')},go:'maz_common'}
+    {label:'Accepter et récupérer son sac',hint:'Nouvel objectif : ramener le sac de Noor',immediate:s=>{s.tags.add('Noor');s.objective='Ramener le sac de Noor pour ouvrir la voie des caves.';addObj('Nouvel objectif : rapporter le sac de Noor.');},go:'maz_noor'},
+    {label:'Refuser mais prendre son indice',hint:'Indice de trappe sans accompagnement',immediate:s=>{s.tags.add('Indice_Trappe');s.objective='Trouver la trappe technique indiquée par Noor.';addObj('Indice obtenu : emplacement de la trappe.');},go:'maz_common'}
   ]
  },
  place_milo:{
-  img:IMG.place,title:'Place du Pont — Milo',text:()=>`
-  <p>Milo a des câbles et des dettes. Il peut te donner un passe-droit au <b>Pont</b>, si tu lui rapportes un <b>coffret</b> planqué à <b>Mazagran</b>.</p>`,
+ img:IMG.place,title:'Place du Pont — Milo',text:()=>`
+  <p>Milo recompte des câbles sous un parapluie troué. Il peut obtenir un laissez-passer au <b>Pont</b> si tu récupères un <b>coffret</b> caché à <b>Mazagran</b>.</p>
+  <p>Le deal est clair : tu rapportes le coffret, il parle aux guetteurs.</p>`,
   choices:[
-    {label:'Prendre le job — coffret pour Milo',hint:'+ objectif + passe-droit plus tard',immediate:s=>{s.tags.add('Milo')},go:'maz_milo'},
-    {label:'L’envoyer promener — route neutre',go:'maz_common'}
+    {label:'Accepter le deal du coffret',hint:'Passe-droit à gagner si tu réussis',immediate:s=>{s.tags.add('Milo');s.objective='Ramener le coffret scellé à Milo pour obtenir le passe.';addObj('Nouvel objectif : récupérer le coffret de Milo.');},go:'maz_milo'},
+    {label:'Refuser et rester indépendant·e',hint:'Route neutre vers Mazagran',immediate:s=>{s.objective='Chercher un passage neutre par Mazagran.';},go:'maz_common'}
   ]
  },
  place_solo:{
-  img:IMG.place,title:'Place du Pont — Lire la foule',text:()=>`
-  <p>Tu laisses les jambes faire. Tu vois la manière dont la pluie choisit les trottoirs. Ça pointe vers <b>Mazagran</b> puis les <b>Berges</b>.</p>`,
+ img:IMG.place,title:'Place du Pont — Lire la foule',text:()=>`
+  <p>Tu te laisses porter par la foule. La pluie trace des courants sur le bitume. Tout converge vers <b>Mazagran</b> avant de glisser vers les <b>Berges</b>.</p>
+  <p>Reste à décider si tu suis le courant ou si tu forces un passage direct.</p>`,
   choices:[
-    {label:'Suivre le flux — Mazagran',go:'maz_common'},
-    {label:'Forcer — direct aux Berges',go:'ber_entry'}
+    {label:'Suivre le flux jusqu’à Mazagran',hint:'Collecter des indices avant les Berges',go:'maz_common'},
+    {label:'Forcer un passage vers les Berges',hint:'Contourner la friche sans aide',go:'ber_entry'}
   ]
  },
  maz_common:{
-  img:IMG.maz,title:'Friche Mazagran — Cour',text:()=>`
-  <p>Dans la cour, un conteneur fait atelier. Une porte basse donne sur la cave. Sur l’établi : un <b>feuillet-mémoire</b> griffé. En bas : un <b>coffret anonyme</b>.</p>`,
+ img:IMG.maz,title:'Friche Mazagran — Cour',text:()=>`
+  <p>Le conteneur-atelier bourdonne. Une échelle plonge vers la cave. Sur l’établi : un <b>feuillet-mémoire</b> annoté. En bas, un <b>coffret scellé</b> attend dans l’ombre.</p>`,
   choices:[
-    {label:'Lire le feuillet',hint:'NEU/Mnémographie (10) → indice vers trappe',test:{stat:'NEU',skill:'Mnémographie',dd:10,
-      ok:s=>{s.tags.add('Motif_R');addObj('Tu identifies la trappe technique vers T1.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Migraine. +1 Stress.')}}},
-    {label:'Prendre le coffret',hint:'+ objet',immediate:s=>{s.inv.push('Coffret scellé');addObj('Coffret récupéré à Mazagran.')}},
-    {label:'Descendre vers les Berges',go:'ber_entry'}
+    {label:'Lire le feuillet annoté',hint:'NEU/Mnémographie (10) — repérer la trappe',test:{stat:'NEU',skill:'Mnémographie',dd:10,
+      ok:s=>{s.tags.add('Motif_R');s.objective='Atteindre la trappe technique depuis les Berges.';addObj('Indice : localisation de la trappe technique vers T1.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Le motif te vrille. +1 Stress.')}}},
+    {label:'Saisir le coffret scellé',hint:'Ajouter l’objet à ton inventaire',immediate:s=>{s.inv.push('Coffret scellé');s.objective='Transporter le coffret sans attirer l’attention.';addObj('Coffret scellé rangé dans ton sac.');}},
+    {label:'Descendre vers les Berges',hint:'Prendre la cave jusqu’aux darses',go:'ber_entry'}
   ]
  },
  maz_noor:{
-  img:IMG.maz,title:'Mazagran — Le sac de Noor',text:()=>`
-  <p>Le sac est coincé derrière un banc scellé. L’eau goutte des bâches, rythme de dentier.</p>`,
+ img:IMG.maz,title:'Mazagran — Le sac de Noor',text:()=>`
+  <p>Le sac de Noor est coincé derrière un banc soudé. L’eau goutte des bâches avec un rythme patient.</p>
+  <p>Tu peux forcer le métal ou descendre par la cave pour ressortir discrètement.</p>`,
   choices:[
-    {label:'Forcer le banc',hint:'SOM/Mécanique (12) → + sac (échec: +1 Blessure)',test:{stat:'SOM',skill:'Mécanique',dd:12,
-      ok:s=>{s.tags.add('Noor_Sac');addObj('Sac de Noor récupéré.');},ko:s=>{s.hp=Math.max(0,s.hp-1);log('Tu t’écorches. +1 Blessure.')}}},
-    {label:'Passer par la cave',hint:'CIN/Furtivité (10) → sortie discrète',test:{stat:'CIN',skill:'Furtivité',dd:10,
+    {label:'Forcer le banc',hint:'SOM/Mécanique (12) — libérer le sac (échec : +1 Blessure)',test:{stat:'SOM',skill:'Mécanique',dd:12,
+      ok:s=>{s.tags.add('Noor_Sac');s.objective='Ramener le sac à Noor sur la Place du Pont.';addObj('Sac de Noor récupéré.');},ko:s=>{s.hp=Math.max(0,s.hp-1);log('Tu t’écorches sur le métal. +1 Blessure.')}}},
+    {label:'Passer par la cave',hint:'CIN/Furtivité (10) — ressortir sans alerter',test:{stat:'CIN',skill:'Furtivité',dd:10,
       ok:s=>{s.tags.add('Sortie_Discrète');log('Personne ne t’a vu.');},ko:s=>{log('Lampe qui claque. Pas de dégâts.')}}},
-    {label:'Filer aux Berges',go:'ber_entry'}
+    {label:'Filer aux Berges',hint:'Rejoindre les darses sans perdre de temps',go:'ber_entry'}
   ]
  },
  maz_milo:{
-  img:IMG.maz,title:'Mazagran — Le coffret de Milo',text:()=>`
-  <p>Le coffret est sanglé. Sceau abîmé — pas par toi. À l’intérieur? Tu décides de ne pas vérifier.</p>`,
+ img:IMG.maz,title:'Mazagran — Le coffret de Milo',text:()=>`
+  <p>Le coffret frappé du sceau de Milo est sanglé à un crochet. Le plomb est déjà ébréché ; tu évites d’y jeter un œil.</p>`,
   choices:[
-    {label:'Emporter le coffret',hint:'+ passe au Pont plus tard',immediate:s=>{s.tags.add('Coffret_Milo');s.inv.push('Coffret (Milo)');addObj('Coffret pour Milo en poche.')}},
-    {label:'Prendre la cave vers les Berges',go:'ber_entry'}
+    {label:'Détacher le coffret pour Milo',hint:'Prépare le passe au Pont',immediate:s=>{s.tags.add('Coffret_Milo');s.inv.push('Coffret (Milo)');s.objective='Apporter le coffret à Milo pour obtenir le laissez-passer.';addObj('Coffret de Milo sécurisé.');}},
+    {label:'Prendre la cave vers les Berges',hint:'Continuer vers la trappe technique',go:'ber_entry'}
   ]
  },
  ber_entry:{
-  img:IMG.ber,title:'Berges — Darses',text:()=>`
-  <p>La vase tient sous une pellicule grise. Une trappe technique chante quand on la touche.</p>`,
+ img:IMG.ber,title:'Berges — Darses',text:()=>`
+  <p>La vase masque une trappe d’entretien. À chaque contact, le métal grince et vibre.</p>`,
   choices:[
-    {label:'Ouvrir la trappe',hint:'NEU/Cryptanalyse (10) → accès T1',test:{stat:'NEU',skill:'Cryptanalyse',dd:10,
-      ok:s=>{s.tags.add('Acces_Tech');addObj('Trappe ouverte vers T1.');},ko:s=>{log('Contacts oxydés : il faudra insister.')}}},
-    {label:'Remonter vers le Pont',hint:'Avec Coffret_Milo → passe-droit',go:'pon_pass'}
+    {label:'Décrocher la trappe technique',hint:'NEU/Cryptanalyse (10) — ouvrir l’accès vers T1',test:{stat:'NEU',skill:'Cryptanalyse',dd:10,
+      ok:s=>{s.tags.add('Acces_Tech');s.objective='Descendre vers T1 par la trappe technique.';addObj('Trappe vers T1 ouverte.');},ko:s=>{log('Contacts oxydés : il faudra insister.')}}},
+    {label:'Remonter vers le Pont',hint:'Avec le coffret de Milo : passe-droit assuré',go:'pon_pass'}
   ]
  },
  pon_pass:{
   img:IMG.pon,title:'Pont de la Guill’ — Passage',text:()=>`
-  <p>Deux silhouettes filtrent les passages. La pluie les a rendues paresseuses et méfiantes.</p>`,
+  <p>Deux guetteurs s’abritent sous le pont. Ils filtrent les passages et attendent un signe convaincant.</p>`,
   choices:()=>{
     const a=[]; if(ST.tags.has('Coffret_Milo')){
-      a.push({label:'Montrer le coffret — passer',hint:'Passe-droit',immediate:s=>{log('« C’est pour Milo. » On te laisse filer.');},go:'t1_entry'});
+      a.push({label:'Montrer le coffret — franchir le Pont',hint:'Passe-droit négocié avec Milo',immediate:s=>{s.objective='Traverser le Pont et atteindre T1.';log('« C’est pour Milo. » On te laisse filer.');},go:'t1_entry'});
     }else{
-      a.push({label:'Parler sec',hint:'VOL/Intimidation (10)',test:{stat:'VOL',skill:'Intimidation',dd:10,
-        ok:s=>{log('Ça passe. Personne n’a envie d’histoires.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('On te balade. +1 Stress.')}} ,go:'t1_entry'});
-      a.push({label:'Raser les barrières',hint:'CIN/Furtivité (12)',test:{stat:'CIN',skill:'Furtivité',dd:12,
-        ok:s=>{log('Tu files comme une ombre.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Repéré·e, tu forçes. +1 Stress.')}} ,go:'t1_entry'});
+      a.push({label:'Parler sec aux guetteurs',hint:'VOL/Intimidation (10) — passer par la parole',test:{stat:'VOL',skill:'Intimidation',dd:10,
+        ok:s=>{s.objective='Traverser le Pont et atteindre T1.';log('Ça passe. Personne n’a envie d’histoires.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('On te balade. +1 Stress.')}} ,go:'t1_entry'});
+      a.push({label:'Se glisser le long des barrières',hint:'CIN/Furtivité (12) — contour discret',test:{stat:'CIN',skill:'Furtivité',dd:12,
+        ok:s=>{s.objective='Traverser le Pont et atteindre T1.';log('Tu files comme une ombre.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Repéré·e, tu forces. +1 Stress.')}} ,go:'t1_entry'});
     }
     return a;
   }
  },
  t1_entry:{
-  img:IMG.t1,title:'Sous-station T1 — Plans froissés',text:()=>`
-  <p>« La douceur est une technologie », écrit à la craie. La porte principale hésite ; une grille renvoie de l’air tiède.</p>`,
+ img:IMG.t1,title:'Sous-station T1 — Plans froissés',text:()=>`
+  <p>« La douceur est une technologie », griffonné à la craie sur le béton. La porte principale tremble ; la grille renvoie un souffle tiède.</p>`,
   choices:[
-    {label:'Déverrouiller la porte',hint:'NEU/Cryptanalyse (12)',test:{stat:'NEU',skill:'Cryptanalyse',dd:12,
-      ok:s=>{s.tags.add('T1_Ouverte');addObj('Porte T1 ouverte.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Le ton faux te vrille. +1 Stress.')}}},
-    {label:'Se glisser par la grille',hint:'CIN/Furtivité (10)',test:{stat:'CIN',skill:'Furtivité',dd:10,
-      ok:s=>{s.tags.add('T1_Grille');addObj('Tu t’infiltres par le bas.');},ko:s=>{log('Une vis tinte. Tu attends.')}}},
-    {label:'Si Noor_Sac → elle t’ouvre de l’intérieur',when:()=>ST.tags.has('Noor_Sac'),immediate:s=>{s.tags.add('Noor_Trust');addObj('Noor te doit une. Porte entrouverte.');}},
-    {label:'Accéder au cœur',hint:'Si T1_Ouverte ou T1_Grille ou Noor_Trust',when:()=>ST.tags.has('T1_Ouverte')||ST.tags.has('T1_Grille')||ST.tags.has('Noor_Trust'),go:'t1_core'}
+    {label:'Déverrouiller la porte principale',hint:'NEU/Cryptanalyse (12) — ouvrir l’accès frontal',test:{stat:'NEU',skill:'Cryptanalyse',dd:12,
+      ok:s=>{s.tags.add('T1_Ouverte');s.objective='Stabiliser le cœur de T1.';addObj('Porte principale de T1 ouverte.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Le ton faux te vrille. +1 Stress.')}}},
+    {label:'Se glisser par la grille',hint:'CIN/Furtivité (10) — infiltration par le bas',test:{stat:'CIN',skill:'Furtivité',dd:10,
+      ok:s=>{s.tags.add('T1_Grille');s.objective='Stabiliser le cœur de T1.';addObj('Tu t’infiltres par la grille.');},ko:s=>{log('Une vis tinte. Tu attends.')}}},
+    {label:'Si Noor_Sac → elle t’ouvre de l’intérieur',when:()=>ST.tags.has('Noor_Sac'),immediate:s=>{s.tags.add('Noor_Trust');s.objective='Stabiliser le cœur de T1.';addObj('Noor entrouvre la porte depuis l’intérieur.');}},
+    {label:'Accéder au cœur',hint:'Disponible si une entrée est ouverte',when:()=>ST.tags.has('T1_Ouverte')||ST.tags.has('T1_Grille')||ST.tags.has('Noor_Trust'),go:'t1_core'}
   ]
  },
  t1_core:{
   img:IMG.t1,title:'Sous-station T1 — Cœur',text:()=>`
-  <p>Bourdonnement bas. Trois leviers bricolés : <b>Contournement</b>, <b>Relance</b>, <b>Trame douce</b>.</p>`,
+  <p>Le cœur de T1 vibre. Trois leviers bricolés clignotent : <b>Contournement</b>, <b>Relance</b>, <b>Trame douce</b>. Chaque option a son prix.</p>`,
   choices:[
-    {label:'Contournement — gagner du temps',hint:'SOM/Mécanique (10) → +1 Flux',test:{stat:'SOM',skill:'Mécanique',dd:10,
-      ok:s=>{s.flux=Math.max(0,s.flux+1);addObj('Contournement posé. La nuit tiendra.');},ko:s=>{s.hp=Math.max(0,s.hp-1);log('Coup de jus. +1 Blessure.')}} ,goOK:'ep_cont',goKO:'ep_silent'},
-    {label:'Relance — plus risqué',hint:'NEU/Déduction (12) → lumière vive, bruit',test:{stat:'NEU',skill:'Déduction',dd:12,
-      ok:s=>{s.tags.add('Relance');addObj('Relance OK. Lumière plus vive.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Tu recules. +1 Stress.')}} ,goOK:'ep_noise',goKO:'ep_silent'},
-    {label:'Trame douce — protéger les souvenirs',hint:'VOL/Empathie (12) + ✦',test:{stat:'VOL',skill:'Empathie',dd:12,needsFrag:true,
-      ok:s=>{s.tags.add('Trame_Douce');s.frag=Math.max(0,s.frag-1);addObj('Voile tiré. Les mémoires tiennent.');},ko:s=>{log('Tu n’oses pas. Rien ne casse.')}} ,goOK:'ep_soft',goKO:'ep_silent'}
+    {label:'Contournement — gagner du temps',hint:'SOM/Mécanique (10) — détourner les flux (+1 Flux)',test:{stat:'SOM',skill:'Mécanique',dd:10,
+      ok:s=>{s.flux=Math.max(0,s.flux+1);s.objective='Quitter la zone avant la prochaine alerte.';addObj('Contournement posé : la nuit tiendra un peu plus.');},ko:s=>{s.hp=Math.max(0,s.hp-1);log('Coup de jus. +1 Blessure.')}} ,goOK:'ep_cont',goKO:'ep_silent'},
+    {label:'Relance — plus risqué',hint:'NEU/Déduction (12) — redémarrage bruyant',test:{stat:'NEU',skill:'Déduction',dd:12,
+      ok:s=>{s.tags.add('Relance');addObj('Relance réussie : T1 repart en claquant.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Tu recules. +1 Stress.')}} ,goOK:'ep_noise',goKO:'ep_silent'},
+    {label:'Trame douce — protéger les souvenirs',hint:'VOL/Empathie (12) + ✦ — apaiser la Sourdine',test:{stat:'VOL',skill:'Empathie',dd:12,needsFrag:true,
+      ok:s=>{s.tags.add('Trame_Douce');s.frag=Math.max(0,s.frag-1);addObj('Voile tiré : les mémoires restent en place.');},ko:s=>{log('Tu n’oses pas. Rien ne casse.')}} ,goOK:'ep_soft',goKO:'ep_silent'}
   ]
  },
  ep_cont:{img:IMG.t1,title:'Épilogue — Contournement',text:()=>`
-  <p>Le quartier respire encore. Pas mieux, pas pire. Tu as acheté du temps.</p>`,choices:[{label:'Recommencer (retour Prologue)',go:'prologue'}]},
+  <p>Le quartier respire encore. Ce n’est pas brillant, mais tu as gagné quelques heures.</p>`,choices:[{label:'Recommencer (retour Prologue)',go:'prologue'}]},
  ep_noise:{img:IMG.t1,title:'Épilogue — Relance',text:()=>`
-  <p>La Guill’ claque comme une ampoule neuve. On te remerciera, ou pas.</p>`,choices:[{label:'Recommencer',go:'prologue'}]},
+  <p>T1 claque comme une ampoule neuve. Certains applaudiront, d’autres t’en voudront pour le vacarme.</p>`,choices:[{label:'Recommencer',go:'prologue'}]},
  ep_soft:{img:IMG.t1,title:'Épilogue — Trame douce',text:()=>`
-  <p>La Sourdine mollit. Les gens se souviennent un peu mieux. La nuit semble tenir à visage humain.</p>`,choices:[{label:'Recommencer',go:'prologue'}]},
+  <p>La Sourdine se relâche. Des visages se souviennent mieux. Tu laisses la nuit respirer.</p>`,choices:[{label:'Recommencer',go:'prologue'}]},
  ep_silent:{img:IMG.t1,title:'Épilogue — Silence',text:()=>`
-  <p>Les chiffres ne sont pas de ton côté. Tu éteins proprement et tu promets de revenir.</p>`,choices:[{label:'Recommencer',go:'prologue'}]}
+  <p>T1 se tait. Tu coupes proprement et promets de revenir avec plus de temps.</p>`,choices:[{label:'Recommencer',go:'prologue'}]}
 };
 
 /* ======= RENDER ENGINE ======= */
 function render(){
   ST.visited.add(ST.scene.includes('maz_')?'maz':ST.scene.includes('ber_')?'ber':ST.scene.includes('pon_')?'pon':ST.scene.includes('t1')?'t1':ST.scene.includes('place')?'place':ST.scene);
   const sc=SC[ST.scene]; if(!sc) return;
+  if(ST.scene==='prologue'){ST.objective='Tracer une voie sûre vers T1.';}
   $('#storyTitle').textContent=sc.title;
   $('#storyText').innerHTML=sc.text?sc.text():'';
   const i=sc.img||IMG.place; $('#storyImg').src=i.src; $('#imgLegend').textContent=i.lg||'';
@@ -464,7 +523,7 @@ function render(){
   });
   bars(); renderStats(); renderAscii(); $('#objectiveText').textContent=ST.objective;
 }
-let pending=null, roll=null, timer=null;
+let pending=null, roll=null, pendingOutcome=null;
 function handleChoice(c){
   const immediateOnly = !!c.immediate && !c.go && !c.test;
   if(c.immediate) c.immediate(ST);
@@ -479,30 +538,89 @@ function showTest(c){
   $('#useFlux').checked=false; $('#usePush').checked=false; $('#useFrag').checked=!!c.test.needsFrag;
   $('#useFlux').disabled=ST.flux<=0; $('#useFrag').disabled=c.test.needsFrag? ST.frag<=0 : ST.frag<=0;
   $('#rollBtn').onclick=()=>startDice();
+  const resultBox=$('#testResult');
+  if(resultBox){resultBox.textContent='';resultBox.classList.remove('show','success','fail');}
 }
-function startDice(){ roll=null; $('#diceOverlay').style.display='flex'; $('#d1').classList.add('anim'); $('#d2').classList.add('anim');
-  $('#diceInfo').textContent='...'; clearTimeout(timer); timer=setTimeout(stopDice, 1400); }
-function stopDice(){ clearTimeout(timer); $('#d1').classList.remove('anim'); $('#d2').classList.remove('anim');
-  const a=1+Math.floor(Math.random()*6), b=1+Math.floor(Math.random()*6); $('#d1').textContent=a; $('#d2').textContent=b; roll={a,b,sum:a+b};
-  $('#diceInfo').textContent=`Résultat: ${a} + ${b} = ${a+b}`; setTimeout(()=>{$('#diceOverlay').style.display='none'; applyRoll();}, 500); }
+function startDice(){
+  if(!pending) return;
+  roll=null; pendingOutcome=null;
+  $('#diceOverlay').style.display='flex';
+  $('#d1').classList.add('anim'); $('#d2').classList.add('anim');
+  $('#d1').textContent='•'; $('#d2').textContent='•';
+  $('#diceInfo').innerHTML='<div class="diceSummary">Les dés roulent…</div><div class="diceBreakdown">Clique sur « Arrêter » pour figer le résultat.</div>';
+  const stop=$('#btnStopDice'), cont=$('#btnResolveDice');
+  if(stop){stop.disabled=false;}
+  if(cont){cont.style.display='none';}
+}
+function computeOutcome(){
+  if(!pending||!roll) return null;
+  const c=pending;
+  let mod=0;
+  const breakdown=[];
+  if(c.test.stat){
+    const base=ST.stats[c.test.stat]||0;
+    mod+=base;
+    breakdown.push(`Attribut ${c.test.stat} +${base}`);
+  }
+  const skillName=c.test.skill||null;
+  if(skillName && ST.skills[skillName]>0){mod+=1;breakdown.push(`Compétence ${skillName} +1`);}
+  if(skillName==='Furtivité'&&ST.arch?.id==='noor'){mod+=1;breakdown.push('Noor +1 Furtivité');}
+  if(skillName==='Intimidation'&&ST.arch?.id==='milo'){mod+=1;breakdown.push('Milo +1 Intimidation');}
+  if(skillName==='Mécanique'&&ST.arch?.id==='rayan'){mod+=1;breakdown.push('Rayan +1 Mécanique');}
+  const spendFlux=$('#useFlux').checked && ST.flux>0;
+  const spendPush=$('#usePush').checked;
+  const spendFrag=$('#useFrag').checked && ST.frag>0;
+  if(spendFlux){mod+=2;breakdown.push('Flux +2');}
+  if(spendPush){mod+=2;breakdown.push('Chance +2');}
+  if(spendFrag){mod+=2;breakdown.push('Fragment +2 (stress +1)');}
+  const total=roll.sum+mod;
+  const dd=c.test.dd;
+  const ok=total>=dd;
+  return {mod,total,dd,ok,spendFlux,spendFrag,spendPush,breakdown};
+}
+function stopDice(){
+  if(!pending||pendingOutcome) return;
+  $('#d1').classList.remove('anim'); $('#d2').classList.remove('anim');
+  const a=1+Math.floor(Math.random()*6), b=1+Math.floor(Math.random()*6);
+  $('#d1').textContent=a; $('#d2').textContent=b;
+  roll={a,b,sum:a+b};
+  pendingOutcome=computeOutcome();
+  let html=`<div class="diceSummary">Résultat : ${a} + ${b} = ${roll.sum}</div>`;
+  if(pendingOutcome){
+    const mods=pendingOutcome.breakdown.length?pendingOutcome.breakdown.join(' · '):'Aucun modificateur';
+    html+=`<div class="diceBreakdown">Modificateurs : ${mods}</div>`;
+    html+=`<div class="diceBreakdown">Total : ${roll.sum} + ${pendingOutcome.mod} = ${pendingOutcome.total}</div>`;
+    html+=`<div class="diceStatus ${pendingOutcome.ok?'success':'fail'}">${pendingOutcome.ok?'Réussite':'Échec'} — ${pendingOutcome.total} (DD ${pendingOutcome.dd})</div>`;
+  }
+  $('#diceInfo').innerHTML=html;
+  const stop=$('#btnStopDice'), cont=$('#btnResolveDice');
+  if(stop){stop.disabled=true;}
+  if(cont){cont.style.display='inline-flex';cont.focus();}
+}
 $('#btnStopDice').addEventListener('click', stopDice);
-function applyRoll(){
-  if(!pending||!roll) return;
-  const c=pending; let mod=(ST.stats[c.test.stat]||0);
-  const useFlux=$('#useFlux').checked && ST.flux>0, usePush=$('#usePush').checked, useFrag=$('#useFrag').checked && ST.frag>0;
-  if(ST.skills[c.test.skill]>0) mod+=1;
-  if(ST.arch?.id==='noor'&&c.test.skill==='Furtivité') mod+=1;
-  if(ST.arch?.id==='milo'&&c.test.skill==='Intimidation') mod+=1;
-  if(ST.arch?.id==='rayan'&&c.test.skill==='Mécanique') mod+=1;
-  if(useFlux){mod+=2;ST.flux--}
-  if(usePush){mod+=2}
-  if(useFrag){mod+=2;ST.frag--;ST.stress=Math.min(5,ST.stress+1);log('Le fragment te mord. +1 Stress.')}
-  const total=roll.sum+mod, ok= total>=c.test.dd;
-  log(`${c.test.stat}/${c.test.skill||'-'} DD${c.test.dd} — ${roll.a}+${roll.b}=${roll.sum} + ${mod} = ${total} → ${ok?'Réussite':'Échec'}`);
-  if(ok && c.test.ok) c.test.ok(ST); if(!ok && c.test.ko) c.test.ko(ST);
-  const next = ok ? (c.goOK||c.go) : (c.goKO||c.go);
-  $('#testPanel').style.display='none'; pending=null; roll=null;
-  if(next){ ST.scene=next; addObj('Déplacement: '+SC[next].title); }
+$('#btnResolveDice').addEventListener('click', resolveRoll);
+function resolveRoll(){
+  if(!pending||!roll||!pendingOutcome) return;
+  const c=pending, outcome=pendingOutcome;
+  if(outcome.spendFlux){ST.flux--;}
+  if(outcome.spendFrag){ST.frag--;ST.stress=Math.min(5,ST.stress+1);log('Le fragment te mord. +1 Stress.');}
+  const next=outcome.ok ? (c.goOK||c.go) : (c.goKO||c.go);
+  log(`${c.test.stat}/${c.test.skill||'-'} DD${outcome.dd} — ${roll.a}+${roll.b}=${roll.sum} + ${outcome.mod} = ${outcome.total} → ${outcome.ok?'Réussite':'Échec'}`);
+  if(outcome.ok && c.test.ok) c.test.ok(ST);
+  if(!outcome.ok && c.test.ko) c.test.ko(ST);
+  const resultBox=$('#testResult');
+  if(resultBox){
+    resultBox.textContent=`${outcome.ok?'Réussite':'Échec'} — ${outcome.total} (DD ${outcome.dd})`;
+    resultBox.classList.remove('show','success','fail');
+    resultBox.classList.add('show', outcome.ok?'success':'fail');
+  }
+  pending=null; roll=null; pendingOutcome=null;
+  const stop=$('#btnStopDice'), cont=$('#btnResolveDice');
+  if(stop){stop.disabled=false;}
+  if(cont){cont.style.display='none';}
+  $('#diceOverlay').style.display='none';
+  if(next){ ST.scene=next; addObj('Déplacement: '+SC[next].title); $('#testPanel').style.display='none'; }
+  else { $('#testPanel').style.display='block'; }
   save(); render();
 }
 
@@ -546,6 +664,7 @@ if(mobileMq){
   if(mobileMq.addEventListener){ mobileMq.addEventListener('change',syncView); }
   else if(mobileMq.addListener){ mobileMq.addListener(syncView); }
 }
+setView(document.body.getAttribute('data-view')||'all');
 load();
 renderStats(); renderAscii(); renderTimeline(); bars(); render();
 if(!ST.arch){ $('#introModal').style.display='flex'; }
