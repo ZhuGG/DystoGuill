@@ -27,16 +27,22 @@ a{color:var(--a)}
 .menuWrap.open .iconBtn{outline:2px solid var(--a)}
 .navMenu{display:none;position:absolute;right:0;top:calc(100% + 8px);background:var(--p2);border:1px solid var(--line);border-radius:12px;padding:8px;min-width:180px;box-shadow:var(--sh);flex-direction:column;gap:6px}
 .menuWrap.open .navMenu{display:flex}
-.navMenu .tabbtn{width:100%;text-align:left}
-.tabbtn,.btn{padding:10px 12px;border:1px solid #2a3a58;background:linear-gradient(180deg,#141f33,#223355);border-radius:12px;color:var(--ink);cursor:pointer;font-weight:700}
+.navMenu .tabbtn{width:100%;text-align:left;justify-content:flex-start}
+.tabbtn,.btn{padding:10px 12px;border:1px solid #2a3a58;background:linear-gradient(180deg,#141f33,#223355);border-radius:12px;color:var(--ink);cursor:pointer;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-align:center}
 .tabbtn[aria-pressed="true"],.btn.primary{outline:2px solid var(--a)}
 .badge{display:inline-flex;align-items:center;gap:6px;border:1px solid #2a3a58;background:var(--p2);color:var(--mut);padding:2px 8px;border-radius:999px;font-size:12px}
 .icon{width:16px;height:16px;opacity:.9}
-.grid{display:grid;gap:12px;grid-template-columns:300px 1fr 340px;max-width:1280px;margin:auto;padding:12px}
-.col{background:var(--p);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh);overflow:hidden}
-.pad{padding:12px}
+.grid{display:grid;gap:16px;grid-template-columns:minmax(280px,320px) minmax(0,1fr) minmax(300px,360px);max-width:1280px;margin:auto;padding:16px;padding-bottom:calc(16px + var(--safe-bottom))}
+.col{background:var(--p);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh);overflow:hidden;display:flex;flex-direction:column;gap:16px}
+.pad{padding:16px;display:flex;flex-direction:column;gap:12px}
 .row{display:flex;gap:8px;flex-wrap:wrap}
-.sectionTitle{color:var(--mut);font-size:12px;text-transform:uppercase;margin:0 0 6px}
+.sectionTitle{color:var(--mut);font-size:12px;text-transform:uppercase;margin:0 0 4px;letter-spacing:.8px}
+.sectionIntro{margin:0;color:var(--mut);font-size:13px;line-height:1.5}
+.saveActions{display:flex;flex-wrap:wrap;gap:8px}
+.saveActions .btn{flex:1 1 150px;min-width:140px;padding:9px 12px;border-radius:10px;font-size:13px}
+.btn.subtle{background:linear-gradient(180deg,#152033,#1f2d45);border:1px solid #32425f}
+.btnIcon{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;font-size:14px;opacity:.85}
+.btnLabel{display:inline-flex;align-items:center;justify-content:center;gap:8px}
 /* left */
 .stat{display:grid;grid-template-columns:24px 1fr 24px;align-items:center;background:var(--p2);border:1px solid var(--line);border-radius:10px;padding:6px;min-width:120px}
 .stat .dot{width:16px;height:16px;border-radius:5px} .stat .name{font-size:11px;color:var(--mut);text-transform:uppercase} .stat .val{font-weight:800;text-align:right}
@@ -58,7 +64,7 @@ a{color:var(--a)}
   .headerBadges{width:100%;justify-content:flex-start}
 }
 .storyImage .legend{position:absolute;left:10px;bottom:10px;background:rgba(10,14,19,.7);padding:6px 8px;border-radius:8px;border:1px solid var(--line);color:var(--mut);font-size:12px}
-.storyBody{background:var(--p2);border:1px solid var(--line);border-radius:14px;padding:14px}
+.storyBody{background:var(--p2);border:1px solid var(--line);border-radius:14px;padding:18px}
 .choices{display:flex;flex-direction:column;gap:10px;margin-top:10px}
 .choice{position:relative;border:1px solid #2a3a58;background:linear-gradient(180deg,#151e31,#233355);padding:12px;border-radius:12px;cursor:pointer;transition:transform .15s ease,outline .15s ease}
 .choice:hover,.choice:focus-visible{outline:2px solid var(--a)} .choice small{display:block;color:var(--mut)}
@@ -99,13 +105,22 @@ a{color:var(--a)}
 @keyframes roll{0%{transform:rotate(0)}33%{transform:rotate(12deg)}66%{transform:rotate(-9deg)}100%{transform:rotate(0)}}
 /* modals */
 .modalScreen{position:fixed;inset:0;background:rgba(10,14,19,.88);display:flex;align-items:center;justify-content:center;z-index:50;padding:24px;overflow-y:auto}
-.modalBox{background:var(--p);border:1px solid var(--line);padding:16px;border-radius:16px;max-width:1000px;width:95%;max-height:calc(100vh - 48px);overflow:auto;box-shadow:var(--sh)}
+.modalBox{background:var(--p);border:1px solid var(--line);padding:20px;border-radius:16px;max-width:1000px;width:95%;max-height:calc(100vh - 48px);overflow:auto;box-shadow:var(--sh)}
 .modalBox h2{margin:0 0 8px 0}
+.introBox{background:linear-gradient(180deg,#111827,#0d131f);border:1px solid rgba(156,246,255,.25)}
+.introLead{margin:0 0 12px 0;color:var(--mut);font-size:15px;line-height:1.7}
+.introColumns{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:6px 0 16px 0}
+.introColumns h3{margin:0 0 6px 0;color:var(--ink);font-size:16px;letter-spacing:.5px}
+.introColumns ul{margin:0;padding-left:18px;color:var(--mut);font-size:14px;line-height:1.6}
+.introColumns li{margin:0 0 8px 0}
+.introNote{border:1px solid rgba(156,246,255,.18);background:rgba(156,246,255,.06);padding:12px;border-radius:12px;color:var(--mut);font-size:13px;line-height:1.6}
+.introActions{justify-content:flex-end;margin-top:18px}
+.introActions .btn{min-width:200px}
 .arches{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
 .arch{border:2px solid #2a3a58;background:linear-gradient(180deg,#141a23,#0e141c);border-radius:14px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;transition:transform .2s ease,outline .2s ease}
 .arch:active{transform:translateY(1px)}
 .arch img{width:100%;height:140px;object-fit:cover}
-.arch .pad{padding:10px}
+.arch .pad{padding:12px;display:flex;flex-direction:column;gap:8px}
 .arch h3{margin:0 0 6px 0}
 .arch p{margin:.4em 0;color:var(--mut);font-size:13px}
 .arch .statrow{display:flex;gap:6px;padding:0 10px 10px 10px}
@@ -156,6 +171,7 @@ a{color:var(--a)}
   .arch .statrow{flex-wrap:wrap;gap:6px}
   .arch .b{font-size:11px;padding:3px 6px}
   .mobilebar{gap:6px}
+  .saveActions .btn{min-width:0;width:100%}
 }
 .mobilebar{display:none; position:fixed; left:0; right:0; bottom:0; z-index:30;
   padding:8px 10px calc(8px + var(--safe-bottom)); gap:8px; justify-content:space-around;
@@ -194,19 +210,17 @@ a{color:var(--a)}
     <div class="pad">
       <div class="sectionTitle">Profil</div>
       <div class="row" id="statsRow"></div>
-      <div style="height:8px"></div>
       <div class="resbar">
         <div class="res"><div class="lbl">Stress</div><div class="meter"><div class="fill bad" id="stressFill" style="width:40%"></div></div></div>
         <div class="res"><div class="lbl">Blessures</div><div class="meter"><div class="fill bad" id="hpFill" style="width:100%"></div></div></div>
       </div>
-      <div style="height:8px"></div>
       <div class="sectionTitle">Mini-carte</div>
       <div class="ascii" id="miniMap"></div>
-      <div style="height:8px"></div>
       <div class="sectionTitle">Sauvegarde</div>
-      <div class="row">
-        <button class="btn" id="btnExport">Exporter</button>
-        <button class="btn" id="btnImport">Importer</button>
+      <p class="sectionIntro">Enregistre ta progression en local ou reprends une partie précédente depuis un fichier.</p>
+      <div class="saveActions">
+        <button class="btn subtle" id="btnExport" type="button"><span class="btnLabel"><span class="btnIcon" aria-hidden="true">💾</span><span>Sauvegarder</span></span></button>
+        <button class="btn subtle" id="btnImport" type="button"><span class="btnLabel"><span class="btnIcon" aria-hidden="true">⤴</span><span>Importer</span></span></button>
       </div>
     </div>
     <div class="pad">
@@ -249,7 +263,6 @@ a{color:var(--a)}
     <div class="pad">
       <div class="sectionTitle">Journal des dés</div>
       <div class="log" id="log"></div>
-      <div style="height:8px"></div>
       <div class="sectionTitle">Journal d’objectifs</div>
       <div class="timeline" id="timeline"></div>
     </div>
@@ -277,11 +290,32 @@ a{color:var(--a)}
 
 <!-- Intro -->
 <div id="introModal" class="modalScreen">
-  <div class="modalBox" style="max-width:900px">
-    <h2>TRAME DOUCE — Présentation</h2>
-    <p style="color:var(--mut)">La Guillotière vit sous <i>la Sourdine</i>, un bourdonnement qui étouffe voix et souvenirs. La sous-station <b>T1</b> décroche : si elle cède, le quartier perdra la lumière.</p>
-    <p style="color:var(--mut)">Choisis ton archétype, négocie avec le quartier et trace un chemin fiable jusqu’à T1. Chaque service rendu ouvre une route, chaque refus en ferme une autre.</p>
-    <div class="row" style="justify-content:flex-end"><button class="btn primary" id="btnChooseArch">Choisir un archétype</button></div>
+  <div class="modalBox introBox" style="max-width:900px">
+    <h2>TRAME DOUCE — Préambule</h2>
+    <p class="introLead">La Guillotière est engluée sous <b>la Sourdine</b>, un grondement électromagnétique qui brouille les voix, avale les souvenirs et dérègle les capteurs. Les habitants s’accrochent aux fragments de mémoire qui restent.</p>
+    <p class="introLead">Pendant que la pluie polit les façades, la sous-station <b>T1</b> décroche du réseau. Si personne ne rétablit le flux, le quartier s’éteint et les voies d’évacuation se referment.</p>
+    <div class="introColumns">
+      <div>
+        <h3>Ce que fait la Sourdine</h3>
+        <ul>
+          <li><b>Étire le temps</b> : sans notes, les souvenirs s’effacent.</li>
+          <li><b>Ferme des portes</b> : chaque refus alimente la méfiance des communautés.</li>
+          <li><b>Désoriente la technologie</b> : le HUD ASCII reste le moyen le plus fiable de suivre ta progression.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Ta mission</h3>
+        <ul>
+          <li>Cartographier une traversée sûre de la Place du Pont jusqu’à <b>T1</b>.</li>
+          <li>Composer avec les acteurs du quartier pour gagner du <b>Flux</b> et des <b>Fragments</b>.</li>
+          <li>Choisir un archétype dont les talents peuvent renverser la situation.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="introLead">Chaque scène offre des choix, parfois des tests de dés. Négocier, détourner ou réparer modifie la tension, ouvre des routes ou t’enferme dans des impasses.</p>
+    <p class="introLead">Quand tu es prêt·e, sélectionne un archétype. Sa manière de parler au quartier définira les opportunités qui se dévoilent.</p>
+    <div class="introNote">Ton avancée est conservée dans ton navigateur. Sauvegarde régulièrement pour garder la trace de ce que la Sourdine pourrait faire oublier.</div>
+    <div class="row introActions"><button class="btn primary" id="btnChooseArch">Choisir un archétype</button></div>
   </div>
 </div>
 
@@ -372,7 +406,7 @@ function save(){localStorage.setItem(SAVE,JSON.stringify({a:ST.arch?.id,s:ST.sta
 function load(){try{const d=JSON.parse(localStorage.getItem(SAVE)||'null');if(!d)return;ST.arch=ARCH.find(x=>x.id===d.a)||null; if(ST.arch){ST.stats={...ST.arch.stats};ST.skills={...ST.arch.skills};ST.inv=[...ST.arch.start]}
   Object.assign(ST,{stress:d.st??2,hp:d.h??5,flux:d.f??2,frag:d.g??2});ST.inv=d.i||ST.inv;ST.tags=new Set(d.t||[]);ST.scene=d.sc||'prologue';ST.objective=d.o||ST.objective;ST.objLog=d.ol||[];ST.visited=new Set(d.v||[]);ST.ascii=d.as!==false}catch(e){}}
 /* exporter/importer */
-$('#btnExport').addEventListener('click',()=>{const blob=new Blob([localStorage.getItem(SAVE)||'{}'],{type:'application/json'});const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download='trame_douce_v6_4_save.json';a.click();URL.revokeObjectURL(u)});
+$('#btnExport').addEventListener('click',()=>{const blob=new Blob([localStorage.getItem(SAVE)||'{}'],{type:'application/json'});const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download='trame_douce_v6_4_sauvegarde.json';a.click();URL.revokeObjectURL(u)});
 $('#btnImport').addEventListener('click',()=>{const i=document.createElement('input');i.type='file';i.accept='application/json';i.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{localStorage.setItem(SAVE,r.result);load();render()};r.readAsText(f)};i.click()});
 
 /* ======= SCENES ======= */
@@ -766,10 +800,8 @@ $('#btnConfirm').addEventListener('click',()=>{ ST.arch=sel; ST.stats={...sel.st
 setupNav(); // header + mobile bar
 const mobileMq=window.matchMedia ? window.matchMedia('(max-width: 900px)') : null;
 const syncView=e=>{
-  if(e.matches){
-    if(document.body.getAttribute('data-view')==='all'){ setView('story'); }
-  }else{
-    if(document.body.getAttribute('data-view')!=='all'){ setView('all'); }
+  if(!e.matches && document.body.getAttribute('data-view')!=='all'){
+    setView('all');
   }
 };
 if(mobileMq){
