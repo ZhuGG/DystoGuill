@@ -453,7 +453,7 @@ function applyRoll(){
   if(ST.arch?.id==='rayan'&&c.test.skill==='Mécanique') mod+=1;
   if(useFlux){mod+=2;ST.flux--}
   if(usePush){mod+=2}
-  if(useFrag){mod+=2;ST.frag--;ST.stress=Math.max(0,ST.stress-1);log('Le fragment te mord. -1 Stress.')}
+  if(useFrag){mod+=2;ST.frag--;ST.stress=Math.min(5,ST.stress+1);log('Le fragment te mord. +1 Stress.')}
   const total=roll.sum+mod, ok= total>=c.test.dd;
   log(`${c.test.stat}/${c.test.skill||'-'} DD${c.test.dd} — ${roll.a}+${roll.b}=${roll.sum} + ${mod} = ${total} → ${ok?'Réussite':'Échec'}`);
   if(ok && c.test.ok) c.test.ok(ST); if(!ok && c.test.ko) c.test.ko(ST);
