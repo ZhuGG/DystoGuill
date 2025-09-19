@@ -535,11 +535,128 @@ function showTest(c){
   $('#testPanel').style.display='block';
   $('#testName').textContent=`${c.test.stat}/${c.test.skill||'-'}`;
   $('#testDD').textContent=c.test.dd;
-  $('#useFlux').checked=false; $('#usePush').checked=false; $('#useFrag').checked=!!c.test.needsFrag;
-  $('#useFlux').disabled=ST.flux<=0; $('#useFrag').disabled=c.test.needsFrag? ST.frag<=0 : ST.frag<=0;
-  $('#rollBtn').onclick=()=>startDice();
+  const fluxBox=$('#useFlux');
+  const pushBox=$('#usePush');
+  const fragBox=$('#useFrag');
+  if(fluxBox){fluxBox.checked=false; fluxBox.disabled=ST.flux<=0;}
+  if(pushBox){pushBox.checked=false;}
+  if(fragBox){
+    const needsFrag=!!c.test.needsFrag;
+    fragBox.checked=needsFrag && ST.frag>0;
+    fragBox.disabled=ST.frag<=0;
+  }
+  const rollBtn=$('#rollBtn');
+  if(rollBtn){rollBtn.disabled=false; rollBtn.onclick=()=>startDice();}
   const resultBox=$('#testResult');
   if(resultBox){resultBox.textContent='';resultBox.classList.remove('show','success','fail');}
+  updateTestHint();
+}
+
+function gatherModifiers(test){
+  const result={mod:0,breakdown:[],previewParts:[],spendFlux:false,spendPush:false,spendFrag:false};
+  if(!test) return result;
+  if(test.stat){
+    const base=ST.stats[test.stat]||0;
+    result.mod+=base;
+    result.breakdown.push(`Attribut ${test.stat} +${base}`);
+    result.previewParts.push(`Base ${test.stat} ${base}`);
+  }
+  const skillName=test.skill||null;
+  if(skillName){
+    if(ST.skills[skillName]>0){
+      result.mod+=1;
+      result.breakdown.push(`Compétence ${skillName} +1`);
+      result.previewParts.push(`Compétence ${skillName} +1`);
+    }
+    if(skillName==='Furtivité'&&ST.arch?.id==='noor'){
+      result.mod+=1;
+      result.breakdown.push('Noor +1 Furtivité');
+      result.previewParts.push('Noor +1 Furtivité');
+    }
+    if(skillName==='Intimidation'&&ST.arch?.id==='milo'){
+      result.mod+=1;
+      result.breakdown.push('Milo +1 Intimidation');
+      result.previewParts.push('Milo +1 Intimidation');
+    }
+    if(skillName==='Mécanique'&&ST.arch?.id==='rayan'){
+      result.mod+=1;
+      result.breakdown.push('Rayan +1 Mécanique');
+      result.previewParts.push('Rayan +1 Mécanique');
+    }
+  }
+  const fluxEl=$('#useFlux');
+  if(fluxEl && fluxEl.checked && ST.flux>0){
+    result.mod+=2;
+    result.breakdown.push('Flux +2');
+    result.previewParts.push('Flux +2');
+    result.spendFlux=true;
+  }
+  const pushEl=$('#usePush');
+  if(pushEl && pushEl.checked){
+    result.mod+=2;
+    result.breakdown.push('Chance +2');
+    result.previewParts.push('Chance +2');
+    result.spendPush=true;
+  }
+  const fragEl=$('#useFrag');
+  if(fragEl && fragEl.checked && ST.frag>0){
+    result.mod+=2;
+    result.breakdown.push('Fragment +2 (stress +1)');
+    result.previewParts.push('Fragment +2 (+1 Stress)');
+    result.spendFrag=true;
+  }
+  return result;
+}
+
+function previewOutcome(test=pending?.test){
+  if(!test) return null;
+  const mods=gatherModifiers(test);
+  return {
+    mod:mods.mod,
+    dd:test.dd||0,
+    parts:mods.previewParts,
+    spendFlux:mods.spendFlux,
+    spendPush:mods.spendPush,
+    spendFrag:mods.spendFrag
+  };
+}
+
+function updateTestHint(){
+  const hint=$('#testHint');
+  if(!hint) return;
+  const test=pending?.test;
+  const rollBtn=$('#rollBtn');
+  const fragEl=$('#useFrag');
+  if(!test){
+    hint.textContent='';
+    if(rollBtn) rollBtn.disabled=false;
+    return;
+  }
+  const needsFrag=!!test.needsFrag;
+  const fragAvailable=ST.frag>0;
+  if(fragEl){
+    if(needsFrag){
+      if(fragAvailable && !fragEl.checked){ fragEl.checked=true; }
+      if(!fragAvailable){ fragEl.checked=false; }
+      fragEl.disabled=!fragAvailable;
+    }else{
+      fragEl.disabled=ST.frag<=0;
+    }
+  }
+  if(needsFrag && !fragAvailable){
+    if(rollBtn) rollBtn.disabled=true;
+    hint.textContent='Fragment requis (+1 Stress) indisponible.';
+    return;
+  }
+  if(rollBtn) rollBtn.disabled=false;
+  const preview=previewOutcome(test);
+  if(!preview){
+    hint.textContent='';
+    return;
+  }
+  const parts=preview.parts.length?preview.parts:['Aucun modificateur'];
+  const modSign=preview.mod>=0?`+${preview.mod}`:`${preview.mod}`;
+  hint.textContent=`${parts.join(' + ')} = ${modSign} (Total cible ${preview.dd})`;
 }
 function startDice(){
   if(!pending) return;
@@ -554,29 +671,20 @@ function startDice(){
 }
 function computeOutcome(){
   if(!pending||!roll) return null;
-  const c=pending;
-  let mod=0;
-  const breakdown=[];
-  if(c.test.stat){
-    const base=ST.stats[c.test.stat]||0;
-    mod+=base;
-    breakdown.push(`Attribut ${c.test.stat} +${base}`);
-  }
-  const skillName=c.test.skill||null;
-  if(skillName && ST.skills[skillName]>0){mod+=1;breakdown.push(`Compétence ${skillName} +1`);}
-  if(skillName==='Furtivité'&&ST.arch?.id==='noor'){mod+=1;breakdown.push('Noor +1 Furtivité');}
-  if(skillName==='Intimidation'&&ST.arch?.id==='milo'){mod+=1;breakdown.push('Milo +1 Intimidation');}
-  if(skillName==='Mécanique'&&ST.arch?.id==='rayan'){mod+=1;breakdown.push('Rayan +1 Mécanique');}
-  const spendFlux=$('#useFlux').checked && ST.flux>0;
-  const spendPush=$('#usePush').checked;
-  const spendFrag=$('#useFrag').checked && ST.frag>0;
-  if(spendFlux){mod+=2;breakdown.push('Flux +2');}
-  if(spendPush){mod+=2;breakdown.push('Chance +2');}
-  if(spendFrag){mod+=2;breakdown.push('Fragment +2 (stress +1)');}
-  const total=roll.sum+mod;
-  const dd=c.test.dd;
+  const mods=gatherModifiers(pending.test);
+  const total=roll.sum+mods.mod;
+  const dd=pending.test.dd;
   const ok=total>=dd;
-  return {mod,total,dd,ok,spendFlux,spendFrag,spendPush,breakdown};
+  return {
+    mod:mods.mod,
+    total,
+    dd,
+    ok,
+    spendFlux:mods.spendFlux,
+    spendFrag:mods.spendFrag,
+    spendPush:mods.spendPush,
+    breakdown:mods.breakdown
+  };
 }
 function stopDice(){
   if(!pending||pendingOutcome) return;
@@ -599,6 +707,10 @@ function stopDice(){
 }
 $('#btnStopDice').addEventListener('click', stopDice);
 $('#btnResolveDice').addEventListener('click', resolveRoll);
+['#useFlux','#usePush','#useFrag'].forEach(sel=>{
+  const el=$(sel);
+  if(el){ el.addEventListener('change', updateTestHint); }
+});
 function resolveRoll(){
   if(!pending||!roll||!pendingOutcome) return;
   const c=pending, outcome=pendingOutcome;
@@ -615,6 +727,7 @@ function resolveRoll(){
     resultBox.classList.add('show', outcome.ok?'success':'fail');
   }
   pending=null; roll=null; pendingOutcome=null;
+  updateTestHint();
   const stop=$('#btnStopDice'), cont=$('#btnResolveDice');
   if(stop){stop.disabled=false;}
   if(cont){cont.style.display='none';}
