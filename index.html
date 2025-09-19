@@ -423,9 +423,11 @@ function render(){
 }
 let pending=null, roll=null, timer=null;
 function handleChoice(c){
+  const immediateOnly = !!c.immediate && !c.go && !c.test;
   if(c.immediate) c.immediate(ST);
   if(c.go && !c.test){ ST.scene=c.go; addObj('Déplacement: '+SC[ST.scene].title); save(); render(); return; }
-  if(c.test){ pending=c; showTest(c); }
+  if(c.test){ pending=c; showTest(c); return; }
+  if(immediateOnly){ save(); render(); return; }
 }
 function showTest(c){
   $('#testPanel').style.display='block';
