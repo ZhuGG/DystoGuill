@@ -282,7 +282,7 @@ a{color:var(--a)}
   <div>2d6 — maintien = animation</div>
   <div class="cubes"><div class="cube anim" id="d1">•</div><div class="cube anim" id="d2">•</div></div>
   <div class="row diceActions" style="justify-content:center">
-    <button class="btn primary" id="btnStopDice">Arrêter</button>
+    <button class="btn primary" id="btnStopDice" aria-label="Figer le résultat du lancer">Figer le résultat</button>
     <button class="btn" id="btnResolveDice" style="display:none">Continuer</button>
   </div>
   <div id="diceInfo" class="small" aria-live="polite"></div>
@@ -971,7 +971,7 @@ function startDice(){
   $('#diceOverlay').style.display='flex';
   $('#d1').classList.add('anim'); $('#d2').classList.add('anim');
   $('#d1').textContent='•'; $('#d2').textContent='•';
-  $('#diceInfo').innerHTML='<div class="diceSummary">Les dés roulent…</div><div class="diceBreakdown">Clique sur « Arrêter » pour figer le résultat.</div>';
+  $('#diceInfo').innerHTML='<div class="diceSummary">Les dés roulent…</div><div class="diceBreakdown">Appuie sur « Figer le résultat » quand tu es prêt·e.</div>';
   const stop=$('#btnStopDice'), cont=$('#btnResolveDice');
   if(stop){stop.disabled=false;}
   if(cont){cont.style.display='none';}
@@ -1006,6 +1006,7 @@ function stopDice(){
     html+=`<div class="diceBreakdown">Modificateurs : ${mods}</div>`;
     html+=`<div class="diceBreakdown">Total : ${roll.sum} + ${pendingOutcome.mod} = ${pendingOutcome.total}</div>`;
     html+=`<div class="diceStatus ${pendingOutcome.ok?'success':'fail'}">${pendingOutcome.ok?'Réussite':'Échec'} — ${pendingOutcome.total} (DD ${pendingOutcome.dd})</div>`;
+    html+=`<div class="diceBreakdown">Clique sur « Continuer » pour résoudre ce lancer.</div>`;
   }
   $('#diceInfo').innerHTML=html;
   const stop=$('#btnStopDice'), cont=$('#btnResolveDice');
