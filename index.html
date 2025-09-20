@@ -148,6 +148,17 @@ a{color:var(--a)}
 }
 .choice .tags{pointer-events:none}
 .choice strong{display:block}
+.kabeGameBox{max-width:520px}
+.kabeGameIntro{margin:0 0 12px 0;color:var(--mut);line-height:1.6}
+.kabeGamePrompt{margin:0 0 10px 0;font-weight:600;color:var(--ink)}
+.kabeGameOptions{display:grid;gap:10px}
+.kabeGameOptions button{width:100%;text-align:left;align-items:flex-start;flex-direction:column;gap:4px}
+.kabeGameOptions button small{font-size:12px;color:var(--mut)}
+.kabeGameOptions button.success{outline:2px solid var(--good)}
+.kabeGameOptions button.fail{outline:2px solid var(--bad)}
+.kabeGameMessage{margin-top:12px;color:var(--mut);line-height:1.6}
+.kabeGameActions{justify-content:flex-end;margin-top:16px}
+.kabeGameActions .btn{min-width:140px}
 @media (max-width: 600px){
   body{font-size:14px}
   .header{padding:12px 10px;gap:10px}
@@ -338,6 +349,20 @@ a{color:var(--a)}
   </div>
 </div>
 
+<div id="kabeGameModal" class="modalScreen" style="display:none" aria-hidden="true">
+  <div class="modalBox kabeGameBox">
+    <h2>Jeu du Kabé clandestin</h2>
+    <p class="kabeGameIntro">Kabé orchestre trois plateaux successifs et change les macérations à chaque tournée. Devine les verres qui correspondent aux indices pour construire la meilleure série possible.</p>
+    <div id="kabeGamePrompt" class="kabeGamePrompt"></div>
+    <div id="kabeGameOptions" class="kabeGameOptions" role="group" aria-live="polite"></div>
+    <div id="kabeGameMessage" class="kabeGameMessage" role="status" aria-live="polite"></div>
+    <div class="row kabeGameActions">
+      <button class="btn subtle" id="kabeGameRetry" type="button">Nouveau plateau</button>
+      <button class="btn primary" id="kabeGameClose" type="button">Fermer</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ======= DATA ======= */
 const ARCH=[
@@ -424,7 +449,7 @@ function toggleNavMenu(){if(navWrap?.classList.contains('open')){closeNavMenu();
 updateViewIndicator(document.body.getAttribute('data-view')||'all');
 if(navToggle){navToggle.addEventListener('click',e=>{e.stopPropagation();toggleNavMenu();});}
 document.addEventListener('click',e=>{if(navWrap&&!navWrap.contains(e.target)){closeNavMenu();}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeNavMenu();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeNavMenu();closeKabeGame();}});
 function log(t){const L=$('#log');const d=document.createElement('div');d.className='line';d.textContent=t;L.prepend(d)}
 function addObj(t){ST.objLog.push({t:Date.now(),text:t}); renderTimeline() }
 function setView(v){
@@ -483,7 +508,7 @@ function renderMiniMap(){const v=s=>ST.visited.has(s)?'●':'○';
   ├─ ${v('place')} Place du Pont
   │   └─ ${v('collectif')} Assemblée couverte
   ├─ ${v('maz')} Mazagran
-  │   ├─ ${v('kabe')} Kabé clandestin
+  │   ├─ ${v('kabe')} Kabé — apéros clandestins
   │   └─ ${v('atelier')} Atelier de fortune
   ├─ ${v('ber')} Berges
   │   └─ ${v('patrouille')} Patrouille fluviale
@@ -499,6 +524,220 @@ function load(){try{const d=JSON.parse(localStorage.getItem(SAVE)||'null');if(!d
 /* exporter/importer */
 $('#btnExport').addEventListener('click',()=>{const blob=new Blob([localStorage.getItem(SAVE)||'{}'],{type:'application/json'});const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download='trame_douce_v6_4_sauvegarde.json';a.click();URL.revokeObjectURL(u)});
 $('#btnImport').addEventListener('click',()=>{const i=document.createElement('input');i.type='file';i.accept='application/json';i.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{localStorage.setItem(SAVE,r.result);load();render()};r.readAsText(f)};i.click()});
+
+const KABE_RECIPES=[
+ {id:'solaire',name:'Éclat Solaire',notes:'Agrumes confits, gingembre et éclats de cuivre.',clue:'agrume brillant avec une pointe métallique.'},
+ {id:'brume',name:'Brume d’Ozone',notes:'Verveine, absinthe douce et vapeur saline.',clue:'herbes froides et souffle d’ozone.'},
+ {id:'nocturne',name:'Nocturne Sourde',notes:'Café froid, cardamome et charbon tamisé.',clue:'café sombre et cardamome.'},
+ {id:'rosace',name:'Rosace du Pont',notes:'Fruits rouges, sucre fumé et paillettes de mica.',clue:'fruit rouge et sucre fumé.'},
+ {id:'sirene',name:'Sirène Cuivrée',notes:'Miel, piment doux et câbles trempés.',clue:'chaleur sucrée avec des reflets cuivrés.'},
+ {id:'nacelle',name:'Nacelle d’Orage',notes:'Poire pochée, poivre long et ozone discret.',clue:'fruit clair, poivre fin et électricité suspendue.'},
+ {id:'graphite',name:'Contrebas Graphite',notes:'Cassis sombre, réglisse et poussière de rail.',clue:'noir profond avec un relent métallique.'},
+ {id:'luciole',name:'Luciole Matinale',notes:'Thé jasmin, citron confit et vapeur douce.',clue:'lumière jaune, jasmin et zeste sucré.'}
+];
+let kabeGameState=null;
+
+function shuffleList(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function openKabeGame(){
+  startKabeSession();
+  const modal=document.getElementById('kabeGameModal');
+  if(modal){
+    modal.style.display='flex';
+    modal.setAttribute('aria-hidden','false');
+  }
+}
+
+function closeKabeGame(){
+  const modal=document.getElementById('kabeGameModal');
+  const wasOpen=modal && modal.style.display!=='none';
+  if(modal){
+    modal.style.display='none';
+    modal.setAttribute('aria-hidden','true');
+  }
+  kabeGameState=null;
+  updateKabeControls();
+  if(wasOpen){
+    render();
+  }
+}
+
+function startKabeSession(){
+  kabeGameState={round:1,maxRounds:3,score:0,history:[],resolved:false,finished:false,current:null};
+  prepareKabeRound();
+}
+
+function prepareKabeRound(){
+  if(!kabeGameState) return;
+  const pool=shuffleList([...KABE_RECIPES]);
+  const optionCount=Math.min(4,pool.length);
+  const choices=pool.slice(0,optionCount);
+  const target=choices[Math.floor(Math.random()*choices.length)];
+  kabeGameState.current={choices,target};
+  kabeGameState.resolved=false;
+  renderKabeGame();
+  updateKabeControls();
+}
+
+function renderKabeGame(){
+  const options=document.getElementById('kabeGameOptions');
+  const prompt=document.getElementById('kabeGamePrompt');
+  const message=document.getElementById('kabeGameMessage');
+  if(!options){
+    return;
+  }
+  options.innerHTML='';
+  if(!kabeGameState||!kabeGameState.current){
+    if(prompt) prompt.textContent='';
+    if(message) message.textContent='';
+    return;
+  }
+  const {round,maxRounds,score,resolved,finished,current}=kabeGameState;
+  if(prompt){
+    prompt.textContent=`Plateau ${round}/${maxRounds} — ${current.target.clue}`;
+  }
+  current.choices.forEach(choice=>{
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.className='btn';
+    btn.setAttribute('data-choice',choice.id);
+    btn.innerHTML=`<span>${choice.name}</span><small>${choice.notes}</small>`;
+    btn.addEventListener('click',()=>handleKabePick(choice.id));
+    options.appendChild(btn);
+  });
+  if(message && !resolved && !finished){
+    const base=ST.tags.has('Kabe_GameWon')
+      ? `Score : ${score}/${maxRounds}. Kabé observe tes variations.`
+      : `Score : ${score}/${maxRounds}. Une tournée parfaite allège ton stress.`;
+    message.textContent=base;
+  }
+}
+
+function updateKabeControls(){
+  const retry=document.getElementById('kabeGameRetry');
+  if(!retry){
+    return;
+  }
+  if(!kabeGameState){
+    retry.textContent='Nouveau plateau';
+    retry.disabled=false;
+    return;
+  }
+  if(kabeGameState.finished){
+    retry.textContent='Relancer une tournée';
+    retry.disabled=false;
+    return;
+  }
+  if(kabeGameState.round>=kabeGameState.maxRounds){
+    retry.textContent='Conclure la tournée';
+  }else{
+    retry.textContent='Plateau suivant';
+  }
+  retry.disabled=!kabeGameState.resolved;
+}
+
+function handleKabePick(id){
+  if(!kabeGameState||kabeGameState.resolved||!kabeGameState.current) return;
+  const {target}=kabeGameState.current;
+  const success=id===target.id;
+  if(success){
+    kabeGameState.score+=1;
+  }
+  kabeGameState.resolved=true;
+  kabeGameState.history.push({round:kabeGameState.round,choice:id,success,target:target.id});
+  const options=document.getElementById('kabeGameOptions');
+  if(options){
+    options.querySelectorAll('button').forEach(btn=>{
+      const choiceId=btn.getAttribute('data-choice');
+      if(choiceId===target.id){
+        btn.classList.add('success');
+      }
+      if(choiceId===id && !success){
+        btn.classList.add('fail');
+      }
+      btn.disabled=true;
+    });
+  }
+  const message=document.getElementById('kabeGameMessage');
+  if(message){
+    const base=`Score : ${kabeGameState.score}/${kabeGameState.maxRounds}. `;
+    message.textContent=success
+      ? `${base}Tu identifies ${target.name} sans hésiter.`
+      : `${base}Kabé sourit : c’était ${target.name}.`;
+  }
+  if(kabeGameState.round>=kabeGameState.maxRounds){
+    finishKabeSession();
+  }
+  updateKabeControls();
+  bars();
+  renderAscii();
+  save();
+}
+
+function finishKabeSession(){
+  if(!kabeGameState) return;
+  kabeGameState.finished=true;
+  const score=kabeGameState.score;
+  const total=kabeGameState.maxRounds;
+  const message=document.getElementById('kabeGameMessage');
+  let text=`Série terminée : ${score}/${total} verres justes.`;
+  if(score===total){
+    if(!ST.tags.has('Kabe_GameWon')){
+      if(ST.stress>0){
+        ST.stress=Math.max(0,ST.stress-1);
+      }
+      ST.tags.add('Kabe_GameWon');
+      log('Kabé sourit : cocktails parfaits. Stress -1.');
+      addObj('Tournée parfaite chez Kabé : stress allégé.');
+      text+=' La tournée parfaite te déleste d’un stress.';
+    }else{
+      text+=' Kabé hoche la tête, complice.';
+    }
+  }else if(score>=Math.ceil(total/2)){
+    text+=' Kabé retient ta constance pour la prochaine ronde.';
+  }else{
+    text+=' Kabé te glisse un verre d’eau et te propose de recommencer.';
+  }
+  if(message){
+    message.textContent=text;
+  }
+  updateKabeControls();
+}
+
+function advanceKabeRound(){
+  if(!kabeGameState){
+    startKabeSession();
+    return;
+  }
+  if(kabeGameState.finished){
+    startKabeSession();
+    return;
+  }
+  if(!kabeGameState.resolved) return;
+  if(kabeGameState.round<kabeGameState.maxRounds){
+    kabeGameState.round+=1;
+    prepareKabeRound();
+  }
+}
+
+const kabeRetry=document.getElementById('kabeGameRetry');
+if(kabeRetry){
+  kabeRetry.addEventListener('click',()=>{
+    advanceKabeRound();
+  });
+}
+const kabeClose=document.getElementById('kabeGameClose');
+if(kabeClose){
+  kabeClose.addEventListener('click',()=>{
+    closeKabeGame();
+  });
+}
 
 /* ======= SCENES ======= */
 const SC={
@@ -601,7 +840,7 @@ const SC={
     {label:'Lire le feuillet annoté',hint:'NEU/Mnémographie (10) — repérer la trappe',test:{stat:'NEU',skill:'Mnémographie',dd:10,
       ok:s=>{s.tags.add('Motif_R');s.objective='Atteindre la trappe technique depuis les Berges.';addObj('Indice : localisation de la trappe technique vers T1.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Le motif te vrille. +1 Stress.')}}},
     {label:'Saisir le coffret scellé',hint:'Ajouter l’objet à ton inventaire',immediate:s=>{s.inv.push('Coffret scellé');s.objective='Transporter le coffret sans attirer l’attention.';addObj('Coffret scellé rangé dans ton sac.');}},
-    {label:'Franchir la porte du Kabé',hint:'Respirer un instant loin de la Sourdine',when:()=>ST.stress>0&&!ST.tags.has('Kabe_Apero'),go:'maz_apero'},
+    {label:'Franchir la porte chez Kabé',hint:'Respirer un instant loin de la Sourdine',when:()=>ST.stress>0&&!ST.tags.has('Kabe_Apero'),go:'maz_apero'},
     {label:'Descendre vers les Berges',hint:'Prendre la cave jusqu’aux darses',go:'ber_entry'},
     {label:'Se faufiler vers l’atelier latéral',hint:'Rencontrer les ouvriers de la friche',go:'maz_atelier'},
     {label:'Retourner vers la Place du Pont',hint:'Faire le point avec Noor, Milo ou le Collectif',go:'place_return'}
@@ -614,16 +853,21 @@ const SC={
     ST.tags.add('Kabe_Apero');
     ST.stress=Math.max(0,ST.stress-1);
     addObj('Kabé clandestin : tu respires avec la ronde. Stress -1.');
-    log('Le Kabé te délasse. -1 Stress.');
+    log('Kabé te délasse. -1 Stress.');
    }
    const souffle=first
     ? 'Un verre tiède passe de main en main, la rumeur couvre la Sourdine. Ton souffle ralentit.'
     : 'Les habitué·es te reconnaissent et gardent une place au chaud.';
+   const defi=ST.tags.has('Kabe_GameWon')
+    ? 'Kabé t’invite à recommencer la série : trois plateaux, juste pour tenir la rumeur en haleine.'
+    : 'Kabé prépare une tournée en trois plateaux : aligner les macérations te permettra de relâcher la pression.';
    return `
-  <p>Derrière la porte blindée, le Kabé diffuse des effluves d’agrumes et de cuivre. Les visages se relâchent à la lueur des lampes maquillées.</p>
-  <p>${souffle}</p>`;
+  <p>Kabé orchestre le refuge : il dirige les apéros clandestins, rythme les souffles et surveille la Sourdine qui cogne.</p>
+  <p>${souffle}</p>
+  <p>${defi}</p>`;
   },
-  choices:[
+  choices:()=>[
+    {label:'Tenter le défi de dégustation de Kabé',hint:ST.tags.has('Kabe_GameWon')?'Mini-jeu : rejouer la tournée à trois plateaux':'Mini-jeu : réussir la série parfaite (stress -1 lors de la première réussite)',immediate:()=>openKabeGame()},
     {label:'Chuchoter un merci et ressortir',hint:'Retourner à la cour de Mazagran',go:'maz_common'},
     {label:'Suivre l’escalier vers les Berges',hint:'Retrouver la cave en douceur',go:'ber_entry'},
     {label:'Remonter vers la Place du Pont',hint:'Partager la chaleur du Kabé avec tes contacts',go:'place_return'}
