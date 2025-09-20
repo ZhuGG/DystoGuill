@@ -50,6 +50,11 @@ a{color:var(--a)}
 .resbar{display:flex;gap:8px}.res{flex:1;background:var(--p2);border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .res .lbl{font-size:12px;color:var(--mut);padding:6px 8px;border-bottom:1px solid var(--line)} .meter{height:6px;background:var(--line)}
 .fill{height:6px;background:linear-gradient(90deg,var(--a),var(--b))} .fill.bad{background:linear-gradient(90deg,var(--bad),var(--warn))}
+.inventory{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.inventory li{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:10px;background:var(--p2);border:1px solid var(--line);font-size:13px}
+.inventory-slot{display:inline-flex;align-items:center;justify-content:center;width:32px;height:24px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid var(--line);font-weight:700;color:var(--mut);font-variant-numeric:tabular-nums}
+.inventory-item{flex:1}
+.inventory-empty{justify-content:center;color:var(--mut);font-style:italic}
 .ascii{font-family:Consolas,Menlo,monospace;font-size:12px;background:#0b0f15;border:1px solid var(--line);border-radius:12px;padding:10px;white-space:pre-wrap;color:#b9c7da}
 /* story */
 .storyImage{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#0a0e13}
@@ -216,6 +221,8 @@ a{color:var(--a)}
       </div>
       <div class="sectionTitle">Mini-carte</div>
       <div class="ascii" id="miniMap"></div>
+      <div class="sectionTitle">Inventaire</div>
+      <ul class="inventory" id="inventoryList" aria-live="polite"></ul>
       <div class="sectionTitle">Sauvegarde</div>
       <p class="sectionIntro">Enregistre ta progression en local ou reprends une partie précédente depuis un fichier.</p>
       <div class="saveActions">
@@ -408,6 +415,7 @@ const $=q=>document.querySelector(q);
 const navWrap=document.getElementById('navWrap');
 const navToggle=document.getElementById('navToggle');
 const navMenu=document.getElementById('navMenu');
+const slotLabel=idx=>String(idx+1).padStart(2,'0');
 
 function updateViewIndicator(v){const badge=$('#viewIndicator'); if(badge){badge.textContent='Vue : '+(VIEW_LABELS[v]||'Tous');}}
 function openNavMenu(){if(!navWrap)return;navWrap.classList.add('open');if(navToggle)navToggle.setAttribute('aria-expanded','true');}
@@ -435,16 +443,40 @@ function bars(){ $('#stressVal').textContent=ST.stress; $('#hpVal').textContent=
 function renderStats(){const r=$('#statsRow');r.innerHTML='';const s=ST.stats;
   const mk=(cls,nm,v)=>`<div class="stat ${cls}"><div class="dot"></div><div class="name">${nm}</div><div class="val">${v}</div></div>`;
   r.insertAdjacentHTML('beforeend',mk('neu','Neuro',s.NEU)); r.insertAdjacentHTML('beforeend',mk('vol','Volonté',s.VOL));
-  r.insertAdjacentHTML('beforeend',mk('som','Somatique',s.SOM)); r.insertAdjacentHTML('beforeend',mk('cin','Cinétique',s.CIN)); }
+  r.insertAdjacentHTML('beforeend',mk('som','Somatique',s.SOM)); r.insertAdjacentHTML('beforeend',mk('cin','Cinétique',s.CIN));
+}
+function renderInventory(){
+  const list=$('#inventoryList');
+  if(!list) return;
+  list.innerHTML='';
+  if(!ST.inv.length){
+    const empty=document.createElement('li');
+    empty.className='inventory-empty';
+    empty.textContent='Aucun objet.';
+    list.appendChild(empty);
+    return;
+  }
+  ST.inv.forEach((item,idx)=>{
+    const li=document.createElement('li');
+    li.innerHTML=`<span class="inventory-slot">${slotLabel(idx)}</span><span class="inventory-item">${item}</span>`;
+    list.appendChild(li);
+  });
+}
 function renderAscii(){ if(!ST.ascii){$('#asciiHud').textContent='(désactivé)'; $('#miniMap').textContent='(désactivé)'; return;}
-  $('#asciiHud').textContent=`╔══[ ATH ]══════════════════════════════════════╗
-║ ${ST.arch?ST.arch.name:'—'}
-║ NEU ${ST.stats.NEU} VOL ${ST.stats.VOL} SOM ${ST.stats.SOM} CIN ${ST.stats.CIN}
-║ Stress ${'█'.repeat(ST.stress)}${'░'.repeat(5-ST.stress)}  Bless ${'█'.repeat(ST.hp)}${'░'.repeat(5-ST.hp)}
-║ Flux ◆${ST.flux}  Frag ✦${ST.frag}
-║ Inv: ${ST.inv.join(' • ')||'—'}
-║ Scène: ${ST.scene}  Tags: ${[...ST.tags].join(', ')||'—'}
-╚════════════════════════════════════════════════╝`; renderMiniMap(); }
+  const asciiLines=[
+    '╔══[ ATH ]══════════════════════════════════════╗',
+    `║ ${ST.arch?ST.arch.name:'—'}`,
+    `║ NEU ${ST.stats.NEU} VOL ${ST.stats.VOL} SOM ${ST.stats.SOM} CIN ${ST.stats.CIN}`,
+    `║ Stress ${'█'.repeat(ST.stress)}${'░'.repeat(5-ST.stress)}  Bless ${'█'.repeat(ST.hp)}${'░'.repeat(5-ST.hp)}`,
+    `║ Flux ◆${ST.flux}  Frag ✦${ST.frag}`,
+    '║ Inventaire:'
+  ];
+  if(ST.inv.length){ ST.inv.forEach((item,idx)=>{ asciiLines.push(`║   ${slotLabel(idx)} ▸ ${item}`); }); }
+  else { asciiLines.push('║   (vide)'); }
+  asciiLines.push(`║ Scène: ${ST.scene}`);
+  asciiLines.push(`║ Tags: ${[...ST.tags].join(', ')||'—'}`);
+  asciiLines.push('╚════════════════════════════════════════════════╝');
+  $('#asciiHud').textContent=asciiLines.join('\n'); renderMiniMap(); }
 function renderMiniMap(){const v=s=>ST.visited.has(s)?'●':'○';
  $('#miniMap').textContent=`[Guillotière]
   ${v('prologue')} Prologue
@@ -837,7 +869,7 @@ function render(){
     div.addEventListener('click',()=>handleChoice(c));
     box.appendChild(div);
   });
-  bars(); renderStats(); renderAscii(); $('#objectiveText').textContent=ST.objective;
+  bars(); renderStats(); renderInventory(); renderAscii(); $('#objectiveText').textContent=ST.objective;
 }
 let pending=null, roll=null, pendingOutcome=null;
 function resolveSceneTarget(target,outcome){
@@ -1120,7 +1152,7 @@ if(mobileMq){
 }
 setView(document.body.getAttribute('data-view')||'all');
 load();
-renderStats(); renderAscii(); renderTimeline(); bars(); render();
+renderStats(); renderInventory(); renderAscii(); renderTimeline(); bars(); render();
 if(!ST.arch){ $('#introModal').style.display='flex'; }
 </script>
 </body>
