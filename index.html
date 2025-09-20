@@ -358,6 +358,7 @@ const VISIT_KEYS=[
  {key:'place',match:s=>s.startsWith('place_')},
  {key:'collectif',match:s=>s==='place_collectif'},
  {key:'maz',match:s=>s.startsWith('maz_')},
+ {key:'kabe',match:s=>s==='maz_apero'},
  {key:'atelier',match:s=>s==='maz_atelier'},
  {key:'ber',match:s=>s.startsWith('ber_')},
  {key:'patrouille',match:s=>s==='ber_patrouille'},
@@ -450,6 +451,7 @@ function renderMiniMap(){const v=s=>ST.visited.has(s)?'●':'○';
   ├─ ${v('place')} Place du Pont
   │   └─ ${v('collectif')} Assemblée couverte
   ├─ ${v('maz')} Mazagran
+  │   ├─ ${v('kabe')} Kabé clandestin
   │   └─ ${v('atelier')} Atelier de fortune
   ├─ ${v('ber')} Berges
   │   └─ ${v('patrouille')} Patrouille fluviale
@@ -567,9 +569,32 @@ const SC={
     {label:'Lire le feuillet annoté',hint:'NEU/Mnémographie (10) — repérer la trappe',test:{stat:'NEU',skill:'Mnémographie',dd:10,
       ok:s=>{s.tags.add('Motif_R');s.objective='Atteindre la trappe technique depuis les Berges.';addObj('Indice : localisation de la trappe technique vers T1.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Le motif te vrille. +1 Stress.')}}},
     {label:'Saisir le coffret scellé',hint:'Ajouter l’objet à ton inventaire',immediate:s=>{s.inv.push('Coffret scellé');s.objective='Transporter le coffret sans attirer l’attention.';addObj('Coffret scellé rangé dans ton sac.');}},
+    {label:'Franchir la porte du Kabé',hint:'Respirer un instant loin de la Sourdine',when:()=>ST.stress>0&&!ST.tags.has('Kabe_Apero'),go:'maz_apero'},
     {label:'Descendre vers les Berges',hint:'Prendre la cave jusqu’aux darses',go:'ber_entry'},
     {label:'Se faufiler vers l’atelier latéral',hint:'Rencontrer les ouvriers de la friche',go:'maz_atelier'},
     {label:'Retourner vers la Place du Pont',hint:'Faire le point avec Noor, Milo ou le Collectif',go:'place_return'}
+ ]
+},
+ maz_apero:{
+  img:IMG.maz,title:'Mazagran — Kabé clandestin',text:()=>{
+   const first=!ST.tags.has('Kabe_Apero');
+   if(first){
+    ST.tags.add('Kabe_Apero');
+    ST.stress=Math.max(0,ST.stress-1);
+    addObj('Kabé clandestin : tu respires avec la ronde. Stress -1.');
+    log('Le Kabé te délasse. -1 Stress.');
+   }
+   const souffle=first
+    ? 'Un verre tiède passe de main en main, la rumeur couvre la Sourdine. Ton souffle ralentit.'
+    : 'Les habitué·es te reconnaissent et gardent une place au chaud.';
+   return `
+  <p>Derrière la porte blindée, le Kabé diffuse des effluves d’agrumes et de cuivre. Les visages se relâchent à la lueur des lampes maquillées.</p>
+  <p>${souffle}</p>`;
+  },
+  choices:[
+    {label:'Chuchoter un merci et ressortir',hint:'Retourner à la cour de Mazagran',go:'maz_common'},
+    {label:'Suivre l’escalier vers les Berges',hint:'Retrouver la cave en douceur',go:'ber_entry'},
+    {label:'Remonter vers la Place du Pont',hint:'Partager la chaleur du Kabé avec tes contacts',go:'place_return'}
   ]
  },
  maz_noor:{
