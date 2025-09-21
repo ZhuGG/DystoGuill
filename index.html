@@ -72,11 +72,106 @@ body::after{
 @keyframes glowDrift{0%{transform:scale(1) translate3d(0,0,0);}100%{transform:scale(1.08) translate3d(8px,-12px,0);}}
 @keyframes choiceRise{0%{opacity:0;transform:translateY(18px);}100%{opacity:1;transform:translateY(0);}}
 @keyframes glowPulse{0%{box-shadow:0 0 0 rgba(255,179,94,.0);}50%{box-shadow:0 0 30px rgba(255,179,94,.25);}100%{box-shadow:0 0 0 rgba(255,179,94,.0);}}
+
+@keyframes headerSweep{0%{transform:translateX(-40px);}50%{transform:translateX(36px);}100%{transform:translateX(-40px);}}
+@keyframes signalSweep{0%{background-position:0 0,0 0,0 0;}100%{background-position:180px -120px,-140px 160px,220px 180px;}}
 a{color:var(--a)}
-.header{position:sticky;top:0;z-index:20;display:flex;flex-direction:column;gap:10px;padding:calc(12px + env(safe-area-inset-top,0px)) 14px 14px;border-bottom:1px solid rgba(255,179,94,.22);
-  background:linear-gradient(180deg,rgba(9,11,15,.96),rgba(10,13,18,.72));backdrop-filter:blur(14px);box-shadow:0 18px 42px rgba(0,0,0,.45);transition:box-shadow .3s ease,border-color .3s ease;isolation:isolate}
-.header::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 12% 20%,rgba(119,244,255,.12),transparent 55%);
-  opacity:.6;pointer-events:none}
+.header{
+  position:sticky;
+  top:0;
+  z-index:20;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding:calc(12px + env(safe-area-inset-top,0px)) 14px 14px;
+  border-bottom:1px solid rgba(255,179,94,.22);
+  background:linear-gradient(180deg,rgba(9,11,15,.96),rgba(10,13,18,.72));
+  backdrop-filter:blur(14px);
+  box-shadow:0 18px 42px rgba(0,0,0,.45);
+  transition:box-shadow .3s ease,border-color .3s ease,transform .35s ease;
+  isolation:isolate;
+  overflow:hidden;
+  transform:translateZ(0);
+}
+.header::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:radial-gradient(circle at 12% 20%,rgba(119,244,255,.12),transparent 55%);
+  opacity:.6;
+  pointer-events:none;
+  z-index:-1;
+}
+.header::after{
+  content:"";
+  position:absolute;
+  left:-20%;
+  right:-20%;
+  bottom:-32px;
+  height:64px;
+  background:linear-gradient(115deg,rgba(255,179,94,.2),rgba(101,241,221,.08));
+  opacity:.45;
+  filter:blur(18px);
+  animation:headerSweep 18s linear infinite;
+  pointer-events:none;
+  z-index:-1;
+}
+.header.header-hidden{
+  transform:translateY(calc(-100% - 16px));
+  box-shadow:0 18px 42px rgba(0,0,0,0);
+}
+.header.collapsed .headerCollapseBtn .collapseIcon{transform:rotate(180deg);}
+.headerMeta{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  transition:max-height .35s ease,opacity .35s ease,filter .35s ease,transform .35s ease;
+  max-height:520px;
+  overflow:hidden;
+}
+.header.collapsed .headerMeta{
+  max-height:0;
+  opacity:0;
+  filter:blur(3px);
+  transform:translateY(-8px);
+  pointer-events:none;
+}
+.headerCollapseBtn{
+  display:none;
+  align-items:center;
+  gap:8px;
+  margin-left:auto;
+  padding:8px 14px;
+  border-radius:999px;
+  border:1px solid rgba(255,179,94,.26);
+  background:linear-gradient(180deg,rgba(18,23,31,.92),rgba(9,11,16,.88));
+  color:var(--mut);
+  font-size:11px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  cursor:pointer;
+  box-shadow:0 12px 28px rgba(0,0,0,.4);
+  transition:transform .2s ease,box-shadow .2s ease,background .3s ease;
+}
+.headerCollapseBtn .collapseLabel{font-weight:600;letter-spacing:.9px;}
+.headerCollapseBtn .collapseIcon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background:rgba(255,179,94,.12);
+  color:var(--a);
+  transition:transform .3s ease,background .3s ease;
+}
+.headerCollapseBtn:hover{
+  transform:translateY(-1px);
+  box-shadow:0 16px 32px rgba(0,0,0,.45);
+}
+.headerCollapseBtn:hover .collapseIcon{background:rgba(255,179,94,.22);}
+.headerCollapseBtn:focus-visible{outline:2px solid var(--glow);outline-offset:3px;}
+
 .headerTop{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .header .row{display:flex;gap:8px;flex-wrap:wrap}
 .header .title{font-weight:800;letter-spacing:.6px;flex:1;display:flex;align-items:center;gap:10px;text-transform:uppercase;text-shadow:0 0 18px rgba(101,241,221,.3)}
@@ -96,8 +191,31 @@ a{color:var(--a)}
 .iconBtn:hover{transform:translateY(-1px);box-shadow:0 10px 26px rgba(0,0,0,.4)}
 .menuWrap{position:relative}
 .menuWrap.open .iconBtn{outline:2px solid var(--a)}
-.navMenu{display:none;position:absolute;right:0;top:calc(100% + 10px);background:var(--p2);border:1px solid rgba(255,179,94,.22);border-radius:14px;padding:10px;min-width:190px;box-shadow:0 18px 44px rgba(0,0,0,.6);flex-direction:column;gap:6px}
-.menuWrap.open .navMenu{display:flex}
+
+.navMenu{
+  display:flex;
+  position:absolute;
+  right:0;
+  top:calc(100% + 10px);
+  background:var(--p2);
+  border:1px solid rgba(255,179,94,.22);
+  border-radius:14px;
+  padding:10px;
+  min-width:190px;
+  box-shadow:0 18px 44px rgba(0,0,0,.6);
+  flex-direction:column;
+  gap:6px;
+  opacity:0;
+  transform:translateY(-6px) scale(.95);
+  pointer-events:none;
+  transition:opacity .18s ease,transform .22s ease;
+}
+.menuWrap.open .navMenu{
+  opacity:1;
+  transform:translateY(0) scale(1);
+  pointer-events:auto;
+}
+
 .navMenu .tabbtn{width:100%;text-align:left;justify-content:flex-start}
 .tabbtn,.btn{padding:11px 14px;border:1px solid rgba(255,179,94,.22);background:linear-gradient(180deg,rgba(18,22,30,.95),rgba(12,15,21,.88));border-radius:12px;color:var(--ink);cursor:pointer;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-align:center;transition:transform .2s ease,box-shadow .2s ease,outline .2s ease}
 .tabbtn:hover,.btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(0,0,0,.45)}
@@ -106,7 +224,25 @@ a{color:var(--a)}
 .tabbtn:focus-visible,.btn:focus-visible{outline:2px solid var(--glow);outline-offset:2px}
 .badge{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,179,94,.2);background:rgba(14,18,24,.7);color:var(--mut);padding:4px 10px;border-radius:999px;font-size:12px;box-shadow:inset 0 0 0 1px rgba(119,244,255,.08);backdrop-filter:blur(8px)}
 .icon{width:16px;height:16px;opacity:.9}
-.grid{display:grid;gap:20px;grid-template-columns:minmax(280px,320px) minmax(0,1fr) minmax(300px,360px);max-width:1280px;margin:auto;padding:22px 22px calc(22px + var(--safe-bottom));animation:panelIn .6s ease both}
+
+.grid{display:grid;gap:20px;grid-template-columns:minmax(280px,320px) minmax(0,1fr) minmax(300px,360px);max-width:1280px;margin:auto;padding:22px 22px calc(22px + var(--safe-bottom));animation:panelIn .6s ease both;position:relative;z-index:1}
+.grid::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(circle at 18% -10%,rgba(255,179,94,.18),transparent 55%),
+    radial-gradient(circle at 92% 120%,rgba(101,241,221,.14),transparent 60%),
+    repeating-linear-gradient(125deg,rgba(255,179,94,.04) 0 6px,transparent 6px 24px);
+  mix-blend-mode:screen;
+  opacity:.32;
+  pointer-events:none;
+  border-radius:28px;
+  filter:blur(0);
+  animation:signalSweep 28s linear infinite;
+  z-index:-1;
+}
+
 .col{position:relative;background:var(--p);border:1px solid rgba(255,179,94,.18);border-radius:16px;box-shadow:var(--sh);overflow:hidden;display:flex;flex-direction:column;gap:16px;transition:transform .35s ease,box-shadow .35s ease}
 .col::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% -10%,rgba(119,244,255,.08),transparent 55%),radial-gradient(circle at 90% 120%,rgba(242,117,77,.08),transparent 60%);opacity:.7;pointer-events:none}
 .col:hover{transform:translateY(-4px);box-shadow:0 28px 48px rgba(0,0,0,.55)}
@@ -144,11 +280,13 @@ a{color:var(--a)}
 .storyImage:hover img{transform:scale(1.05)}
 @media (max-width: 900px){
   .storyImage img{height:200px}
-  .header{position:sticky;gap:12px}
+  .header{gap:8px;padding:calc(10px + env(safe-area-inset-top,0px)) 12px 12px}
   .header .title{font-size:18px}
-  .headerTop{align-items:flex-start}
+  .headerTop{align-items:flex-start;gap:10px}
   .headerControls{margin-left:0;width:100%;justify-content:flex-start;flex-wrap:wrap}
   .headerControls .btn,.headerControls .iconBtn{width:auto}
+  .headerCollapseBtn{display:inline-flex;font-size:10px;padding:7px 12px}
+  .headerMeta{gap:8px}
   .headerBadges{width:100%;justify-content:flex-start}
   .headerLore{font-size:12px}
   .headerTicker{width:100%}
@@ -208,8 +346,10 @@ a{color:var(--a)}
 .diceStatus.fail{color:var(--bad)}
 @media (prefers-reduced-motion: reduce){
   .cube{animation:none!important}
-  .grid,.choice,.storyImage::after,.headerTicker span{animation:none!important}
-  .choice,.col,.btn,.iconBtn{transition:none!important}
+
+  .grid,.choice,.storyImage::after,.headerTicker span,.header::after,.grid::before{animation:none!important}
+  .choice,.col,.btn,.iconBtn,.header,.headerCollapseBtn,.navMenu{transition:none!important}
+
 }
 .anim{animation:roll 1s ease-in-out infinite}
 @keyframes roll{0%{transform:rotate(0)}33%{transform:rotate(12deg)}66%{transform:rotate(-9deg)}100%{transform:rotate(0)}}
@@ -285,10 +425,12 @@ a{color:var(--a)}
 .kabeGameActions .btn{min-width:160px}
 @media (max-width: 600px){
   body{font-size:14px}
-  .header{padding:12px 10px;gap:10px}
+  .header{padding:calc(9px + env(safe-area-inset-top,0px)) 10px 10px;gap:8px}
   .header .title{font-size:16px;line-height:1.25}
   .headerTop{gap:8px}
   .headerControls{gap:6px}
+  .headerCollapseBtn{width:100%;justify-content:space-between}
+  .headerMeta{gap:6px}
   .headerBadges{gap:6px}
   .headerLore{font-size:11px}
   .headerTicker{font-size:11px}
@@ -323,15 +465,15 @@ a{color:var(--a)}
 </style>
 </head>
 <body data-view="all">
-<header class="header">
+<header class="header" data-collapsed="false">
   <div class="headerTop">
     <div class="title">⟡ TRAME DOUCE — <span id="loc">Guillotière</span></div>
     <div class="headerControls">
       <span class="badge viewBadge" id="viewIndicator">Vue : Tous</span>
       <button class="btn ghost" id="asciiBtn">HUD ASCII ✓</button>
       <div class="menuWrap" id="navWrap">
-        <button class="iconBtn" id="navToggle" aria-haspopup="true" aria-expanded="false" aria-label="Changer de vue">⋯</button>
-        <div class="navMenu" id="navMenu" role="menu">
+        <button class="iconBtn" id="navToggle" aria-haspopup="true" aria-expanded="false" aria-label="Changer de vue" aria-controls="navMenu">⋯</button>
+        <div class="navMenu" id="navMenu" role="menu" aria-hidden="true">
           <button class="tabbtn" data-viewto="all" aria-pressed="true" role="menuitem">Tous</button>
           <button class="tabbtn" data-viewto="story" role="menuitem">Histoire</button>
           <button class="tabbtn" data-viewto="profile" role="menuitem">Profil</button>
@@ -339,14 +481,22 @@ a{color:var(--a)}
         </div>
       </div>
     </div>
+    <button class="headerCollapseBtn" id="headerCollapseBtn" type="button" aria-expanded="true" aria-controls="headerMeta" aria-label="Replier le briefing Sourdine">
+      <span class="collapseIcon" aria-hidden="true">▾</span>
+      <span class="collapseLabel">Briefing Sourdine</span>
+    </button>
   </div>
-  <p class="headerLore">La pluie magnétique se mêle à la poussière rouge. Chaque décision illumine — ou condamne — les couloirs désertés.</p>
-  <div class="headerTicker" aria-hidden="true"><span>Transmission pirate : &nbsp; «&nbsp;Quartier sous quarantaine douce. Cherche signaux stables. Méfiance envers la milice de la Sourdine.&nbsp;» ✶ Transmission pirate : &nbsp; «&nbsp;Quartier sous quarantaine douce. Cherche signaux stables. Méfiance envers la milice de la Sourdine.&nbsp;»</span></div>
-  <div class="row headerBadges">
-    <span class="badge"><img class="icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Heart_coraz%C3%B3n.svg/32px-Heart_coraz%C3%B3n.svg.png"> Stress <span id="stressVal">2</span>/5</span>
-    <span class="badge"><img class="icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/OOjs_UI_icon_firstaid-ltr.svg/32px-OOjs_UI_icon_firstaid-ltr.svg.png"> Blessures <span id="hpVal">5</span>/5</span>
-    <span class="badge"><img class="icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Circle-icons-bulb.svg/32px-Circle-icons-bulb.svg.png"> Flux ◆ <span id="fluxVal">2</span></span>
-    <span class="badge"><img class="icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Noun_Project_document_icon_1409169_cc.svg/32px-Noun_Project_document_icon_1409169_cc.svg.png"> Fragments ✦ <span id="fragVal">2</span></span>
+
+  <div class="headerMeta" id="headerMeta">
+    <p class="headerLore">La pluie magnétique se mêle à la poussière rouge. Chaque décision illumine — ou condamne — les couloirs désertés.</p>
+    <div class="headerTicker" aria-hidden="true"><span>Transmission pirate : &nbsp; «&nbsp;Quartier sous quarantaine douce. Cherche signaux stables. Méfiance envers la milice de la Sourdine.&nbsp;» ✶ Transmission pirate : &nbsp; «&nbsp;Quartier sous quarantaine douce. Cherche signaux stables. Méfiance envers la milice de la Sourdine.&nbsp;»</span></div>
+    <div class="row headerBadges">
+      <span class="badge"><img class="icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Heart_coraz%C3%B3n.svg/32px-Heart_coraz%C3%B3n.svg.png"> Stress <span id="stressVal">2</span>/5</span>
+      <span class="badge"><img class="icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/OOjs_UI_icon_firstaid-ltr.svg/32px-OOjs_UI_icon_firstaid-ltr.svg.png"> Blessures <span id="hpVal">5</span>/5</span>
+      <span class="badge"><img class="icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Circle-icons-bulb.svg/32px-Circle-icons-bulb.svg.png"> Flux ◆ <span id="fluxVal">2</span></span>
+      <span class="badge"><img class="icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Noun_Project_document_icon_1409169_cc.svg/32px-Noun_Project_document_icon_1409169_cc.svg.png"> Fragments ✦ <span id="fragVal">2</span></span>
+    </div>
+
   </div>
 </header>
 
@@ -573,6 +723,58 @@ const $=q=>document.querySelector(q);
 const navWrap=document.getElementById('navWrap');
 const navToggle=document.getElementById('navToggle');
 const navMenu=document.getElementById('navMenu');
+const header=document.querySelector('.header');
+const headerCollapseBtn=document.getElementById('headerCollapseBtn');
+const mobileHeaderMQ=window.matchMedia('(max-width: 900px)');
+let headerCollapsed=false;
+let lastScrollY=window.scrollY;
+function revealHeader(){if(header)header.classList.remove('header-hidden');}
+function setHeaderCollapsed(state){
+  if(!header)return;
+  headerCollapsed=!!state;
+  header.classList.toggle('collapsed',headerCollapsed);
+  header.setAttribute('data-collapsed',headerCollapsed?'true':'false');
+  if(headerCollapseBtn){
+    headerCollapseBtn.setAttribute('aria-expanded',headerCollapsed?'false':'true');
+    headerCollapseBtn.setAttribute('aria-label',headerCollapsed?'Déployer le briefing Sourdine':'Replier le briefing Sourdine');
+  }
+}
+function syncHeaderForViewport(){
+  if(!header)return;
+  if(mobileHeaderMQ.matches){
+    setHeaderCollapsed(true);
+    revealHeader();
+  }else{
+    setHeaderCollapsed(false);
+    revealHeader();
+  }
+  lastScrollY=window.scrollY;
+}
+function handleHeaderScroll(){
+  if(!header||!mobileHeaderMQ.matches)return;
+  const currentY=window.scrollY;
+  if(navWrap?.classList.contains('open')){lastScrollY=currentY;return;}
+  if(currentY>lastScrollY+16&&currentY>80){
+    header.classList.add('header-hidden');
+  }else if(currentY<lastScrollY-12||currentY<16){
+    header.classList.remove('header-hidden');
+  }
+  lastScrollY=currentY;
+}
+syncHeaderForViewport();
+if(typeof mobileHeaderMQ.addEventListener==='function'){
+  mobileHeaderMQ.addEventListener('change',()=>{syncHeaderForViewport();});
+}else if(typeof mobileHeaderMQ.addListener==='function'){
+  mobileHeaderMQ.addListener(()=>{syncHeaderForViewport();});
+}
+if(headerCollapseBtn){
+  headerCollapseBtn.addEventListener('click',()=>{
+    if(!mobileHeaderMQ.matches)return;
+    setHeaderCollapsed(!headerCollapsed);
+    revealHeader();
+  });
+}
+window.addEventListener('scroll',handleHeaderScroll,{passive:true});
 const slotLabel=idx=>String(idx+1).padStart(2,'0');
 const hasItem=name=>ST.inv.includes(name);
 function gainItem(name){
@@ -644,8 +846,19 @@ function setupFocusTrap(modalBox){
 document.querySelectorAll('.modalBox').forEach(setupFocusTrap);
 
 function updateViewIndicator(v){const badge=$('#viewIndicator'); if(badge){badge.textContent='Vue : '+(VIEW_LABELS[v]||'Tous');}}
-function openNavMenu(){if(!navWrap)return;navWrap.classList.add('open');if(navToggle)navToggle.setAttribute('aria-expanded','true');}
-function closeNavMenu(){if(!navWrap)return;navWrap.classList.remove('open');if(navToggle)navToggle.setAttribute('aria-expanded','false');}
+function openNavMenu(){
+  if(!navWrap)return;
+  revealHeader();
+  navWrap.classList.add('open');
+  if(navToggle)navToggle.setAttribute('aria-expanded','true');
+  if(navMenu)navMenu.setAttribute('aria-hidden','false');
+}
+function closeNavMenu(){
+  if(!navWrap)return;
+  navWrap.classList.remove('open');
+  if(navToggle)navToggle.setAttribute('aria-expanded','false');
+  if(navMenu)navMenu.setAttribute('aria-hidden','true');
+}
 function toggleNavMenu(){if(navWrap?.classList.contains('open')){closeNavMenu();}else{openNavMenu();}}
 updateViewIndicator(document.body.getAttribute('data-view')||'all');
 if(navToggle){navToggle.addEventListener('click',e=>{e.stopPropagation();toggleNavMenu();});}
