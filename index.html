@@ -2029,6 +2029,7 @@ function openArch(){
 function selectArch(a,card){ sel=a; document.querySelectorAll('.arch').forEach(x=>x.setAttribute('aria-selected','false')); card.setAttribute('aria-selected','true'); $('#btnConfirm').disabled=false; }
 $('#btnRandom').addEventListener('click',()=>{const i=Math.floor(Math.random()*ARCH.length);selectArch(ARCH[i], document.querySelectorAll('.arch')[i])});
 $('#btnConfirm').addEventListener('click',()=>{ ST.arch=sel; ST.stats={...sel.stats}; ST.skills={...sel.skills}; ST.inv=[...sel.start];
+  bars(); renderStats(); renderAscii();
   addObj('Archétype: '+sel.name); const modal=document.getElementById('archModal'); if(modal){modal.style.display='none';}
   const intro=document.getElementById('introModal'); if(intro){intro.style.display='none';intro.setAttribute('aria-hidden','true');}
   save(); render(); restoreFocus(archReturnFocus); archReturnFocus=null; });
