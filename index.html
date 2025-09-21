@@ -156,13 +156,23 @@ a{color:var(--a)}
 .kabeGamePalette .btn small{font-size:12px;color:var(--mut)}
 .kabeGamePalette .btn.selected{outline:2px solid var(--a)}
 .kabeGamePalette .btn.locked{opacity:.55;cursor:default}
+.kabeGestureLabel{display:flex;align-items:center;gap:8px;width:100%}
+.kabeGestureBadge{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:8px;background:var(--kabe-tone,var(--a));color:#050a16;font-size:13px;font-weight:700;letter-spacing:.3px;line-height:1;box-shadow:0 0 0 1px rgba(5,10,20,.35);flex-shrink:0}
+.kabeGestureName{flex:1}
+.kabeGamePalette .btn.selected .kabeGestureBadge{box-shadow:0 0 0 2px rgba(156,246,255,.5)}
+.kabeGamePalette .btn.locked .kabeGestureBadge{opacity:.75}
 .kabeGameSequence{margin-top:4px;padding:10px;border-radius:12px;border:1px dashed var(--line);background:rgba(255,255,255,.03);display:flex;flex-direction:column;gap:6px}
 .kabeGameSequence .steps{display:flex;flex-direction:column;gap:6px}
-.kabeGameSequence .step{display:flex;flex-direction:column;gap:2px;padding:6px 8px;border-radius:8px;background:rgba(0,0,0,.14);border:1px solid rgba(156,246,255,.12);font-size:13px}
+.kabeGameSequence .step{display:flex;flex-direction:column;gap:4px;padding:6px 8px;border-radius:8px;background:rgba(0,0,0,.14);border:1px solid rgba(156,246,255,.12);font-size:13px}
+.kabeGameSequence .step .kabeStepHeading{display:flex;align-items:center;gap:8px}
 .kabeGameSequence .step strong{font-size:12px;color:var(--mut)}
+.kabeGameSequence .step .kabeStepGesture{display:flex;align-items:center;gap:8px;font-weight:600}
 .kabeGameSequence .step.pending{opacity:.65;font-style:italic}
+.kabeGameSequence .step.pending .kabeStepGesture{font-weight:500}
 .kabeGameSequence .step.fail{border-color:var(--bad);color:var(--bad)}
 .kabeGameSequence .step.success{border-color:var(--good);color:var(--good)}
+.kabeGameSequence .step.fail .kabeGestureBadge{box-shadow:0 0 0 2px rgba(255,107,122,.45)}
+.kabeGameSequence .step.success .kabeGestureBadge{box-shadow:0 0 0 2px rgba(120,242,187,.4)}
 .kabeGameMessage{margin-top:12px;color:var(--mut);line-height:1.6}
 .kabeGameActions{justify-content:flex-end;margin-top:16px;flex-wrap:wrap;gap:10px}
 .kabeGameActions .btn{min-width:150px}
@@ -607,14 +617,14 @@ $('#btnExport').addEventListener('click',()=>{const blob=new Blob([localStorage.
 $('#btnImport').addEventListener('click',()=>{const i=document.createElement('input');i.type='file';i.accept='application/json';i.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{localStorage.setItem(SAVE,r.result);load();render()};r.readAsText(f)};i.click()});
 
 const KABE_GESTURES={
-  brume:{name:'Brume d’absinthe',notes:'Assourdit la salle et adoucit la Sourdine.'},
-  braise:{name:'Braise confite',notes:'Chaleur fumée qui tient les cœurs éveillés.'},
-  givre:{name:'Givre de menthe noire',notes:'Froid sec qui tranche les excès.'},
-  pulse:{name:'Pulse magnétique',notes:'Battement salin qui cale la ronde.'},
-  sève:{name:'Sève cardée',notes:'Épaisseur végétale qui rassure les nerfs.'},
-  voile:{name:'Voile de sureau',notes:'Fleurs blanches qui filtrent la Sourdine.'},
-  zeste:{name:'Zeste d’orage',notes:'Agrume électrique qui réveille le palais.'},
-  sel:{name:'Sel de darse',notes:'Cristaux salins qui rappellent le quai.'}
+  brume:{name:'Brume d’absinthe',notes:'Assourdit la salle et adoucit la Sourdine.',tone:'#7fb3ff',icon:'💨'},
+  braise:{name:'Braise confite',notes:'Chaleur fumée qui tient les cœurs éveillés.',tone:'#ff8a5c',icon:'🔥'},
+  givre:{name:'Givre de menthe noire',notes:'Froid sec qui tranche les excès.',tone:'#8cecff',icon:'❄️'},
+  pulse:{name:'Pulse magnétique',notes:'Battement salin qui cale la ronde.',tone:'#b89cff',icon:'🎚️'},
+  sève:{name:'Sève cardée',notes:'Épaisseur végétale qui rassure les nerfs.',tone:'#6fdd9d',icon:'🌿'},
+  voile:{name:'Voile de sureau',notes:'Fleurs blanches qui filtrent la Sourdine.',tone:'#ffb0f7',icon:'🫧'},
+  zeste:{name:'Zeste d’orage',notes:'Agrume électrique qui réveille le palais.',tone:'#ffd86b',icon:'⚡️'},
+  sel:{name:'Sel de darse',notes:'Cristaux salins qui rappellent le quai.',tone:'#8ed6ff',icon:'🧂'}
 };
 const KABE_RITUALS=[
   {id:'velours',name:'Velours de veille',clue:'Kabé veut endormir les capteurs : couvre la salle, stabilise, puis scelle avec une chaleur douce.',sequence:['voile','sève','braise'],palette:['voile','pulse','sève','braise','zeste']},
@@ -742,6 +752,12 @@ function renderKabeGame(){
   const {ritual,selected,locked,feedback}=kabeGameState;
   prompt.innerHTML=`<strong>${ritual.name}</strong> — ${ritual.clue}`;
   palette.innerHTML='';
+  const badgeFor=info=>{
+    if(!info) return '';
+    const icon=info.icon||info.name?.charAt(0)||'•';
+    const tone=info.tone?` style="--kabe-tone:${info.tone}"`:'';
+    return `<span class="kabeGestureBadge"${tone} aria-hidden="true">${icon}</span>`;
+  };
   ritual.palette.forEach(id=>{
     const info=KABE_GESTURES[id];
     if(!info) return;
@@ -751,7 +767,8 @@ function renderKabeGame(){
     if(locked) btn.classList.add('locked');
     if(selected.includes(id)) btn.classList.add('selected');
     btn.disabled=locked||selected.includes(id);
-    btn.innerHTML=`<span>${info.name}</span><small>${info.notes}</small>`;
+    const gestureLabel=`<span class="kabeGestureLabel">${badgeFor(info)}<span class="kabeGestureName">${info.name}</span></span>`;
+    btn.innerHTML=`${gestureLabel}<small>${info.notes}</small>`;
     btn.addEventListener('click',()=>handleKabeGesture(id));
     palette.appendChild(btn);
   });
@@ -765,10 +782,13 @@ function renderKabeGame(){
     const chosen=selected[i];
     if(!chosen){
       wrap.classList.add('pending');
-      wrap.innerHTML=`<strong>${i+1}.</strong> En attente`;
+      wrap.innerHTML=`<div class="kabeStepHeading"><strong>${i+1}.</strong><span class="kabeStepGesture">En attente</span></div>`;
     }else{
       const info=KABE_GESTURES[chosen];
-      wrap.innerHTML=`<strong>${i+1}.</strong> ${info?info.name:chosen}`;
+      const label=info
+        ? `${badgeFor(info)}<span class="kabeGestureName">${info.name}</span>`
+        : `<span class="kabeGestureName">${chosen}</span>`;
+      wrap.innerHTML=`<div class="kabeStepHeading"><strong>${i+1}.</strong><span class="kabeStepGesture">${label}</span></div>`;
       if((locked||feedback==='fail') && ritual.sequence[i]===chosen){
         wrap.classList.add('success');
       }else if((locked||feedback==='fail') && ritual.sequence[i]!==chosen){
