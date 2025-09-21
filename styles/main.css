@@ -343,6 +343,30 @@ a{color:var(--a)}
   .grid,.choice,.storyImage::after,.headerTicker span,.header::after,.grid::before{animation:none!important}
   .choice,.col,.btn,.iconBtn,.header,.headerCollapseBtn,.navMenu{transition:none!important}
 
+  .header,
+  .modalScreen,
+  .storyImage,
+  .choice{
+    backdrop-filter:none!important;
+    box-shadow:0 8px 20px rgba(0,0,0,.35);
+  }
+
+  .header::before,
+  .header::after,
+  .grid::before,
+  .storyImage::before,
+  .storyImage::after,
+  .choice::after{
+    content:none!important;
+    background:none!important;
+    mix-blend-mode:normal!important;
+    animation:none!important;
+  }
+
+  .storyImage img{transform:none!important}
+
+  .modalScreen{background:rgba(5,6,8,.95)}
+
 }
 .anim{animation:roll 1s ease-in-out infinite}
 @keyframes roll{0%{transform:rotate(0)}33%{transform:rotate(12deg)}66%{transform:rotate(-9deg)}100%{transform:rotate(0)}}
@@ -455,4 +479,61 @@ a{color:var(--a)}
   padding:10px 12px calc(12px + var(--safe-bottom)); gap:10px; justify-content:space-around;
   background:linear-gradient(180deg,rgba(8,10,14,.35),rgba(5,6,8,.92)); backdrop-filter: blur(10px); border-top:1px solid rgba(255,179,94,.18); box-shadow:0 -12px 32px rgba(0,0,0,.45);}
 .mobilebar .tabbtn{flex:1; text-align:center}
+
+@media (max-width: 900px){
+  .header{
+    backdrop-filter:none;
+    box-shadow:0 10px 24px rgba(0,0,0,.35);
+  }
+
+  .header::before,
+  .header::after{
+    content:none;
+    animation:none;
+    background:none;
+  }
+
+  .grid::before{
+    content:none;
+    background:none;
+    mix-blend-mode:normal;
+    animation:none;
+  }
+
+  .col{box-shadow:0 12px 26px rgba(0,0,0,.4)}
+
+  .storyImage{
+    box-shadow:0 14px 28px rgba(0,0,0,.45);
+  }
+
+  .storyImage::before,
+  .storyImage::after{
+    content:none;
+    animation:none;
+    background:none;
+    mix-blend-mode:normal;
+  }
+
+  .storyImage img{
+    transform:none;
+    transition:none;
+  }
+
+  .choice{
+    box-shadow:0 12px 24px rgba(0,0,0,.35);
+    animation:none;
+  }
+
+  .choice::after{content:none}
+
+  .modalScreen{
+    backdrop-filter:none;
+    background:rgba(5,6,8,.95);
+  }
+
+  .mobilebar{
+    backdrop-filter:none;
+    box-shadow:0 -8px 20px rgba(0,0,0,.35);
+  }
+}
 
