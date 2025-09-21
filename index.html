@@ -673,7 +673,7 @@ const VISIT_KEYS=[
  {key:'place',match:s=>s.startsWith('place_')},
  {key:'collectif',match:s=>s==='place_collectif'},
  {key:'maz',match:s=>s.startsWith('maz_')},
- {key:'kabe',match:s=>s==='maz_apero'},
+ {key:'kabe',match:s=>s==='maz_apero'||s==='maz_apero_anto'},
  {key:'atelier',match:s=>s==='maz_atelier'},
  {key:'ber',match:s=>s.startsWith('ber_')},
  {key:'patrouille',match:s=>s==='ber_patrouille'},
@@ -1291,16 +1291,30 @@ const SC={
  maz_common:{
  img:IMG.maz,title:'Friche Mazagran — Cour',text:()=>`
   <p>Le conteneur-atelier bourdonne. Une échelle plonge vers la cave. Sur l’établi : un <b>feuillet-mémoire</b> annoté. En bas, un <b>coffret scellé</b> attend dans l’ombre.</p>`,
-  choices:[
+  choices:()=>{
+   const goKabe=ST.tags.has('Kabe_AntoOK')?'maz_apero':'maz_apero_anto';
+   return [
     {label:'Lire le feuillet annoté',hint:'NEU/Mnémographie (10) — repérer la trappe',test:{stat:'NEU',skill:'Mnémographie',dd:10,
-      ok:s=>{s.tags.add('Motif_R');s.objective='Atteindre la trappe technique depuis les Berges.';addObj('Indice : localisation de la trappe technique vers T1.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Le motif te vrille. +1 Stress.')}}},
+      ok:s=>{s.tags.add('Motif_R');s.objective='Atteindre la trappe technique depuis les Berges.';addObj('Indice : localisation de la trappe technique vers T1.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Le motif te vrille. +1 Stress.');}}},
     {label:'Saisir le coffret scellé',hint:'Ajouter l’objet à ton inventaire',immediate:s=>{s.tags.add('Coffret_Milo');gainItem('Coffret (Milo)');s.objective='Apporter le coffret à Milo pour obtenir le laissez-passer.';addObj('Coffret (Milo) rangé dans ton sac.');}},
-    {label:'Franchir la porte du Kabé',hint:'Respirer un instant loin de la Sourdine',when:()=>ST.stress>0&&!ST.tags.has('Kabe_Apero'),go:'maz_apero'},
+    {label:'Franchir la porte du Kabé',hint:'Respirer un instant loin de la Sourdine',when:()=>ST.stress>0&&!ST.tags.has('Kabe_Apero'),go:goKabe},
     {label:'Descendre vers les Berges',hint:'Prendre la cave jusqu’aux darses',go:'ber_entry'},
     {label:'Se faufiler vers l’atelier latéral',hint:'Rencontrer les ouvriers de la friche',go:'maz_atelier'},
     {label:'Retourner vers la Place du Pont',hint:'Faire le point avec Noor, Milo ou le Collectif',go:'place_return'}
- ]
-},
+   ];
+  }
+ },
+ maz_apero_anto:{
+  img:IMG.maz,title:'Mazagran — Seuil du Kabé',text:()=>`
+  <p>Anto, colosse chauve au doigt cassé strié de résine, garde la porte blindée du Kabé. Ses épaules bloquent la lumière qui filtre du refuge.</p>
+  <p>Il jauge chaque souffle qui approche et attend un signe de reconnaissance avant de desserrer sa prise sur la poignée.</p>`,
+  choices:()=>[
+    {label:'Convaincre Anto de te laisser passer',hint:'VOL/Empathie (10) — apaiser sa vigilance',test:{stat:'VOL',skill:'Empathie',dd:10,
+      ok:s=>{if(!s.tags.has('Kabe_AntoOK')){addObj('Anto hoche la tête : accès assuré au Kabé.');}s.tags.add('Kabe_AntoOK');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Anto reste inflexible. +1 Stress.');}},goOK:'maz_apero',goKO:'maz_apero_anto'},
+    {label:'Montrer patte blanche',hint:'Présenter un badge, un passe ou un appui reconnu',when:()=>ST.tags.has('Milo_Pass')||ST.tags.has('Collectif_Favor')||ST.tags.has('Noor_Trust')||ST.tags.has('Collectif_Pret')||ST.tags.has('BadgeTech')||ST.tags.has('BadgeTech_Used')||hasItem('Badge maintenance'),immediate:s=>{if(!s.tags.has('Kabe_AntoOK')){addObj('Ton signe de confiance ouvre la porte du Kabé.');}s.tags.add('Kabe_AntoOK');log('Anto reconnaît ton signe et entrouvre le passage.');},go:'maz_apero'},
+    {label:'Reculer vers la cour',hint:'Laisser la porte scellée et observer encore',go:'maz_common'}
+  ]
+ },
  maz_apero:{
   img:IMG.maz,title:'Mazagran — Kabé clandestin',text:()=>{
    const first=!ST.tags.has('Kabe_Apero');
