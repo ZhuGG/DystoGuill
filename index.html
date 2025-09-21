@@ -72,6 +72,7 @@ body::after{
 @keyframes glowDrift{0%{transform:scale(1) translate3d(0,0,0);}100%{transform:scale(1.08) translate3d(8px,-12px,0);}}
 @keyframes choiceRise{0%{opacity:0;transform:translateY(18px);}100%{opacity:1;transform:translateY(0);}}
 @keyframes glowPulse{0%{box-shadow:0 0 0 rgba(255,179,94,.0);}50%{box-shadow:0 0 30px rgba(255,179,94,.25);}100%{box-shadow:0 0 0 rgba(255,179,94,.0);}}
+
 @keyframes headerSweep{0%{transform:translateX(-40px);}50%{transform:translateX(36px);}100%{transform:translateX(-40px);}}
 @keyframes signalSweep{0%{background-position:0 0,0 0,0 0;}100%{background-position:180px -120px,-140px 160px,220px 180px;}}
 a{color:var(--a)}
@@ -170,6 +171,7 @@ a{color:var(--a)}
 }
 .headerCollapseBtn:hover .collapseIcon{background:rgba(255,179,94,.22);}
 .headerCollapseBtn:focus-visible{outline:2px solid var(--glow);outline-offset:3px;}
+
 .headerTop{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .header .row{display:flex;gap:8px;flex-wrap:wrap}
 .header .title{font-weight:800;letter-spacing:.6px;flex:1;display:flex;align-items:center;gap:10px;text-transform:uppercase;text-shadow:0 0 18px rgba(101,241,221,.3)}
@@ -189,6 +191,7 @@ a{color:var(--a)}
 .iconBtn:hover{transform:translateY(-1px);box-shadow:0 10px 26px rgba(0,0,0,.4)}
 .menuWrap{position:relative}
 .menuWrap.open .iconBtn{outline:2px solid var(--a)}
+
 .navMenu{
   display:flex;
   position:absolute;
@@ -212,6 +215,7 @@ a{color:var(--a)}
   transform:translateY(0) scale(1);
   pointer-events:auto;
 }
+
 .navMenu .tabbtn{width:100%;text-align:left;justify-content:flex-start}
 .tabbtn,.btn{padding:11px 14px;border:1px solid rgba(255,179,94,.22);background:linear-gradient(180deg,rgba(18,22,30,.95),rgba(12,15,21,.88));border-radius:12px;color:var(--ink);cursor:pointer;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-align:center;transition:transform .2s ease,box-shadow .2s ease,outline .2s ease}
 .tabbtn:hover,.btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(0,0,0,.45)}
@@ -220,6 +224,7 @@ a{color:var(--a)}
 .tabbtn:focus-visible,.btn:focus-visible{outline:2px solid var(--glow);outline-offset:2px}
 .badge{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,179,94,.2);background:rgba(14,18,24,.7);color:var(--mut);padding:4px 10px;border-radius:999px;font-size:12px;box-shadow:inset 0 0 0 1px rgba(119,244,255,.08);backdrop-filter:blur(8px)}
 .icon{width:16px;height:16px;opacity:.9}
+
 .grid{display:grid;gap:20px;grid-template-columns:minmax(280px,320px) minmax(0,1fr) minmax(300px,360px);max-width:1280px;margin:auto;padding:22px 22px calc(22px + var(--safe-bottom));animation:panelIn .6s ease both;position:relative;z-index:1}
 .grid::before{
   content:"";
@@ -237,6 +242,7 @@ a{color:var(--a)}
   animation:signalSweep 28s linear infinite;
   z-index:-1;
 }
+
 .col{position:relative;background:var(--p);border:1px solid rgba(255,179,94,.18);border-radius:16px;box-shadow:var(--sh);overflow:hidden;display:flex;flex-direction:column;gap:16px;transition:transform .35s ease,box-shadow .35s ease}
 .col::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% -10%,rgba(119,244,255,.08),transparent 55%),radial-gradient(circle at 90% 120%,rgba(242,117,77,.08),transparent 60%);opacity:.7;pointer-events:none}
 .col:hover{transform:translateY(-4px);box-shadow:0 28px 48px rgba(0,0,0,.55)}
@@ -340,8 +346,10 @@ a{color:var(--a)}
 .diceStatus.fail{color:var(--bad)}
 @media (prefers-reduced-motion: reduce){
   .cube{animation:none!important}
+
   .grid,.choice,.storyImage::after,.headerTicker span,.header::after,.grid::before{animation:none!important}
   .choice,.col,.btn,.iconBtn,.header,.headerCollapseBtn,.navMenu{transition:none!important}
+
 }
 .anim{animation:roll 1s ease-in-out infinite}
 @keyframes roll{0%{transform:rotate(0)}33%{transform:rotate(12deg)}66%{transform:rotate(-9deg)}100%{transform:rotate(0)}}
@@ -478,6 +486,7 @@ a{color:var(--a)}
       <span class="collapseLabel">Briefing Sourdine</span>
     </button>
   </div>
+
   <div class="headerMeta" id="headerMeta">
     <p class="headerLore">La pluie magnétique se mêle à la poussière rouge. Chaque décision illumine — ou condamne — les couloirs désertés.</p>
     <div class="headerTicker" aria-hidden="true"><span>Transmission pirate : &nbsp; «&nbsp;Quartier sous quarantaine douce. Cherche signaux stables. Méfiance envers la milice de la Sourdine.&nbsp;» ✶ Transmission pirate : &nbsp; «&nbsp;Quartier sous quarantaine douce. Cherche signaux stables. Méfiance envers la milice de la Sourdine.&nbsp;»</span></div>
@@ -487,6 +496,7 @@ a{color:var(--a)}
       <span class="badge"><img class="icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Circle-icons-bulb.svg/32px-Circle-icons-bulb.svg.png"> Flux ◆ <span id="fluxVal">2</span></span>
       <span class="badge"><img class="icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Noun_Project_document_icon_1409169_cc.svg/32px-Noun_Project_document_icon_1409169_cc.svg.png"> Fragments ✦ <span id="fragVal">2</span></span>
     </div>
+
   </div>
 </header>
 
