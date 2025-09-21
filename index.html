@@ -150,15 +150,22 @@ a{color:var(--a)}
 .choice strong{display:block}
 .kabeGameBox{max-width:520px}
 .kabeGameIntro{margin:0 0 12px 0;color:var(--mut);line-height:1.6}
-.kabeGamePrompt{margin:0 0 10px 0;font-weight:600;color:var(--ink)}
-.kabeGameOptions{display:grid;gap:10px}
-.kabeGameOptions button{width:100%;text-align:left;align-items:flex-start;flex-direction:column;gap:4px}
-.kabeGameOptions button small{font-size:12px;color:var(--mut)}
-.kabeGameOptions button.success{outline:2px solid var(--good)}
-.kabeGameOptions button.fail{outline:2px solid var(--bad)}
+.kabeGamePrompt{margin:0 0 12px 0;font-weight:600;color:var(--ink);line-height:1.5}
+.kabeGamePalette{display:grid;gap:10px;margin-bottom:8px}
+.kabeGamePalette .btn{width:100%;text-align:left;align-items:flex-start;flex-direction:column;gap:4px}
+.kabeGamePalette .btn small{font-size:12px;color:var(--mut)}
+.kabeGamePalette .btn.selected{outline:2px solid var(--a)}
+.kabeGamePalette .btn.locked{opacity:.55;cursor:default}
+.kabeGameSequence{margin-top:4px;padding:10px;border-radius:12px;border:1px dashed var(--line);background:rgba(255,255,255,.03);display:flex;flex-direction:column;gap:6px}
+.kabeGameSequence .steps{display:flex;flex-direction:column;gap:6px}
+.kabeGameSequence .step{display:flex;flex-direction:column;gap:2px;padding:6px 8px;border-radius:8px;background:rgba(0,0,0,.14);border:1px solid rgba(156,246,255,.12);font-size:13px}
+.kabeGameSequence .step strong{font-size:12px;color:var(--mut)}
+.kabeGameSequence .step.pending{opacity:.65;font-style:italic}
+.kabeGameSequence .step.fail{border-color:var(--bad);color:var(--bad)}
+.kabeGameSequence .step.success{border-color:var(--good);color:var(--good)}
 .kabeGameMessage{margin-top:12px;color:var(--mut);line-height:1.6}
-.kabeGameActions{justify-content:flex-end;margin-top:16px}
-.kabeGameActions .btn{min-width:140px}
+.kabeGameActions{justify-content:flex-end;margin-top:16px;flex-wrap:wrap;gap:10px}
+.kabeGameActions .btn{min-width:150px}
 @media (max-width: 600px){
   body{font-size:14px}
   .header{padding:12px 10px;gap:10px}
@@ -351,13 +358,17 @@ a{color:var(--a)}
 
 <div id="kabeGameModal" class="modalScreen" style="display:none" aria-hidden="true">
   <div class="modalBox kabeGameBox">
-    <h2>Jeu du Kabé clandestin</h2>
-    <p class="kabeGameIntro">Kabé, maître des apéros clandestins, aligne ses macérations sur un plateau et observe les habitué·es. Retrouve la coupe correspondant à l’indice pour gagner une bouffée de douceur.</p>
+    <h2>Rituel du Kabé clandestin</h2>
+    <p class="kabeGameIntro">Kabé, maître des apéros clandestins, orchestre un rituel d’infusion pour garder la salle accordée. Enchaîne les gestes dans le bon ordre pour offrir une bouffée de douceur.</p>
     <div id="kabeGamePrompt" class="kabeGamePrompt"></div>
-    <div id="kabeGameOptions" class="kabeGameOptions" role="group" aria-live="polite"></div>
+    <div id="kabeGamePalette" class="kabeGamePalette" role="group" aria-live="polite"></div>
+    <div id="kabeGameSequence" class="kabeGameSequence" aria-live="polite"></div>
     <div id="kabeGameMessage" class="kabeGameMessage" role="status" aria-live="polite"></div>
     <div class="row kabeGameActions">
-      <button class="btn subtle" id="kabeGameRetry" type="button">Nouveau plateau</button>
+      <button class="btn subtle" id="kabeGameUndo" type="button">Annuler le dernier geste</button>
+      <button class="btn subtle" id="kabeGameReset" type="button">Réinitialiser</button>
+      <button class="btn primary" id="kabeGameServe" type="button">Servir la coupe</button>
+      <button class="btn subtle" id="kabeGameRetry" type="button">Nouveau rituel</button>
       <button class="btn primary" id="kabeGameClose" type="button">Fermer</button>
     </div>
   </div>
@@ -441,6 +452,12 @@ const navWrap=document.getElementById('navWrap');
 const navToggle=document.getElementById('navToggle');
 const navMenu=document.getElementById('navMenu');
 const slotLabel=idx=>String(idx+1).padStart(2,'0');
+const hasItem=name=>ST.inv.includes(name);
+function gainItem(name){
+  if(!ST.inv.includes(name)){
+    ST.inv.push(name);
+  }
+}
 
 function updateViewIndicator(v){const badge=$('#viewIndicator'); if(badge){badge.textContent='Vue : '+(VIEW_LABELS[v]||'Tous');}}
 function openNavMenu(){if(!navWrap)return;navWrap.classList.add('open');if(navToggle)navToggle.setAttribute('aria-expanded','true');}
@@ -520,30 +537,34 @@ function renderMiniMap(){const v=s=>ST.visited.has(s)?'●':'○';
 function renderTimeline(){const T=$('#timeline');T.innerHTML='';ST.objLog.slice().reverse().forEach(o=>{const d=document.createElement('div');d.className='item';d.innerHTML=`<div>${o.text}</div><div class="when">${new Date(o.t).toLocaleTimeString()}</div>`;T.appendChild(d)})}
 function save(){localStorage.setItem(SAVE,JSON.stringify({a:ST.arch?.id,s:ST.stats,k:ST.skills,st:ST.stress,h:ST.hp,f:ST.flux,g:ST.frag,i:ST.inv,t:[...ST.tags],sc:ST.scene,o:ST.objective,ol:ST.objLog,v:[...ST.visited],as:ST.ascii}))}
 function load(){try{const d=JSON.parse(localStorage.getItem(SAVE)||'null');if(!d)return;ST.arch=ARCH.find(x=>x.id===d.a)||null; if(ST.arch){ST.stats={...ST.arch.stats};ST.skills={...ST.arch.skills};ST.inv=[...ST.arch.start]}
-  Object.assign(ST,{stress:d.st??2,hp:d.h??5,flux:d.f??2,frag:d.g??2});ST.inv=d.i||ST.inv;ST.tags=new Set(d.t||[]);ST.scene=d.sc||'prologue';ST.objective=d.o||ST.objective;ST.objLog=d.ol||[];ST.visited=new Set(d.v||[]);ST.ascii=d.as!==false}catch(e){}}
+  Object.assign(ST,{stress:d.st??2,hp:d.h??5,flux:d.f??2,frag:d.g??2});ST.inv=d.i||ST.inv;ST.tags=new Set(d.t||[]);
+  if(ST.tags.has('Kabe_GameWon')){ST.tags.delete('Kabe_GameWon');ST.tags.add('Kabe_RitualWon');}
+  ST.scene=d.sc||'prologue';ST.objective=d.o||ST.objective;ST.objLog=d.ol||[];ST.visited=new Set(d.v||[]);ST.ascii=d.as!==false}catch(e){}}
 /* exporter/importer */
 $('#btnExport').addEventListener('click',()=>{const blob=new Blob([localStorage.getItem(SAVE)||'{}'],{type:'application/json'});const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download='trame_douce_v6_4_sauvegarde.json';a.click();URL.revokeObjectURL(u)});
 $('#btnImport').addEventListener('click',()=>{const i=document.createElement('input');i.type='file';i.accept='application/json';i.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{localStorage.setItem(SAVE,r.result);load();render()};r.readAsText(f)};i.click()});
 
-const KABE_RECIPES=[
- {id:'solaire',name:'Éclat Solaire',notes:'Agrumes confits, gingembre et éclats de cuivre.',clue:'agrume brillant avec une pointe métallique.'},
- {id:'brume',name:'Brume d’Ozone',notes:'Verveine, absinthe douce et vapeur saline.',clue:'herbes froides et souffle d’ozone.'},
- {id:'nocturne',name:'Nocturne Sourde',notes:'Café froid, cardamome et charbon tamisé.',clue:'café sombre et cardamome.'},
- {id:'rosace',name:'Rosace du Pont',notes:'Fruits rouges, sucre fumé et paillettes de mica.',clue:'fruit rouge et sucre fumé.'},
- {id:'sirene',name:'Sirène Cuivrée',notes:'Miel, piment doux et câbles trempés.',clue:'chaleur sucrée avec des reflets cuivrés.'}
+const KABE_GESTURES={
+  brume:{name:'Brume d’absinthe',notes:'Assourdit la salle et adoucit la Sourdine.'},
+  braise:{name:'Braise confite',notes:'Chaleur fumée qui tient les cœurs éveillés.'},
+  givre:{name:'Givre de menthe noire',notes:'Froid sec qui tranche les excès.'},
+  pulse:{name:'Pulse magnétique',notes:'Battement salin qui cale la ronde.'},
+  sève:{name:'Sève cardée',notes:'Épaisseur végétale qui rassure les nerfs.'},
+  voile:{name:'Voile de sureau',notes:'Fleurs blanches qui filtrent la Sourdine.'},
+  zeste:{name:'Zeste d’orage',notes:'Agrume électrique qui réveille le palais.'},
+  sel:{name:'Sel de darse',notes:'Cristaux salins qui rappellent le quai.'}
+};
+const KABE_RITUALS=[
+  {id:'velours',name:'Velours de veille',clue:'Kabé veut endormir les capteurs : couvre la salle, stabilise, puis scelle avec une chaleur douce.',sequence:['voile','sève','braise'],palette:['voile','pulse','sève','braise','zeste']},
+  {id:'orage',name:'Orage contenu',clue:'Il faut réveiller la ronde sans casser le silence : une pointe vive, calmer aussitôt, puis verrouiller par un souffle froid.',sequence:['zeste','brume','givre'],palette:['zeste','brume','givre','braise','pulse']},
+  {id:'rebond',name:'Rebond des habitués',clue:'Kabé réclame un rythme rebondissant : pulse la table, lie avec un voile, puis relève par une douceur végétale.',sequence:['pulse','voile','sève'],palette:['pulse','voile','sève','brume','givre']},
+  {id:'rade',name:'Ancre des darses',clue:'Les mariniers veulent oublier la vase : appelle la brume, verse le sel des quais, termine par une braise confite.',sequence:['brume','sel','braise'],palette:['brume','sel','braise','sève','zeste']},
+  {id:'clair',name:'Clair sous la Sourdine',clue:'Pour garder les idées claires : givre l’esprit, impose une pulse régulière, referme avec un voile protecteur.',sequence:['givre','pulse','voile'],palette:['givre','pulse','voile','brume','sève']}
 ];
 let kabeGameState=null;
 
-function shuffleList(arr){
-  for(let i=arr.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [arr[i],arr[j]]=[arr[j],arr[i]];
-  }
-  return arr;
-}
-
 function openKabeGame(){
-  startKabeRound();
+  startKabeRitual();
   const modal=document.getElementById('kabeGameModal');
   if(modal){
     modal.style.display='flex';
@@ -559,94 +580,177 @@ function closeKabeGame(){
     modal.setAttribute('aria-hidden','true');
   }
   kabeGameState=null;
+  renderKabeGame();
   if(wasOpen){
     render();
   }
 }
 
-function startKabeRound(){
-  const pool=shuffleList([...KABE_RECIPES]);
-  const choices=pool.slice(0,3);
-  const target=choices[Math.floor(Math.random()*choices.length)];
-  kabeGameState={choices,target,resolved:false};
+function startKabeRitual(){
+  const ritual=KABE_RITUALS[Math.floor(Math.random()*KABE_RITUALS.length)];
+  kabeGameState={ritual,selected:[],locked:false,feedback:null,firstWin:false};
+  renderKabeGame();
+}
+
+function handleKabeGesture(id){
+  if(!kabeGameState||kabeGameState.locked) return;
+  if(!KABE_GESTURES[id]) return;
+  if(kabeGameState.selected.includes(id)) return;
+  const len=kabeGameState.ritual.sequence.length;
+  if(kabeGameState.selected.length>=len) return;
+  kabeGameState.selected.push(id);
+  kabeGameState.feedback=null;
+  renderKabeGame();
+}
+
+function undoKabeGesture(){
+  if(!kabeGameState||kabeGameState.locked) return;
+  if(kabeGameState.selected.length===0) return;
+  kabeGameState.selected.pop();
+  kabeGameState.feedback=null;
+  renderKabeGame();
+}
+
+function resetKabeGesture(){
+  if(!kabeGameState||kabeGameState.locked) return;
+  kabeGameState.selected=[];
+  kabeGameState.feedback=null;
+  renderKabeGame();
+}
+
+function serveKabeRitual(){
+  if(!kabeGameState||kabeGameState.locked) return;
+  const {ritual,selected}=kabeGameState;
+  const needed=ritual.sequence.length;
+  if(selected.length<needed){
+    kabeGameState.feedback='incomplete';
+    renderKabeGame();
+    return;
+  }
+  const success=ritual.sequence.every((step,idx)=>selected[idx]===step);
+  if(success){
+    const firstWin=!ST.tags.has('Kabe_RitualWon');
+    kabeGameState.locked=true;
+    kabeGameState.feedback='success';
+    kabeGameState.firstWin=firstWin;
+    if(firstWin){
+      if(ST.stress>0){
+        ST.stress=Math.max(0,ST.stress-1);
+      }
+      ST.tags.add('Kabe_RitualWon');
+      addObj('Rituel de Kabé maîtrisé : stress allégé.');
+      log('Kabé approuve le rituel parfait. Stress -1.');
+    }else{
+      log('Kabé sourit : la séquence est impeccable.');
+    }
+    bars();
+    renderAscii();
+    save();
+  }else{
+    kabeGameState.feedback='fail';
+  }
   renderKabeGame();
 }
 
 function renderKabeGame(){
-  const options=document.getElementById('kabeGameOptions');
+  const palette=document.getElementById('kabeGamePalette');
   const prompt=document.getElementById('kabeGamePrompt');
+  const sequenceBox=document.getElementById('kabeGameSequence');
   const message=document.getElementById('kabeGameMessage');
-  if(!options||!kabeGameState){
-    if(options) options.innerHTML='';
-    if(prompt) prompt.textContent='';
-    if(message) message.textContent='';
+  if(!palette||!prompt||!sequenceBox||!message){
     return;
   }
-  options.innerHTML='';
-  if(prompt){
-    prompt.textContent=`Kabé murmure : « ${kabeGameState.target.name} » — ${kabeGameState.target.clue}`;
+  if(!kabeGameState){
+    palette.innerHTML='';
+    prompt.textContent='';
+    sequenceBox.innerHTML='';
+    message.textContent='';
+    const undo=document.getElementById('kabeGameUndo');
+    const reset=document.getElementById('kabeGameReset');
+    const serve=document.getElementById('kabeGameServe');
+    if(undo) undo.disabled=true;
+    if(reset) reset.disabled=true;
+    if(serve) serve.disabled=true;
+    return;
   }
-  if(message){
-    message.textContent=ST.tags.has('Kabe_GameWon')
-      ? 'Tu joues maintenant pour le panache : Kabé connaît déjà ton palais.'
-      : 'Choisis la macération qui correspond à l’indice pour soulager ton stress.';
-  }
-  kabeGameState.choices.forEach(choice=>{
+  const {ritual,selected,locked,feedback}=kabeGameState;
+  prompt.innerHTML=`<strong>${ritual.name}</strong> — ${ritual.clue}`;
+  palette.innerHTML='';
+  ritual.palette.forEach(id=>{
+    const info=KABE_GESTURES[id];
+    if(!info) return;
     const btn=document.createElement('button');
     btn.type='button';
     btn.className='btn';
-    btn.setAttribute('data-choice',choice.id);
-    btn.innerHTML=`<span>${choice.name}</span><small>${choice.notes}</small>`;
-    btn.addEventListener('click',()=>handleKabePick(choice.id));
-    options.appendChild(btn);
+    if(locked) btn.classList.add('locked');
+    if(selected.includes(id)) btn.classList.add('selected');
+    btn.disabled=locked||selected.includes(id);
+    btn.innerHTML=`<span>${info.name}</span><small>${info.notes}</small>`;
+    btn.addEventListener('click',()=>handleKabeGesture(id));
+    palette.appendChild(btn);
   });
-}
 
-function handleKabePick(id){
-  if(!kabeGameState||kabeGameState.resolved) return;
-  const wasWon=ST.tags.has('Kabe_GameWon');
-  const success=id===kabeGameState.target.id;
-  kabeGameState.resolved=true;
-  const options=document.getElementById('kabeGameOptions');
-  if(options){
-    options.querySelectorAll('button').forEach(btn=>{
-      const choiceId=btn.getAttribute('data-choice');
-      if(choiceId===kabeGameState.target.id){
-        btn.classList.add('success');
+  const seqLen=ritual.sequence.length;
+  const steps=document.createElement('div');
+  steps.className='steps';
+  for(let i=0;i<seqLen;i++){
+    const wrap=document.createElement('div');
+    wrap.className='step';
+    const chosen=selected[i];
+    if(!chosen){
+      wrap.classList.add('pending');
+      wrap.innerHTML=`<strong>${i+1}.</strong> En attente`;
+    }else{
+      const info=KABE_GESTURES[chosen];
+      wrap.innerHTML=`<strong>${i+1}.</strong> ${info?info.name:chosen}`;
+      if((locked||feedback==='fail') && ritual.sequence[i]===chosen){
+        wrap.classList.add('success');
+      }else if((locked||feedback==='fail') && ritual.sequence[i]!==chosen){
+        wrap.classList.add('fail');
       }
-      if(choiceId===id && !success){
-        btn.classList.add('fail');
-      }
-      btn.disabled=true;
-    });
-  }
-  const message=document.getElementById('kabeGameMessage');
-  if(success){
-    if(!wasWon){
-      if(ST.stress>0){
-        ST.stress=Math.max(0,ST.stress-1);
-      }
-      ST.tags.add('Kabe_GameWon');
-      log('Kabé sourit : cocktail parfait. Stress -1.');
-      addObj('Jeu du Kabé remporté : stress allégé.');
-      if(message){
-        message.textContent='La coupe juste glisse et tes épaules se détendent.';
-      }
-    }else if(message){
-      message.textContent='Même sans récompense, le Kabé applaudit ton palais infaillible.';
     }
-  }else if(message){
-    message.textContent='La coupe pique un peu. Kabé t’encourage à retenter le plateau.';
+    steps.appendChild(wrap);
   }
-  bars();
-  renderAscii();
-  save();
+  sequenceBox.innerHTML='';
+  sequenceBox.appendChild(steps);
+
+  let msg='';
+  if(locked && feedback==='success'){
+    msg=kabeGameState.firstWin
+      ? 'Kabé approuve : le rituel parfait calme la salle. Stress -1.'
+      : 'Kabé acquiesce. Tu maîtrises encore la séquence.';
+  }else if(feedback==='fail'){
+    const missIndex=ritual.sequence.findIndex((step,idx)=>selected[idx]!==step);
+    if(missIndex>=0){
+      const expected=KABE_GESTURES[ritual.sequence[missIndex]];
+      const expName=expected?expected.name:'un autre geste';
+      msg=`La coupe manque d’équilibre. Kabé attendait ${expName} en ${missIndex+1}ᵉ geste.`;
+    }else{
+      msg='La coupe manque d’équilibre. Annule un geste ou recommence la séquence.';
+    }
+  }else if(feedback==='incomplete'){
+    msg='La coupe n’est pas prête : complète la séquence avant de servir.';
+  }else if(selected.length===0){
+    msg=`Choisis ${seqLen} gestes dans l’ordre. Kabé observe chaque mouvement.`;
+  }else if(selected.length<seqLen){
+    msg=`Geste ${selected.length+1} sur ${seqLen} : écoute la salle avant de poursuivre.`;
+  }else{
+    msg='Quand tu es prêt·e, sers la coupe pour que Kabé juge la ronde.';
+  }
+  message.textContent=msg;
+
+  const undo=document.getElementById('kabeGameUndo');
+  const reset=document.getElementById('kabeGameReset');
+  const serve=document.getElementById('kabeGameServe');
+  if(undo) undo.disabled=locked||selected.length===0;
+  if(reset) reset.disabled=locked||selected.length===0;
+  if(serve) serve.disabled=locked||selected.length<seqLen;
 }
 
 const kabeRetry=document.getElementById('kabeGameRetry');
 if(kabeRetry){
   kabeRetry.addEventListener('click',()=>{
-    startKabeRound();
+    startKabeRitual();
   });
 }
 const kabeClose=document.getElementById('kabeGameClose');
@@ -655,13 +759,32 @@ if(kabeClose){
     closeKabeGame();
   });
 }
+const kabeUndo=document.getElementById('kabeGameUndo');
+if(kabeUndo){
+  kabeUndo.addEventListener('click',()=>{
+    undoKabeGesture();
+  });
+}
+const kabeReset=document.getElementById('kabeGameReset');
+if(kabeReset){
+  kabeReset.addEventListener('click',()=>{
+    resetKabeGesture();
+  });
+}
+const kabeServe=document.getElementById('kabeGameServe');
+if(kabeServe){
+  kabeServe.addEventListener('click',()=>{
+    serveKabeRitual();
+  });
+}
 
 /* ======= SCENES ======= */
 const SC={
  prologue:{
   img:IMG.pro,title:'Prologue — La Sourdine',text:()=>`
-  <p>La pluie plaque les enseignes de la Place du Pont. Sous <b>la Sourdine</b>, les voix deviennent feutrées et les souvenirs glissent. La sous-station <b>T1</b> décroche : si elle lâche, la Guill’ s’assombrit.</p>
-  <p>Il te faut un itinéraire sûr. <i>Noor</i> connaît les caves, <i>Milo</i> négocie avec les guetteurs, ou tu peux lire seul·e le courant de la foule.</p>`,
+  <p>La pluie plaque les enseignes de la Place du Pont et étire les halos des néons. Sous <b>la Sourdine</b>, les voix deviennent feutrées, les souvenirs glissent et ton HUD vacille par à-coups.</p>
+  <p>La sous-station <b>T1</b> décroche du réseau : si elle lâche, la Guill’ s’assombrit et les voies d’évacuation se referment.</p>
+  <p>Il te faut un itinéraire sûr. <i>Noor</i> connaît les caves, <i>Milo</i> négocie avec les guetteurs, ou tu peux lire seul·e le courant qui serpente sous la pluie.</p>`,
   choices:[
     {label:'Retrouver Noor, la dormeuse du pont',hint:'Guide discret vers les Berges (furtivité)',go:'place_noor'},
     {label:'Marcher vers Milo, le revendeur',hint:'Passe-droit potentiel au Pont',go:'place_milo'},
@@ -670,8 +793,8 @@ const SC={
  },
  place_noor:{
  img:IMG.place,title:'Place du Pont — Noor',text:()=>`
-  <p>Noor s’abrite sous une bâche plastique. Regard calme mais précis. Elle connaît les caves qui mènent aux <b>Berges</b>.</p>
-  <p>Elle ouvrira la voie si tu récupères <b>son sac</b> oublié à <b>Mazagran</b>.</p>`,
+  <p>Noor s’abrite sous une bâche plastique, capuche rabattue, regard calme mais précis. Elle connaît les caves qui mènent aux <b>Berges</b> et repère déjà les issues derrière toi.</p>
+  <p>Elle ouvrira la voie si tu récupères <b>son sac</b> oublié à <b>Mazagran</b>, celui qui contient un feuillet d’itinéraires griffonné à la main.</p>`,
   choices:[
     {label:'Accepter et récupérer son sac',hint:'Nouvel objectif : ramener le sac de Noor',immediate:s=>{s.tags.add('Noor');s.objective='Ramener le sac de Noor pour ouvrir la voie des caves.';addObj('Nouvel objectif : rapporter le sac de Noor.');},go:'maz_noor'},
     {label:'Refuser mais prendre son indice',hint:'Indice de trappe sans accompagnement',immediate:s=>{s.tags.add('Indice_Trappe');s.objective='Trouver la trappe technique indiquée par Noor.';addObj('Indice obtenu : emplacement de la trappe.');},go:'maz_common'},
@@ -680,8 +803,8 @@ const SC={
  },
  place_milo:{
  img:IMG.place,title:'Place du Pont — Milo',text:()=>`
-  <p>Milo recompte des câbles sous un parapluie troué. Il peut obtenir un laissez-passer au <b>Pont</b> si tu récupères un <b>coffret</b> caché à <b>Mazagran</b>.</p>
-  <p>Le deal est clair : tu rapportes le coffret, il parle aux guetteurs.</p>`,
+  <p>Milo recompte des câbles sous un parapluie troué. Son réseau alimente les guetteurs du <b>Pont</b>. Il peut obtenir un laissez-passer si tu récupères un <b>coffret</b> caché à <b>Mazagran</b>.</p>
+  <p>Le deal est clair : tu rapportes le coffret, il parle aux guetteurs et partage un code de reconnaissance gravé sur le plomb.</p>`,
   choices:[
     {label:'Accepter le deal du coffret',hint:'Passe-droit à gagner si tu réussis',immediate:s=>{s.tags.add('Milo');s.objective='Ramener le coffret scellé à Milo pour obtenir le passe.';addObj('Nouvel objectif : récupérer le coffret de Milo.');},go:'maz_milo'},
     {label:'Refuser et rester indépendant·e',hint:'Route neutre vers Mazagran',immediate:s=>{s.objective='Chercher un passage neutre par Mazagran.';},go:'maz_common'},
@@ -690,8 +813,8 @@ const SC={
  },
  place_solo:{
  img:IMG.place,title:'Place du Pont — Lire la foule',text:()=>`
-  <p>Tu te laisses porter par la foule. La pluie trace des courants sur le bitume. Tout converge vers <b>Mazagran</b> avant de glisser vers les <b>Berges</b>.</p>
-  <p>Reste à décider si tu suis le courant ou si tu forces un passage direct.</p>`,
+  <p>Tu te laisses porter par la foule. La pluie trace des courants sur le bitume et les rumeurs roulent d’un abri à l’autre. Tout converge vers <b>Mazagran</b> avant de glisser vers les <b>Berges</b>.</p>
+  <p>Reste à décider si tu suis le courant, si tu glanes des indices sous l’auvent ou si tu forces un passage direct.</p>`,
   choices:[
     {label:'Suivre le flux jusqu’à Mazagran',hint:'Collecter des indices avant les Berges',go:'maz_common'},
     {label:'Forcer un passage vers les Berges',hint:'Contourner la friche sans aide',go:'ber_entry'},
@@ -723,7 +846,10 @@ const SC={
    if(ST.tags.has('Collectif_Favor')&&!ST.tags.has('Collectif_Pret')){
     arr.push({label:'Prévenir le Collectif de ton départ',hint:'Prépare une escorte sociale',immediate:s=>{s.tags.add('Collectif_Pret');s.objective='Rejoindre le Pont avec l’appui du Collectif.';addObj('Le Collectif prépare une escorte pour le Pont.');},go:'place_return'});
    }
-   arr.push({label:'Rejoindre l’assemblée sous l’auvent',hint:'Chercher des appuis sociaux',go:'place_collectif'});
+   if(hasItem('Feuillet-mica')&&!ST.tags.has('Feuillet_Map')){
+    arr.push({label:'Déplier le feuillet-mica',hint:'Cartographier un conduit oublié vers T1',immediate:s=>{s.tags.add('Feuillet_Map');s.objective='Suivre les repères du feuillet vers une gaine discrète.';addObj('Les tracés UV du feuillet révèlent un détour sûr.');},go:'place_return'});
+   }
+    arr.push({label:'Rejoindre l’assemblée sous l’auvent',hint:'Chercher des appuis sociaux',go:'place_collectif'});
    arr.push({label:'Retourner vers Mazagran',hint:'Explorer la friche encore humide',go:'maz_common'});
    arr.push({label:'Descendre vers les Berges',hint:'Retrouver la trappe technique',go:'ber_entry'});
    arr.push({label:'S’approcher du Pont',hint:'Tester les contrôles en place',go:'pon_pass'});
@@ -735,6 +861,7 @@ const SC={
   <p>Sous l’auvent, des tables pliantes croulent sous les radios démontées. Les membres du Collectif griffonnent des plans pour contourner la Sourdine.</p>
   <p>Ils peuvent fournir escortes, rumeurs ou accès techniques si tu prouves ta valeur.</p>`,
   choices:[
+    {label:'Partager la note marquée de Milo',hint:'Utiliser la recommandation pour convaincre',when:()=>hasItem('Note marquée')&&!ST.tags.has('Collectif_Favor'),immediate:s=>{s.tags.add('Collectif_Favor');s.objective='Le Collectif peut préparer une escorte vers le Pont.';addObj('La note marquée circule sous l’auvent : confiance gagnée.');},go:'place_return'},
     {label:'Partager ton itinéraire',hint:'VOL/Empathie (10) — obtenir une escorte',when:()=>!ST.tags.has('Collectif_Favor'),test:{stat:'VOL',skill:'Empathie',dd:10,
       ok:s=>{s.tags.add('Collectif_Favor');s.objective='Le Collectif peut préparer une escorte vers le Pont.';addObj('Le Collectif accepte de couvrir ton passage.');},
       ko:s=>{s.stress=Math.min(5,s.stress+1);log('La discussion s’échauffe. +1 Stress.');}
@@ -744,7 +871,7 @@ const SC={
       ko:s=>{s.stress=Math.min(5,s.stress+1);log('Un regard te fixe. +1 Stress.');}
     },goOK:'place_return',goKO:'place_collectif'},
     {label:'Rétablir leur relais radio',hint:'NEU/Mécanique (11) — badge de maintenance',when:()=>!ST.tags.has('BadgeTech'),test:{stat:'NEU',skill:'Mécanique',dd:11,
-      ok:s=>{if(!s.inv.includes('Badge maintenance'))s.inv.push('Badge maintenance');s.tags.add('BadgeTech');s.objective='Utiliser le badge pour contourner la surveillance du Pont.';addObj('Badge de maintenance prêt pour les contrôles.');},
+      ok:s=>{gainItem('Badge maintenance');s.tags.add('BadgeTech');s.objective='Utiliser le badge pour contourner la surveillance du Pont.';addObj('Badge de maintenance prêt pour les contrôles.');},
       ko:s=>{s.hp=Math.max(0,s.hp-1);log('Une étincelle te mord. +1 Blessure.');}
     },goOK:'place_return',goKO:'place_collectif'},
     {label:'Revenir vers la Place principale',hint:'Faire le point avec tes contacts',go:'place_return'}
@@ -756,7 +883,7 @@ const SC={
   choices:[
     {label:'Lire le feuillet annoté',hint:'NEU/Mnémographie (10) — repérer la trappe',test:{stat:'NEU',skill:'Mnémographie',dd:10,
       ok:s=>{s.tags.add('Motif_R');s.objective='Atteindre la trappe technique depuis les Berges.';addObj('Indice : localisation de la trappe technique vers T1.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Le motif te vrille. +1 Stress.')}}},
-    {label:'Saisir le coffret scellé',hint:'Ajouter l’objet à ton inventaire',immediate:s=>{s.inv.push('Coffret scellé');s.objective='Transporter le coffret sans attirer l’attention.';addObj('Coffret scellé rangé dans ton sac.');}},
+    {label:'Saisir le coffret scellé',hint:'Ajouter l’objet à ton inventaire',immediate:s=>{gainItem('Coffret scellé');s.objective='Transporter le coffret sans attirer l’attention.';addObj('Coffret scellé rangé dans ton sac.');}},
     {label:'Franchir la porte du Kabé',hint:'Respirer un instant loin de la Sourdine',when:()=>ST.stress>0&&!ST.tags.has('Kabe_Apero'),go:'maz_apero'},
     {label:'Descendre vers les Berges',hint:'Prendre la cave jusqu’aux darses',go:'ber_entry'},
     {label:'Se faufiler vers l’atelier latéral',hint:'Rencontrer les ouvriers de la friche',go:'maz_atelier'},
@@ -772,19 +899,19 @@ const SC={
     addObj('Kabé clandestin : tu respires avec la ronde. Stress -1.');
     log('Le Kabé te délasse. -1 Stress.');
    }
-   const souffle=first
-    ? 'Un verre tiède passe de main en main, la rumeur couvre la Sourdine. Ton souffle ralentit.'
-    : 'Les habitué·es te reconnaissent et gardent une place au chaud.';
-   const defi=ST.tags.has('Kabe_GameWon')
-    ? 'Kabé t’invite à rejouer pour maintenir l’ambiance : son plateau clandestin est devenu votre code discret.'
-    : 'Kabé, PNJ des apéros clandestins, te lance son jeu de dégustation : reconnaître la bonne macération pour chasser la pression.';
+  const souffle=first
+   ? 'Un verre tiède passe de main en main, la rumeur couvre la Sourdine. Ton souffle ralentit.'
+   : 'Les habitué·es te reconnaissent et gardent une place au chaud.';
+  const defi=ST.tags.has('Kabe_RitualWon')
+   ? 'Kabé t’invite à rejouer le rituel pour garder la salle accordée : la séquence est devenue votre signe discret.'
+   : 'Kabé, maître des apéros clandestins, te propose un rituel d’infusion : enchaîner les gestes parfaits pour chasser la pression.';
    return `
   <p>Kabé orchestre le refuge : il dirige les apéros clandestins, rythme les souffles et surveille la Sourdine qui cogne.</p>
   <p>${souffle}</p>
   <p>${defi}</p>`;
   },
   choices:()=>[
-    {label:'Tenter le défi de dégustation de Kabé',hint:ST.tags.has('Kabe_GameWon')?'Mini-jeu : rejouer pour le panache':'Mini-jeu : reconnaître la macération signature (stress -1 à la première victoire)',immediate:()=>openKabeGame()},
+    {label:'Composer le rituel du Kabé',hint:ST.tags.has('Kabe_RitualWon')?'Mini-jeu : rejouer pour le panache':'Mini-jeu : aligner la bonne séquence (stress -1 à la première victoire)',immediate:()=>openKabeGame()},
     {label:'Chuchoter un merci et ressortir',hint:'Retourner à la cour de Mazagran',go:'maz_common'},
     {label:'Suivre l’escalier vers les Berges',hint:'Retrouver la cave en douceur',go:'ber_entry'},
     {label:'Remonter vers la Place du Pont',hint:'Partager la chaleur du Kabé avec tes contacts',go:'place_return'}
@@ -792,13 +919,15 @@ const SC={
  },
  maz_noor:{
  img:IMG.maz,title:'Mazagran — Le sac de Noor',text:()=>`
-  <p>Le sac de Noor est coincé derrière un banc soudé. L’eau goutte des bâches avec un rythme patient.</p>
-  <p>Tu peux forcer le métal ou descendre par la cave pour ressortir discrètement.</p>`,
+  <p>Le sac de Noor est coincé derrière un banc soudé. Les sangles collées à la rouille cèdent par à-coups tandis que l’eau goutte des bâches avec un rythme patient.</p>
+  <p>Tu peux forcer le métal, t’aider de ton matériel ou descendre par la cave pour ressortir discrètement.</p>`,
   choices:[
     {label:'Forcer le banc',hint:'SOM/Mécanique (12) — libérer le sac (échec : +1 Blessure)',test:{stat:'SOM',skill:'Mécanique',dd:12,
       ok:s=>{s.tags.add('Noor_Sac');s.objective='Ramener le sac à Noor sur la Place du Pont.';addObj('Sac de Noor récupéré.');},ko:s=>{s.hp=Math.max(0,s.hp-1);log('Tu t’écorches sur le métal. +1 Blessure.')}}},
     {label:'Passer par la cave',hint:'CIN/Furtivité (10) — ressortir sans alerter',test:{stat:'CIN',skill:'Furtivité',dd:10,
       ok:s=>{s.tags.add('Sortie_Discrète');log('Personne ne t’a vu.');},ko:s=>{log('Lampe qui claque. Pas de dégâts.')}}},
+    {label:'Découper les sangles au cutter',hint:'Utiliser ton outil pour libérer le sac sans bruit',when:()=>hasItem('Cutter')&&!ST.tags.has('Noor_Sac'),immediate:s=>{s.tags.add('Noor_Sac');s.objective='Ramener le sac à Noor sur la Place du Pont.';addObj('Le cutter entaille les sangles : sac de Noor libéré.');log('Le cutter grignote la rouille.');},go:'place_return'},
+    {label:'Faire levier avec le tournevis isolé',hint:'Exploiter ton tournevis pour dégager le banc',when:()=>hasItem('Tournevis isolé')&&!ST.tags.has('Noor_Sac'),immediate:s=>{s.tags.add('Noor_Sac');s.tags.add('Sortie_Discrète');s.objective='Ramener le sac à Noor sur la Place du Pont.';addObj('Le tournevis isolé fait céder le banc sans déclencher d’alarme.');},go:'place_return'},
     {label:'Filer aux Berges',hint:'Rejoindre les darses sans perdre de temps',go:'ber_entry'},
     {label:'Investir l’atelier voisin',hint:'Tenter un détour social ou technique',go:'maz_atelier'},
     {label:'Retourner à la Place du Pont',hint:'Remettre le sac ou chercher du soutien',go:'place_return'}
@@ -806,9 +935,10 @@ const SC={
  },
  maz_milo:{
  img:IMG.maz,title:'Mazagran — Le coffret de Milo',text:()=>`
-  <p>Le coffret frappé du sceau de Milo est sanglé à un crochet. Le plomb est déjà ébréché ; tu évites d’y jeter un œil.</p>`,
+  <p>Le coffret frappé du sceau de Milo est sanglé à un crochet. Des motifs gravés luisent sous la pluie ; le plomb est déjà ébréché et un code y est poinçonné.</p>`,
   choices:[
-    {label:'Détacher le coffret pour Milo',hint:'Prépare le passe au Pont',immediate:s=>{s.tags.add('Coffret_Milo');s.inv.push('Coffret (Milo)');s.objective='Apporter le coffret à Milo pour obtenir le laissez-passer.';addObj('Coffret de Milo sécurisé.');}},
+    {label:'Détacher le coffret pour Milo',hint:'Prépare le passe au Pont',immediate:s=>{s.tags.add('Coffret_Milo');gainItem('Coffret (Milo)');s.objective='Apporter le coffret à Milo pour obtenir le laissez-passer.';addObj('Coffret de Milo sécurisé.');}},
+    {label:'Inspecter le coffret à la lampe plate',hint:'Révéler le code gravé (sans l’ouvrir)',when:()=>hasItem('Lampe plate')&&!ST.tags.has('Milo_Code'),immediate:s=>{s.tags.add('Milo_Code');s.objective='Utiliser le code de Milo pour traverser le Pont sans montrer le coffret.';addObj('Le faisceau révèle le code du coffret de Milo.');log('La lampe rase les motifs et révèle des chiffres cachés.');},go:'maz_milo'},
     {label:'Prendre la cave vers les Berges',hint:'Continuer vers la trappe technique',go:'ber_entry'},
     {label:'Se glisser vers l’atelier latéral',hint:'Approcher les ouvriers en douce',go:'maz_atelier'},
     {label:'Retourner vers la Place du Pont',hint:'Négocier le laissez-passer avec Milo',go:'place_return'}
@@ -825,26 +955,39 @@ const SC={
       ko:s=>{s.stress=Math.min(5,s.stress+1);log('On te jauge froidement. +1 Stress.');}
     },goOK:'maz_atelier',goKO:'maz_atelier'},
     {label:'Forcer le casier technique',hint:'CIN/Furtivité (10) — récupérer un badge',when:()=>!ST.tags.has('BadgeTech'),test:{stat:'CIN',skill:'Furtivité',dd:10,
-      ok:s=>{if(!s.inv.includes('Badge maintenance'))s.inv.push('Badge maintenance');s.tags.add('BadgeTech');s.objective='Utiliser le badge pour traverser les contrôles du Pont.';addObj('Badge de maintenance subtilisé.');},
+      ok:s=>{gainItem('Badge maintenance');s.tags.add('BadgeTech');s.objective='Utiliser le badge pour traverser les contrôles du Pont.';addObj('Badge de maintenance subtilisé.');},
       ko:s=>{s.stress=Math.min(5,s.stress+1);log('Un crochet grince. +1 Stress.');}
     },goOK:'maz_atelier',goKO:'maz_atelier'},
     {label:'Calibrer leur génératrice',hint:'NEU/Mécanique (10) — stabiliser la nacelle',when:()=>!ST.tags.has('Berges_Stable'),test:{stat:'NEU',skill:'Mécanique',dd:10,
       ok:s=>{s.tags.add('Berges_Stable');s.objective='Descendre par la nacelle stabilisée vers les Berges.';addObj('La génératrice cale la nacelle : accès plus stable.');},
       ko:s=>{s.hp=Math.max(0,s.hp-1);log('Courant récalcitrant. +1 Blessure.');}
     },goOK:'maz_atelier',goKO:'maz_atelier'},
+    {label:'Sangler la nacelle avec ton ruban textile',hint:'Mettre ton matériel au service de l’atelier',when:()=>hasItem('Ruban textile')&&!ST.tags.has('Berges_Stable'),immediate:s=>{s.tags.add('Berges_Stable');s.objective='Descendre par la nacelle stabilisée vers les Berges.';addObj('Ton ruban textile verrouille les attaches de la nacelle.');},go:'maz_atelier'},
     {label:'Retourner à la cour de Mazagran',hint:'Revenir vers les autres pistes',go:'maz_common'},
     {label:'Descendre vers les Berges',hint:'Suivre la voie préparée',go:'ber_entry'}
   ]
  },
  ber_entry:{
- img:IMG.ber,title:'Berges — Darses',text:()=>`
-  <p>La vase masque une trappe d’entretien. À chaque contact, le métal grince et vibre.</p>`,
+ img:IMG.ber,title:'Berges — Darses',text:()=>{
+  const hints=[];
+  if(ST.tags.has('Feuillet_Map')){hints.push('Les repères UV du feuillet scintillent sur un capot presque noyé.');}
+  if(hasItem('Aimant-alu')){hints.push('Ton aimant-alu pulse doucement lorsque tu le rapproches du loquet.');}
+  const extra=hints.length?`<p>${hints.join(' ')}</p>`:'';
+  return `
+  <p>La vase masque une trappe d’entretien. À chaque contact, le métal grince et vibre.</p>${extra}`;
+ },
   choices:()=>{
     const arr=[
       {label:'Décrocher la trappe technique',hint:'NEU/Cryptanalyse (10) — ouvrir l’accès vers T1',test:{stat:'NEU',skill:'Cryptanalyse',dd:10,
         ok:s=>{s.tags.add('Acces_Tech');s.objective='Descendre vers T1 par la trappe technique.';addObj('Trappe vers T1 ouverte.');},ko:s=>{log('Contacts oxydés : il faudra insister.')}}},
       {label:'Remonter vers le Pont',hint:'Avec le coffret de Milo : passe-droit assuré',go:'pon_pass'}
     ];
+    if(ST.tags.has('Feuillet_Map')&&!ST.tags.has('T1_Grille')){
+      arr.push({label:'Suivre les repères du feuillet-mica',hint:'Utiliser la cartographie secrète de Noor',immediate:s=>{s.tags.add('Pont_Souterrain');s.tags.add('T1_Grille');s.objective='Atteindre T1 via la gaine repérée sur le feuillet.';addObj('Le feuillet révèle une gaine intacte vers T1.');log('Les repères UV scintillent : un passage s’ouvre.');},go:'pon_shadow'});
+    }
+    if(hasItem('Aimant-alu')&&!ST.tags.has('Acces_Tech')){
+      arr.push({label:'Soulever la trappe avec ton aimant-alu',hint:'Déverrouiller en silence grâce à ton outil',immediate:s=>{s.tags.add('Acces_Tech');s.objective='Descendre vers T1 par la trappe technique.';addObj('Aimant-alu décroche les loquets de la trappe.');log('L’aimant attire les goupilles : la trappe bascule.');},go:'t1_overlook'});
+    }
     if(ST.tags.has('Atelier_Allie')&&ST.tags.has('Berges_Stable')){
       arr.push({label:'Appeler la nacelle des ouvriers',hint:'Voie technique sécurisée',immediate:s=>{s.tags.add('Acces_Tech');s.tags.add('T1_Soutien');s.objective='Suivre la nacelle stabilisée jusqu’au périmètre de T1.';addObj('La nacelle de Mazagran t’abaisse vers la sous-station.');},go:'t1_overlook'});
     }
@@ -865,14 +1008,15 @@ const SC={
       ok:s=>{s.tags.add('Pont_Escorte');s.objective='Traverser le Pont escorté par la patrouille.';addObj('La patrouille fluviale t’offre un passage encadré.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('On te renvoie vers la vase. +1 Stress.');}},goOK:'ber_entry',goKO:'ber_patrouille'},
     {label:'Suivre la patrouille à distance',hint:'CIN/Furtivité (11) — repérer la contre-voie',test:{stat:'CIN',skill:'Furtivité',dd:11,
       ok:s=>{s.tags.add('Pont_Souterrain');s.objective='Passer sous le pont par la contre-voie.';addObj('Itinéraire sous le tablier repéré.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Un projecteur t’accroche. +1 Stress.');}},goOK:'pon_shadow',goKO:'ber_patrouille'},
+    {label:'Allumer une flamme de détresse',hint:'Utiliser ton briquet pour détourner la patrouille',when:()=>hasItem('Briquet')&&!ST.tags.has('Pont_Distrait'),immediate:s=>{s.tags.add('Pont_Distrait');s.objective='Profiter de la confusion pour franchir le Pont.';addObj('Une flamme brève attire la patrouille vers la vase.');log('Le briquet déclenche une flamme brève : la patrouille se disperse.');},go:'ber_entry'},
     {label:'Saboter le relais de détection',hint:'NEU/Cryptanalyse (11) — détourner les capteurs',test:{stat:'NEU',skill:'Cryptanalyse',dd:11,
       ok:s=>{s.tags.add('Pont_Distrait');s.objective='Profiter de la confusion pour franchir le Pont.';addObj('Les capteurs du Pont partent en boucle.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Les alarmes grincent. +1 Stress.');}},goOK:'ber_entry',goKO:'ber_patrouille'},
     {label:'Revenir vers les darses',hint:'Changer de stratégie',go:'ber_entry'}
   ]
  },
  pon_pass:{
-  img:IMG.pon,title:'Pont de la Guill’ — Passage',text:()=>`
-  <p>Deux guetteurs s’abritent sous le pont. Ils filtrent les passages et attendent un signe convaincant.</p>`,
+ img:IMG.pon,title:'Pont de la Guill’ — Passage',text:()=>`
+  <p>Deux guetteurs s’abritent sous le pont. Leurs badges grésillent et ils attendent un signe convaincant pour laisser passer quiconque vers T1.</p>`,
   choices:()=>{
     const a=[];
     if(ST.tags.has('Milo_Pass')){
@@ -885,6 +1029,9 @@ const SC={
     }
     if(ST.tags.has('Pont_Escorte')){
       a.push({label:'Suivre l’escorte jusqu’à T1',hint:'Route sociale sécurisée',immediate:s=>{s.objective='Laisser l’escorte te mener au périmètre de T1.';},go:'t1_entry'});
+    }
+    if(ST.tags.has('Milo_Code')&&!ST.tags.has('Milo_Pass')&&!ST.tags.has('Pont_Escorte')){
+      a.push({label:'Énoncer le code gravé du coffret',hint:'Convaincre les guetteurs sans montrer de preuve',immediate:s=>{s.objective='Traverser le Pont et atteindre T1.';log('Le code de Milo ouvre la voie : les guetteurs te laissent filer.');},go:'t1_entry'});
     }
     if(ST.tags.has('Collectif_Dossier')){
       a.push({label:'Révéler le planning volé',hint:'Mettre la pression sur les guetteurs',immediate:s=>{s.tags.delete('Collectif_Dossier');s.tags.add('Pont_Distrait');addObj('Les guetteurs lâchent du lest face aux preuves.');},go:'pon_pass'});
@@ -922,6 +1069,7 @@ const SC={
     {label:'Pirater le relais de surveillance',hint:'NEU/Cryptanalyse (11) — déclencher une boucle',test:{stat:'NEU',skill:'Cryptanalyse',dd:11,
       ok:s=>{s.tags.add('Pont_Distrait');addObj('Les capteurs du pont se remettent à zéro dans un grésillement.');},
       ko:s=>{s.stress=Math.min(5,s.stress+1);log('Le relais claque et t’oblige à reculer. +1 Stress.');}},goOK:'pon_pass',goKO:'pon_shadow'},
+    {label:'Allumer une flamme rassurante',hint:'Utiliser ton briquet pour faire baisser la pression (stress -1)',when:()=>hasItem('Briquet')&&!ST.tags.has('Briquet_Calm')&&ST.stress>0,immediate:s=>{s.stress=Math.max(0,s.stress-1);s.tags.add('Briquet_Calm');log('La flamme vacille mais t’apaise. Stress -1.');},go:'pon_shadow'},
     {label:'Revenir vers les Berges',hint:'Retenter depuis les darses',go:'ber_entry'},
     {label:'Remonter vers la Place',hint:'Reprendre son souffle sous l’auvent',go:'place_return'}
   ]
@@ -936,6 +1084,15 @@ const SC={
       {label:'Se glisser par la grille',hint:'CIN/Furtivité (10) — infiltration par le bas',test:{stat:'CIN',skill:'Furtivité',dd:10,
         ok:s=>{s.tags.add('T1_Grille');s.objective='Stabiliser le cœur de T1.';addObj('Tu t’infiltres par la grille.');},ko:s=>{log('Une vis tinte. Tu attends.');}}}
     ];
+    if(hasItem('Tournevis isolé')&&!ST.tags.has('T1_Grille')){
+      arr.push({label:'Démonter le panneau latéral',hint:'Utiliser ton tournevis pour créer un accès discret',immediate:s=>{s.tags.add('T1_Grille');s.tags.add('Acces_Tech');s.objective='Glisser vers le cœur de T1 par le panneau démonté.';addObj('Panneau latéral démonté grâce au tournevis isolé.');},go:'t1_overlook'});
+    }
+    if(ST.tags.has('Milo_Code')&&!ST.tags.has('T1_Ouverte')){
+      arr.push({label:'Projeter le motif relevé sur la serrure',hint:'NEU/Déduction (9) — exploiter les codes de Milo',test:{stat:'NEU',skill:'Déduction',dd:9,
+        ok:s=>{s.tags.add('T1_Ouverte');s.objective='Stabiliser le cœur de T1.';addObj('Le motif gravé synchronise la serrure de T1.');},
+        ko:s=>{s.stress=Math.min(5,s.stress+1);log('Le motif rebondit sans effet. +1 Stress.');}
+      },goOK:'t1_entry',goKO:'t1_entry'});
+    }
     if(ST.tags.has('Noor_Trust')){
       arr.push({label:'Noor entrouvre la porte',hint:'Voie sociale depuis les caves',immediate:s=>{s.objective='Stabiliser le cœur de T1.';addObj('Noor te fait entrer par la cave.');}});
     }
@@ -971,14 +1128,44 @@ const SC={
  t1_core:{
   img:IMG.t1,title:'Sous-station T1 — Cœur',text:()=>`
   <p>Le cœur de T1 vibre. Trois leviers bricolés clignotent : <b>Contournement</b>, <b>Relance</b>, <b>Trame douce</b>. Chaque option a son prix.</p>`,
-  choices:[
-    {label:'Contournement — gagner du temps',hint:'SOM/Mécanique (10) — détourner les flux (+1 Flux)',test:{stat:'SOM',skill:'Mécanique',dd:10,
-      ok:s=>{s.flux=Math.max(0,s.flux+1);s.objective='Quitter la zone avant la prochaine alerte.';addObj('Contournement posé : la nuit tiendra un peu plus.');clearEndingTags();markEndingApproach();s.tags.add('End_Contournement');},ko:s=>{s.hp=Math.max(0,s.hp-1);log('Coup de jus. +1 Blessure.')}} ,goOK:()=>pickEnding('cont'),goKO:'ep_silent'},
-    {label:'Relance — plus risqué',hint:'NEU/Déduction (12) — redémarrage bruyant',test:{stat:'NEU',skill:'Déduction',dd:12,
-      ok:s=>{s.tags.add('Relance');addObj('Relance réussie : T1 repart en claquant.');clearEndingTags();markEndingApproach();s.tags.add('End_Noise');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Tu recules. +1 Stress.')}} ,goOK:()=>pickEnding('noise'),goKO:'ep_silent'},
-    {label:'Trame douce — protéger les souvenirs',hint:'VOL/Empathie (12) + ✦ — apaiser la Sourdine',test:{stat:'VOL',skill:'Empathie',dd:12,needsFrag:true,
-      ok:s=>{s.tags.add('Trame_Douce');s.frag=Math.max(0,s.frag-1);addObj('Voile tiré : les mémoires restent en place.');clearEndingTags();markEndingApproach();s.tags.add('End_Soft');},ko:s=>{log('Tu n’oses pas. Rien ne casse.')}} ,goOK:()=>pickEnding('soft'),goKO:'ep_silent'}
-  ]
+  choices:()=>{
+    const arr=[];
+    if(hasItem('Gants usés')&&!ST.tags.has('Leviers_Prepares')){
+      arr.push({label:'Enfiler tes gants sur les leviers',hint:'Préparer les commandes contre les arcs',immediate:s=>{s.tags.add('Leviers_Prepares');addObj('Les leviers sont isolés par tes gants usés.');log('Tu glisses tes gants usés sur les leviers : l’arc sera amorti.');},go:'t1_core'});
+    }
+    if(hasItem('Ruban textile')&&!ST.tags.has('Leviers_Prepares')){
+      arr.push({label:'Enrubanner les câbles avec ton ruban',hint:'Renforcer l’isolation avant d’agir',immediate:s=>{s.tags.add('Leviers_Prepares');addObj('Le ruban textile amortit les arcs autour des leviers.');log('Tu bandes les leviers de ruban textile.');},go:'t1_core'});
+    }
+    arr.push({label:'Contournement — gagner du temps',hint:'SOM/Mécanique (10) — détourner les flux (+1 Flux)',test:{stat:'SOM',skill:'Mécanique',dd:10,
+      ok:s=>{s.flux=Math.max(0,s.flux+1);s.objective='Quitter la zone avant la prochaine alerte.';addObj('Contournement posé : la nuit tiendra un peu plus.');clearEndingTags();markEndingApproach();s.tags.add('End_Contournement');},
+      ko:s=>{
+        if(s.tags.has('Leviers_Prepares')){
+          s.tags.delete('Leviers_Prepares');
+          log('La protection improvisée brûle mais tu restes indemne.');
+        }else{
+          s.hp=Math.max(0,s.hp-1);
+          log('Coup de jus. +1 Blessure.');
+        }
+      }
+    },goOK:()=>pickEnding('cont'),goKO:'ep_silent'});
+    arr.push({label:'Relance — plus risqué',hint:'NEU/Déduction (12) — redémarrage bruyant',test:{stat:'NEU',skill:'Déduction',dd:12,
+      ok:s=>{s.tags.add('Relance');addObj('Relance réussie : T1 repart en claquant.');clearEndingTags();markEndingApproach();s.tags.add('End_Noise');},
+      ko:s=>{
+        if(s.tags.has('Leviers_Prepares')){
+          s.tags.delete('Leviers_Prepares');
+          log('Le ruban fume mais tu restes concentré·e.');
+        }else{
+          s.stress=Math.min(5,s.stress+1);
+          log('Tu recules. +1 Stress.');
+        }
+      }
+    },goOK:()=>pickEnding('noise'),goKO:'ep_silent'});
+    arr.push({label:'Trame douce — protéger les souvenirs',hint:'VOL/Empathie (12) + ✦ — apaiser la Sourdine',test:{stat:'VOL',skill:'Empathie',dd:12,needsFrag:true,
+      ok:s=>{s.tags.add('Trame_Douce');s.frag=Math.max(0,s.frag-1);addObj('Voile tiré : les mémoires restent en place.');clearEndingTags();markEndingApproach();s.tags.add('End_Soft');},
+      ko:s=>{log('Tu n’oses pas. Rien ne casse.');}
+    },goOK:()=>pickEnding('soft'),goKO:'ep_silent'});
+    return arr;
+  }
  },
  ep_cont:{img:IMG.t1,title:'Épilogue — Contournement',text:()=>`
   <p>Le quartier respire encore. Ce n’est pas brillant, mais tu as gagné quelques heures.</p>`,choices:[{label:'Recommencer (retour Prologue)',go:'prologue'}]},
