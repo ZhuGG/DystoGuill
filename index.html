@@ -841,7 +841,7 @@ const SC={
     arr.push({label:'Remettre le sac à Noor',hint:'Voie sociale vers les caves',immediate:s=>{s.tags.delete('Noor_Sac');s.tags.add('Noor_Trust');s.objective='Suivre Noor par les caves vers les Berges.';addObj('Noor récupère son sac et t’offre la trappe des caves.');},go:'place_return'});
    }
    if(ST.tags.has('Milo')&&ST.tags.has('Coffret_Milo')&&!ST.tags.has('Milo_Pass')){
-    arr.push({label:'Livrer le coffret à Milo',hint:'Passe-droit vers le Pont',immediate:s=>{s.tags.delete('Coffret_Milo');s.tags.add('Milo_Pass');s.inv=s.inv.filter(it=>it!=='Coffret (Milo)');s.objective='Utiliser le laissez-passer de Milo pour franchir le Pont.';addObj('Milo tamponne ton laissez-passer et te fait un clin d’œil.');},go:'place_return'});
+    arr.push({label:'Livrer le coffret à Milo',hint:'Passe-droit vers le Pont',immediate:s=>{s.tags.delete('Coffret_Milo');s.tags.add('Milo_Pass');s.inv=s.inv.filter(it=>it!=='Coffret (Milo)'&&it!=='Coffret scellé');s.objective='Utiliser le laissez-passer de Milo pour franchir le Pont.';addObj('Milo tamponne ton laissez-passer et te fait un clin d’œil.');},go:'place_return'});
    }
    if(ST.tags.has('Collectif_Favor')&&!ST.tags.has('Collectif_Pret')){
     arr.push({label:'Prévenir le Collectif de ton départ',hint:'Prépare une escorte sociale',immediate:s=>{s.tags.add('Collectif_Pret');s.objective='Rejoindre le Pont avec l’appui du Collectif.';addObj('Le Collectif prépare une escorte pour le Pont.');},go:'place_return'});
@@ -883,7 +883,7 @@ const SC={
   choices:[
     {label:'Lire le feuillet annoté',hint:'NEU/Mnémographie (10) — repérer la trappe',test:{stat:'NEU',skill:'Mnémographie',dd:10,
       ok:s=>{s.tags.add('Motif_R');s.objective='Atteindre la trappe technique depuis les Berges.';addObj('Indice : localisation de la trappe technique vers T1.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Le motif te vrille. +1 Stress.')}}},
-    {label:'Saisir le coffret scellé',hint:'Ajouter l’objet à ton inventaire',immediate:s=>{gainItem('Coffret scellé');s.objective='Transporter le coffret sans attirer l’attention.';addObj('Coffret scellé rangé dans ton sac.');}},
+    {label:'Saisir le coffret scellé',hint:'Ajouter l’objet à ton inventaire',immediate:s=>{s.tags.add('Coffret_Milo');gainItem('Coffret (Milo)');s.objective='Apporter le coffret à Milo pour obtenir le laissez-passer.';addObj('Coffret (Milo) rangé dans ton sac.');}},
     {label:'Franchir la porte du Kabé',hint:'Respirer un instant loin de la Sourdine',when:()=>ST.stress>0&&!ST.tags.has('Kabe_Apero'),go:'maz_apero'},
     {label:'Descendre vers les Berges',hint:'Prendre la cave jusqu’aux darses',go:'ber_entry'},
     {label:'Se faufiler vers l’atelier latéral',hint:'Rencontrer les ouvriers de la friche',go:'maz_atelier'},
