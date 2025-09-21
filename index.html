@@ -314,9 +314,9 @@ a{color:var(--a)}
 </div></div>
 
 <!-- Intro -->
-<div id="introModal" class="modalScreen">
+<div id="introModal" class="modalScreen" role="dialog" aria-modal="true" aria-labelledby="introModalTitle">
   <div class="modalBox introBox" style="max-width:900px">
-    <h2>TRAME DOUCE — Préambule</h2>
+    <h2 id="introModalTitle">TRAME DOUCE — Préambule</h2>
     <p class="introLead">La Guillotière est engluée sous <b>la Sourdine</b>, un grondement électromagnétique qui brouille les voix, avale les souvenirs et dérègle les capteurs. Les habitants s’accrochent aux fragments de mémoire qui restent.</p>
     <p class="introLead">Pendant que la pluie polit les façades, la sous-station <b>T1</b> décroche du réseau. Si personne ne rétablit le flux, le quartier s’éteint et les voies d’évacuation se referment.</p>
     <div class="introColumns">
@@ -345,9 +345,9 @@ a{color:var(--a)}
 </div>
 
 <!-- Archetypes -->
-<div id="archModal" class="modalScreen" style="display:none">
+<div id="archModal" class="modalScreen" role="dialog" aria-modal="true" aria-labelledby="archModalTitle" style="display:none">
   <div class="modalBox">
-    <h2>Choisis ton archétype</h2>
+    <h2 id="archModalTitle">Choisis ton archétype</h2>
     <div class="arches" id="archList"></div>
     <div class="row" style="justify-content:flex-end">
       <button class="btn" id="btnRandom">Au hasard</button>
@@ -356,9 +356,9 @@ a{color:var(--a)}
   </div>
 </div>
 
-<div id="kabeGameModal" class="modalScreen" style="display:none" aria-hidden="true">
+<div id="kabeGameModal" class="modalScreen" role="dialog" aria-modal="true" aria-labelledby="kabeGameModalTitle" style="display:none" aria-hidden="true">
   <div class="modalBox kabeGameBox">
-    <h2>Rituel du Kabé clandestin</h2>
+    <h2 id="kabeGameModalTitle">Rituel du Kabé clandestin</h2>
     <p class="kabeGameIntro">Kabé, maître des apéros clandestins, orchestre un rituel d’infusion pour garder la salle accordée. Enchaîne les gestes dans le bon ordre pour offrir une bouffée de douceur.</p>
     <div id="kabeGamePrompt" class="kabeGamePrompt"></div>
     <div id="kabeGamePalette" class="kabeGamePalette" role="group" aria-live="polite"></div>
@@ -458,6 +458,68 @@ function gainItem(name){
     ST.inv.push(name);
   }
 }
+
+const FOCUSABLE_SELECTOR='a[href],button:not([disabled]),textarea:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])';
+let archReturnFocus=null;
+let kabeGameReturnFocus=null;
+
+function isElementVisible(el){
+  return !!(el && (el.offsetWidth||el.offsetHeight||el.getClientRects().length));
+}
+function getFocusableElements(container){
+  if(!container) return [];
+  return Array.from(container.querySelectorAll(FOCUSABLE_SELECTOR)).filter(el=>{
+    if(el.hasAttribute('disabled')) return false;
+    if(el.getAttribute('aria-hidden')==='true') return false;
+    return isElementVisible(el);
+  });
+}
+function focusFirstFocusable(container){
+  const focusables=getFocusableElements(container);
+  if(focusables.length){
+    try{
+      focusables[0].focus({preventScroll:true});
+    }catch(e){
+      focusables[0].focus();
+    }
+  }
+}
+function restoreFocus(el){
+  if(!el||typeof el.focus!=='function') return;
+  if(!document.contains(el)) return;
+  try{
+    el.focus({preventScroll:true});
+  }catch(e){
+    el.focus();
+  }
+}
+function setupFocusTrap(modalBox){
+  if(!modalBox) return;
+  modalBox.addEventListener('keydown',event=>{
+    if(event.key!=='Tab') return;
+    const modalScreen=modalBox.closest('.modalScreen');
+    if(!modalScreen) return;
+    const style=window.getComputedStyle(modalScreen);
+    if(style.display==='none'||style.visibility==='hidden'||modalScreen.getAttribute('aria-hidden')==='true') return;
+    const focusables=getFocusableElements(modalBox);
+    if(!focusables.length) return;
+    const first=focusables[0];
+    const last=focusables[focusables.length-1];
+    const active=document.activeElement;
+    if(event.shiftKey){
+      if(active===first||!modalBox.contains(active)){
+        event.preventDefault();
+        last.focus();
+      }
+    }else{
+      if(active===last||!modalBox.contains(active)){
+        event.preventDefault();
+        first.focus();
+      }
+    }
+  });
+}
+document.querySelectorAll('.modalBox').forEach(setupFocusTrap);
 
 function updateViewIndicator(v){const badge=$('#viewIndicator'); if(badge){badge.textContent='Vue : '+(VIEW_LABELS[v]||'Tous');}}
 function openNavMenu(){if(!navWrap)return;navWrap.classList.add('open');if(navToggle)navToggle.setAttribute('aria-expanded','true');}
@@ -564,11 +626,13 @@ const KABE_RITUALS=[
 let kabeGameState=null;
 
 function openKabeGame(){
+  kabeGameReturnFocus=document.activeElement instanceof HTMLElement ? document.activeElement : null;
   startKabeRitual();
   const modal=document.getElementById('kabeGameModal');
   if(modal){
     modal.style.display='flex';
     modal.setAttribute('aria-hidden','false');
+    focusFirstFocusable(modal.querySelector('.modalBox'));
   }
 }
 
@@ -583,7 +647,9 @@ function closeKabeGame(){
   renderKabeGame();
   if(wasOpen){
     render();
+    restoreFocus(kabeGameReturnFocus);
   }
+  kabeGameReturnFocus=null;
 }
 
 function startKabeRitual(){
@@ -1464,6 +1530,7 @@ function resolveRoll(){
 $('#btnChooseArch').addEventListener('click',()=>{ $('#introModal').style.display='none'; openArch(); });
 let sel=null;
 function openArch(){
+  archReturnFocus=document.activeElement instanceof HTMLElement ? document.activeElement : null;
   const list=$('#archList'); list.innerHTML='';
   sel=ST.arch||null;
   $('#btnConfirm').disabled=!sel;
@@ -1478,12 +1545,17 @@ function openArch(){
       if(e.key==='Enter'||e.key===' '||e.key==='Spacebar'){e.preventDefault();selectArch(a,card);} });
     if(ST.arch && ST.arch.id===a.id){ sel=a; card.setAttribute('aria-selected','true'); $('#btnConfirm').disabled=false; }
     list.appendChild(card); });
-  $('#archModal').style.display='flex';
+  const modal=document.getElementById('archModal');
+  if(modal){
+    modal.style.display='flex';
+    focusFirstFocusable(modal.querySelector('.modalBox'));
+  }
 }
 function selectArch(a,card){ sel=a; document.querySelectorAll('.arch').forEach(x=>x.setAttribute('aria-selected','false')); card.setAttribute('aria-selected','true'); $('#btnConfirm').disabled=false; }
 $('#btnRandom').addEventListener('click',()=>{const i=Math.floor(Math.random()*ARCH.length);selectArch(ARCH[i], document.querySelectorAll('.arch')[i])});
 $('#btnConfirm').addEventListener('click',()=>{ ST.arch=sel; ST.stats={...sel.stats}; ST.skills={...sel.skills}; ST.inv=[...sel.start];
-  addObj('Archétype: '+sel.name); $('#archModal').style.display='none'; save(); render(); });
+  addObj('Archétype: '+sel.name); const modal=document.getElementById('archModal'); if(modal){modal.style.display='none';}
+  save(); render(); restoreFocus(archReturnFocus); archReturnFocus=null; });
 
 /* ======= INIT ======= */
 setupNav(); // header + mobile bar
