@@ -150,15 +150,22 @@ a{color:var(--a)}
 .choice strong{display:block}
 .kabeGameBox{max-width:520px}
 .kabeGameIntro{margin:0 0 12px 0;color:var(--mut);line-height:1.6}
-.kabeGamePrompt{margin:0 0 10px 0;font-weight:600;color:var(--ink)}
-.kabeGameOptions{display:grid;gap:10px}
-.kabeGameOptions button{width:100%;text-align:left;align-items:flex-start;flex-direction:column;gap:4px}
-.kabeGameOptions button small{font-size:12px;color:var(--mut)}
-.kabeGameOptions button.success{outline:2px solid var(--good)}
-.kabeGameOptions button.fail{outline:2px solid var(--bad)}
+.kabeGamePrompt{margin:0 0 12px 0;font-weight:600;color:var(--ink);line-height:1.5}
+.kabeGamePalette{display:grid;gap:10px;margin-bottom:8px}
+.kabeGamePalette .btn{width:100%;text-align:left;align-items:flex-start;flex-direction:column;gap:4px}
+.kabeGamePalette .btn small{font-size:12px;color:var(--mut)}
+.kabeGamePalette .btn.selected{outline:2px solid var(--a)}
+.kabeGamePalette .btn.locked{opacity:.55;cursor:default}
+.kabeGameSequence{margin-top:4px;padding:10px;border-radius:12px;border:1px dashed var(--line);background:rgba(255,255,255,.03);display:flex;flex-direction:column;gap:6px}
+.kabeGameSequence .steps{display:flex;flex-direction:column;gap:6px}
+.kabeGameSequence .step{display:flex;flex-direction:column;gap:2px;padding:6px 8px;border-radius:8px;background:rgba(0,0,0,.14);border:1px solid rgba(156,246,255,.12);font-size:13px}
+.kabeGameSequence .step strong{font-size:12px;color:var(--mut)}
+.kabeGameSequence .step.pending{opacity:.65;font-style:italic}
+.kabeGameSequence .step.fail{border-color:var(--bad);color:var(--bad)}
+.kabeGameSequence .step.success{border-color:var(--good);color:var(--good)}
 .kabeGameMessage{margin-top:12px;color:var(--mut);line-height:1.6}
-.kabeGameActions{justify-content:flex-end;margin-top:16px}
-.kabeGameActions .btn{min-width:140px}
+.kabeGameActions{justify-content:flex-end;margin-top:16px;flex-wrap:wrap;gap:10px}
+.kabeGameActions .btn{min-width:150px}
 @media (max-width: 600px){
   body{font-size:14px}
   .header{padding:12px 10px;gap:10px}
@@ -351,13 +358,17 @@ a{color:var(--a)}
 
 <div id="kabeGameModal" class="modalScreen" style="display:none" aria-hidden="true">
   <div class="modalBox kabeGameBox">
-    <h2>Jeu du Kabé clandestin</h2>
-    <p class="kabeGameIntro">Kabé, maître des apéros clandestins, aligne ses macérations sur un plateau et observe les habitué·es. Retrouve la coupe correspondant à l’indice pour gagner une bouffée de douceur.</p>
+    <h2>Rituel du Kabé clandestin</h2>
+    <p class="kabeGameIntro">Kabé, maître des apéros clandestins, orchestre un rituel d’infusion pour garder la salle accordée. Enchaîne les gestes dans le bon ordre pour offrir une bouffée de douceur.</p>
     <div id="kabeGamePrompt" class="kabeGamePrompt"></div>
-    <div id="kabeGameOptions" class="kabeGameOptions" role="group" aria-live="polite"></div>
+    <div id="kabeGamePalette" class="kabeGamePalette" role="group" aria-live="polite"></div>
+    <div id="kabeGameSequence" class="kabeGameSequence" aria-live="polite"></div>
     <div id="kabeGameMessage" class="kabeGameMessage" role="status" aria-live="polite"></div>
     <div class="row kabeGameActions">
-      <button class="btn subtle" id="kabeGameRetry" type="button">Nouveau plateau</button>
+      <button class="btn subtle" id="kabeGameUndo" type="button">Annuler le dernier geste</button>
+      <button class="btn subtle" id="kabeGameReset" type="button">Réinitialiser</button>
+      <button class="btn primary" id="kabeGameServe" type="button">Servir la coupe</button>
+      <button class="btn subtle" id="kabeGameRetry" type="button">Nouveau rituel</button>
       <button class="btn primary" id="kabeGameClose" type="button">Fermer</button>
     </div>
   </div>
@@ -526,30 +537,34 @@ function renderMiniMap(){const v=s=>ST.visited.has(s)?'●':'○';
 function renderTimeline(){const T=$('#timeline');T.innerHTML='';ST.objLog.slice().reverse().forEach(o=>{const d=document.createElement('div');d.className='item';d.innerHTML=`<div>${o.text}</div><div class="when">${new Date(o.t).toLocaleTimeString()}</div>`;T.appendChild(d)})}
 function save(){localStorage.setItem(SAVE,JSON.stringify({a:ST.arch?.id,s:ST.stats,k:ST.skills,st:ST.stress,h:ST.hp,f:ST.flux,g:ST.frag,i:ST.inv,t:[...ST.tags],sc:ST.scene,o:ST.objective,ol:ST.objLog,v:[...ST.visited],as:ST.ascii}))}
 function load(){try{const d=JSON.parse(localStorage.getItem(SAVE)||'null');if(!d)return;ST.arch=ARCH.find(x=>x.id===d.a)||null; if(ST.arch){ST.stats={...ST.arch.stats};ST.skills={...ST.arch.skills};ST.inv=[...ST.arch.start]}
-  Object.assign(ST,{stress:d.st??2,hp:d.h??5,flux:d.f??2,frag:d.g??2});ST.inv=d.i||ST.inv;ST.tags=new Set(d.t||[]);ST.scene=d.sc||'prologue';ST.objective=d.o||ST.objective;ST.objLog=d.ol||[];ST.visited=new Set(d.v||[]);ST.ascii=d.as!==false}catch(e){}}
+  Object.assign(ST,{stress:d.st??2,hp:d.h??5,flux:d.f??2,frag:d.g??2});ST.inv=d.i||ST.inv;ST.tags=new Set(d.t||[]);
+  if(ST.tags.has('Kabe_GameWon')){ST.tags.delete('Kabe_GameWon');ST.tags.add('Kabe_RitualWon');}
+  ST.scene=d.sc||'prologue';ST.objective=d.o||ST.objective;ST.objLog=d.ol||[];ST.visited=new Set(d.v||[]);ST.ascii=d.as!==false}catch(e){}}
 /* exporter/importer */
 $('#btnExport').addEventListener('click',()=>{const blob=new Blob([localStorage.getItem(SAVE)||'{}'],{type:'application/json'});const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download='trame_douce_v6_4_sauvegarde.json';a.click();URL.revokeObjectURL(u)});
 $('#btnImport').addEventListener('click',()=>{const i=document.createElement('input');i.type='file';i.accept='application/json';i.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{localStorage.setItem(SAVE,r.result);load();render()};r.readAsText(f)};i.click()});
 
-const KABE_RECIPES=[
- {id:'solaire',name:'Éclat Solaire',notes:'Agrumes confits, gingembre et éclats de cuivre.',clue:'agrume brillant avec une pointe métallique.'},
- {id:'brume',name:'Brume d’Ozone',notes:'Verveine, absinthe douce et vapeur saline.',clue:'herbes froides et souffle d’ozone.'},
- {id:'nocturne',name:'Nocturne Sourde',notes:'Café froid, cardamome et charbon tamisé.',clue:'café sombre et cardamome.'},
- {id:'rosace',name:'Rosace du Pont',notes:'Fruits rouges, sucre fumé et paillettes de mica.',clue:'fruit rouge et sucre fumé.'},
- {id:'sirene',name:'Sirène Cuivrée',notes:'Miel, piment doux et câbles trempés.',clue:'chaleur sucrée avec des reflets cuivrés.'}
+const KABE_GESTURES={
+  brume:{name:'Brume d’absinthe',notes:'Assourdit la salle et adoucit la Sourdine.'},
+  braise:{name:'Braise confite',notes:'Chaleur fumée qui tient les cœurs éveillés.'},
+  givre:{name:'Givre de menthe noire',notes:'Froid sec qui tranche les excès.'},
+  pulse:{name:'Pulse magnétique',notes:'Battement salin qui cale la ronde.'},
+  sève:{name:'Sève cardée',notes:'Épaisseur végétale qui rassure les nerfs.'},
+  voile:{name:'Voile de sureau',notes:'Fleurs blanches qui filtrent la Sourdine.'},
+  zeste:{name:'Zeste d’orage',notes:'Agrume électrique qui réveille le palais.'},
+  sel:{name:'Sel de darse',notes:'Cristaux salins qui rappellent le quai.'}
+};
+const KABE_RITUALS=[
+  {id:'velours',name:'Velours de veille',clue:'Kabé veut endormir les capteurs : couvre la salle, stabilise, puis scelle avec une chaleur douce.',sequence:['voile','sève','braise'],palette:['voile','pulse','sève','braise','zeste']},
+  {id:'orage',name:'Orage contenu',clue:'Il faut réveiller la ronde sans casser le silence : une pointe vive, calmer aussitôt, puis verrouiller par un souffle froid.',sequence:['zeste','brume','givre'],palette:['zeste','brume','givre','braise','pulse']},
+  {id:'rebond',name:'Rebond des habitués',clue:'Kabé réclame un rythme rebondissant : pulse la table, lie avec un voile, puis relève par une douceur végétale.',sequence:['pulse','voile','sève'],palette:['pulse','voile','sève','brume','givre']},
+  {id:'rade',name:'Ancre des darses',clue:'Les mariniers veulent oublier la vase : appelle la brume, verse le sel des quais, termine par une braise confite.',sequence:['brume','sel','braise'],palette:['brume','sel','braise','sève','zeste']},
+  {id:'clair',name:'Clair sous la Sourdine',clue:'Pour garder les idées claires : givre l’esprit, impose une pulse régulière, referme avec un voile protecteur.',sequence:['givre','pulse','voile'],palette:['givre','pulse','voile','brume','sève']}
 ];
 let kabeGameState=null;
 
-function shuffleList(arr){
-  for(let i=arr.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [arr[i],arr[j]]=[arr[j],arr[i]];
-  }
-  return arr;
-}
-
 function openKabeGame(){
-  startKabeRound();
+  startKabeRitual();
   const modal=document.getElementById('kabeGameModal');
   if(modal){
     modal.style.display='flex';
@@ -565,100 +580,201 @@ function closeKabeGame(){
     modal.setAttribute('aria-hidden','true');
   }
   kabeGameState=null;
+  renderKabeGame();
   if(wasOpen){
     render();
   }
 }
 
-function startKabeRound(){
-  const pool=shuffleList([...KABE_RECIPES]);
-  const choices=pool.slice(0,3);
-  const target=choices[Math.floor(Math.random()*choices.length)];
-  kabeGameState={choices,target,resolved:false};
+function startKabeRitual(){
+  const ritual=KABE_RITUALS[Math.floor(Math.random()*KABE_RITUALS.length)];
+  kabeGameState={ritual,selected:[],locked:false,feedback:null,firstWin:false};
+  renderKabeGame();
+}
+
+function handleKabeGesture(id){
+  if(!kabeGameState||kabeGameState.locked) return;
+  if(!KABE_GESTURES[id]) return;
+  if(kabeGameState.selected.includes(id)) return;
+  const len=kabeGameState.ritual.sequence.length;
+  if(kabeGameState.selected.length>=len) return;
+  kabeGameState.selected.push(id);
+  kabeGameState.feedback=null;
+  renderKabeGame();
+}
+
+function undoKabeGesture(){
+  if(!kabeGameState||kabeGameState.locked) return;
+  if(kabeGameState.selected.length===0) return;
+  kabeGameState.selected.pop();
+  kabeGameState.feedback=null;
+  renderKabeGame();
+}
+
+function resetKabeGesture(){
+  if(!kabeGameState||kabeGameState.locked) return;
+  kabeGameState.selected=[];
+  kabeGameState.feedback=null;
+  renderKabeGame();
+}
+
+function serveKabeRitual(){
+  if(!kabeGameState||kabeGameState.locked) return;
+  const {ritual,selected}=kabeGameState;
+  const needed=ritual.sequence.length;
+  if(selected.length<needed){
+    kabeGameState.feedback='incomplete';
+    renderKabeGame();
+    return;
+  }
+  const success=ritual.sequence.every((step,idx)=>selected[idx]===step);
+  if(success){
+    const firstWin=!ST.tags.has('Kabe_RitualWon');
+    kabeGameState.locked=true;
+    kabeGameState.feedback='success';
+    kabeGameState.firstWin=firstWin;
+    if(firstWin){
+      if(ST.stress>0){
+        ST.stress=Math.max(0,ST.stress-1);
+      }
+      ST.tags.add('Kabe_RitualWon');
+      addObj('Rituel de Kabé maîtrisé : stress allégé.');
+      log('Kabé approuve le rituel parfait. Stress -1.');
+    }else{
+      log('Kabé sourit : la séquence est impeccable.');
+    }
+    bars();
+    renderAscii();
+    save();
+  }else{
+    kabeGameState.feedback='fail';
+  }
   renderKabeGame();
 }
 
 function renderKabeGame(){
-  const options=document.getElementById('kabeGameOptions');
+  const palette=document.getElementById('kabeGamePalette');
   const prompt=document.getElementById('kabeGamePrompt');
+  const sequenceBox=document.getElementById('kabeGameSequence');
   const message=document.getElementById('kabeGameMessage');
-  if(!options||!kabeGameState){
-    if(options) options.innerHTML='';
-    if(prompt) prompt.textContent='';
-    if(message) message.textContent='';
+  if(!palette||!prompt||!sequenceBox||!message){
     return;
   }
-  options.innerHTML='';
-  if(prompt){
-    prompt.textContent=`Kabé murmure : « ${kabeGameState.target.name} » — ${kabeGameState.target.clue}`;
+  if(!kabeGameState){
+    palette.innerHTML='';
+    prompt.textContent='';
+    sequenceBox.innerHTML='';
+    message.textContent='';
+    const undo=document.getElementById('kabeGameUndo');
+    const reset=document.getElementById('kabeGameReset');
+    const serve=document.getElementById('kabeGameServe');
+    if(undo) undo.disabled=true;
+    if(reset) reset.disabled=true;
+    if(serve) serve.disabled=true;
+    return;
   }
-  if(message){
-    message.textContent=ST.tags.has('Kabe_GameWon')
-      ? 'Tu joues maintenant pour le panache : Kabé connaît déjà ton palais.'
-      : 'Choisis la macération qui correspond à l’indice pour soulager ton stress.';
-  }
-  kabeGameState.choices.forEach(choice=>{
+  const {ritual,selected,locked,feedback}=kabeGameState;
+  prompt.innerHTML=`<strong>${ritual.name}</strong> — ${ritual.clue}`;
+  palette.innerHTML='';
+  ritual.palette.forEach(id=>{
+    const info=KABE_GESTURES[id];
+    if(!info) return;
     const btn=document.createElement('button');
     btn.type='button';
     btn.className='btn';
-    btn.setAttribute('data-choice',choice.id);
-    btn.innerHTML=`<span>${choice.name}</span><small>${choice.notes}</small>`;
-    btn.addEventListener('click',()=>handleKabePick(choice.id));
-    options.appendChild(btn);
+    if(locked) btn.classList.add('locked');
+    if(selected.includes(id)) btn.classList.add('selected');
+    btn.disabled=locked||selected.includes(id);
+    btn.innerHTML=`<span>${info.name}</span><small>${info.notes}</small>`;
+    btn.addEventListener('click',()=>handleKabeGesture(id));
+    palette.appendChild(btn);
   });
-}
 
-function handleKabePick(id){
-  if(!kabeGameState||kabeGameState.resolved) return;
-  const wasWon=ST.tags.has('Kabe_GameWon');
-  const success=id===kabeGameState.target.id;
-  kabeGameState.resolved=true;
-  const options=document.getElementById('kabeGameOptions');
-  if(options){
-    options.querySelectorAll('button').forEach(btn=>{
-      const choiceId=btn.getAttribute('data-choice');
-      if(choiceId===kabeGameState.target.id){
-        btn.classList.add('success');
+  const seqLen=ritual.sequence.length;
+  const steps=document.createElement('div');
+  steps.className='steps';
+  for(let i=0;i<seqLen;i++){
+    const wrap=document.createElement('div');
+    wrap.className='step';
+    const chosen=selected[i];
+    if(!chosen){
+      wrap.classList.add('pending');
+      wrap.innerHTML=`<strong>${i+1}.</strong> En attente`;
+    }else{
+      const info=KABE_GESTURES[chosen];
+      wrap.innerHTML=`<strong>${i+1}.</strong> ${info?info.name:chosen}`;
+      if((locked||feedback==='fail') && ritual.sequence[i]===chosen){
+        wrap.classList.add('success');
+      }else if((locked||feedback==='fail') && ritual.sequence[i]!==chosen){
+        wrap.classList.add('fail');
       }
-      if(choiceId===id && !success){
-        btn.classList.add('fail');
-      }
-      btn.disabled=true;
-    });
-  }
-  const message=document.getElementById('kabeGameMessage');
-  if(success){
-    if(!wasWon){
-      if(ST.stress>0){
-        ST.stress=Math.max(0,ST.stress-1);
-      }
-      ST.tags.add('Kabe_GameWon');
-      log('Kabé sourit : cocktail parfait. Stress -1.');
-      addObj('Jeu du Kabé remporté : stress allégé.');
-      if(message){
-        message.textContent='La coupe juste glisse et tes épaules se détendent.';
-      }
-    }else if(message){
-      message.textContent='Même sans récompense, le Kabé applaudit ton palais infaillible.';
     }
-  }else if(message){
-    message.textContent='La coupe pique un peu. Kabé t’encourage à retenter le plateau.';
+    steps.appendChild(wrap);
   }
-  bars();
-  renderAscii();
-  save();
+  sequenceBox.innerHTML='';
+  sequenceBox.appendChild(steps);
+
+  let msg='';
+  if(locked && feedback==='success'){
+    msg=kabeGameState.firstWin
+      ? 'Kabé approuve : le rituel parfait calme la salle. Stress -1.'
+      : 'Kabé acquiesce. Tu maîtrises encore la séquence.';
+  }else if(feedback==='fail'){
+    const missIndex=ritual.sequence.findIndex((step,idx)=>selected[idx]!==step);
+    if(missIndex>=0){
+      const expected=KABE_GESTURES[ritual.sequence[missIndex]];
+      const expName=expected?expected.name:'un autre geste';
+      msg=`La coupe manque d’équilibre. Kabé attendait ${expName} en ${missIndex+1}ᵉ geste.`;
+    }else{
+      msg='La coupe manque d’équilibre. Annule un geste ou recommence la séquence.';
+    }
+  }else if(feedback==='incomplete'){
+    msg='La coupe n’est pas prête : complète la séquence avant de servir.';
+  }else if(selected.length===0){
+    msg=`Choisis ${seqLen} gestes dans l’ordre. Kabé observe chaque mouvement.`;
+  }else if(selected.length<seqLen){
+    msg=`Geste ${selected.length+1} sur ${seqLen} : écoute la salle avant de poursuivre.`;
+  }else{
+    msg='Quand tu es prêt·e, sers la coupe pour que Kabé juge la ronde.';
+  }
+  message.textContent=msg;
+
+  const undo=document.getElementById('kabeGameUndo');
+  const reset=document.getElementById('kabeGameReset');
+  const serve=document.getElementById('kabeGameServe');
+  if(undo) undo.disabled=locked||selected.length===0;
+  if(reset) reset.disabled=locked||selected.length===0;
+  if(serve) serve.disabled=locked||selected.length<seqLen;
 }
 
 const kabeRetry=document.getElementById('kabeGameRetry');
 if(kabeRetry){
   kabeRetry.addEventListener('click',()=>{
-    startKabeRound();
+    startKabeRitual();
   });
 }
 const kabeClose=document.getElementById('kabeGameClose');
 if(kabeClose){
   kabeClose.addEventListener('click',()=>{
     closeKabeGame();
+  });
+}
+const kabeUndo=document.getElementById('kabeGameUndo');
+if(kabeUndo){
+  kabeUndo.addEventListener('click',()=>{
+    undoKabeGesture();
+  });
+}
+const kabeReset=document.getElementById('kabeGameReset');
+if(kabeReset){
+  kabeReset.addEventListener('click',()=>{
+    resetKabeGesture();
+  });
+}
+const kabeServe=document.getElementById('kabeGameServe');
+if(kabeServe){
+  kabeServe.addEventListener('click',()=>{
+    serveKabeRitual();
   });
 }
 
@@ -783,19 +899,19 @@ const SC={
     addObj('Kabé clandestin : tu respires avec la ronde. Stress -1.');
     log('Le Kabé te délasse. -1 Stress.');
    }
-   const souffle=first
-    ? 'Un verre tiède passe de main en main, la rumeur couvre la Sourdine. Ton souffle ralentit.'
-    : 'Les habitué·es te reconnaissent et gardent une place au chaud.';
-   const defi=ST.tags.has('Kabe_GameWon')
-    ? 'Kabé t’invite à rejouer pour maintenir l’ambiance : son plateau clandestin est devenu votre code discret.'
-    : 'Kabé, PNJ des apéros clandestins, te lance son jeu de dégustation : reconnaître la bonne macération pour chasser la pression.';
+  const souffle=first
+   ? 'Un verre tiède passe de main en main, la rumeur couvre la Sourdine. Ton souffle ralentit.'
+   : 'Les habitué·es te reconnaissent et gardent une place au chaud.';
+  const defi=ST.tags.has('Kabe_RitualWon')
+   ? 'Kabé t’invite à rejouer le rituel pour garder la salle accordée : la séquence est devenue votre signe discret.'
+   : 'Kabé, maître des apéros clandestins, te propose un rituel d’infusion : enchaîner les gestes parfaits pour chasser la pression.';
    return `
   <p>Kabé orchestre le refuge : il dirige les apéros clandestins, rythme les souffles et surveille la Sourdine qui cogne.</p>
   <p>${souffle}</p>
   <p>${defi}</p>`;
   },
   choices:()=>[
-    {label:'Tenter le défi de dégustation de Kabé',hint:ST.tags.has('Kabe_GameWon')?'Mini-jeu : rejouer pour le panache':'Mini-jeu : reconnaître la macération signature (stress -1 à la première victoire)',immediate:()=>openKabeGame()},
+    {label:'Composer le rituel du Kabé',hint:ST.tags.has('Kabe_RitualWon')?'Mini-jeu : rejouer pour le panache':'Mini-jeu : aligner la bonne séquence (stress -1 à la première victoire)',immediate:()=>openKabeGame()},
     {label:'Chuchoter un merci et ressortir',hint:'Retourner à la cour de Mazagran',go:'maz_common'},
     {label:'Suivre l’escalier vers les Berges',hint:'Retrouver la cave en douceur',go:'ber_entry'},
     {label:'Remonter vers la Place du Pont',hint:'Partager la chaleur du Kabé avec tes contacts',go:'place_return'}
