@@ -1161,7 +1161,7 @@ const SC={
       }
     },goOK:()=>pickEnding('noise'),goKO:'ep_silent'});
     arr.push({label:'Trame douce — protéger les souvenirs',hint:'VOL/Empathie (12) + ✦ — apaiser la Sourdine',test:{stat:'VOL',skill:'Empathie',dd:12,needsFrag:true,
-      ok:s=>{s.tags.add('Trame_Douce');s.frag=Math.max(0,s.frag-1);addObj('Voile tiré : les mémoires restent en place.');clearEndingTags();markEndingApproach();s.tags.add('End_Soft');},
+      ok:s=>{s.tags.add('Trame_Douce');addObj('Voile tiré : les mémoires restent en place.');clearEndingTags();markEndingApproach();s.tags.add('End_Soft');},
       ko:s=>{log('Tu n’oses pas. Rien ne casse.');}
     },goOK:()=>pickEnding('soft'),goKO:'ep_silent'});
     return arr;
