@@ -1306,12 +1306,13 @@ const SC={
  },
  maz_apero_anto:{
   img:IMG.maz,title:'Mazagran — Seuil du Kabé',text:()=>`
-  <p>Anto, colosse chauve au doigt cassé strié de résine, garde la porte blindée du Kabé. Ses épaules bloquent la lumière qui filtre du refuge.</p>
-  <p>Il jauge chaque souffle qui approche et attend un signe de reconnaissance avant de desserrer sa prise sur la poignée.</p>`,
+  <p>Anto aka le Carné, colosse chauve au doigt cassé strié de résine, verrouille la porte blindée du Kabé. Sa carrure tamise la lanière de lumière ambrée qui fuit du refuge.</p>
+  <p>On dit qu’il a mémorisé chaque visage toléré par Kabé : son doigt réparé glisse sur la poignée comme sur un registre invisible tandis qu’il écoute la Sourdine frapper la cour.</p>
+  <p>Il attend un signe de reconnaissance — badge, parole ou regard complice — avant de relâcher le verrou que le Kabé lui confie.</p>`,
   choices:()=>[
-    {label:'Convaincre Anto de te laisser passer',hint:'VOL/Empathie (10) — apaiser sa vigilance',test:{stat:'VOL',skill:'Empathie',dd:10,
-      ok:s=>{if(!s.tags.has('Kabe_AntoOK')){addObj('Anto hoche la tête : accès assuré au Kabé.');}s.tags.add('Kabe_AntoOK');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Anto reste inflexible. +1 Stress.');}},goOK:'maz_apero',goKO:'maz_apero_anto'},
-    {label:'Montrer patte blanche',hint:'Présenter un badge, un passe ou un appui reconnu',when:()=>ST.tags.has('Milo_Pass')||ST.tags.has('Collectif_Favor')||ST.tags.has('Noor_Trust')||ST.tags.has('Collectif_Pret')||ST.tags.has('BadgeTech')||ST.tags.has('BadgeTech_Used')||hasItem('Badge maintenance'),immediate:s=>{if(!s.tags.has('Kabe_AntoOK')){addObj('Ton signe de confiance ouvre la porte du Kabé.');}s.tags.add('Kabe_AntoOK');log('Anto reconnaît ton signe et entrouvre le passage.');},go:'maz_apero'},
+    {label:'Convaincre Anto « le Carné » de te laisser passer',hint:'VOL/Empathie (10) — apaiser sa vigilance',test:{stat:'VOL',skill:'Empathie',dd:10,
+      ok:s=>{if(!s.tags.has('Kabe_AntoOK')){addObj('Anto « le Carné » hoche la tête : accès assuré au Kabé.');}s.tags.add('Kabe_AntoOK');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Anto « le Carné » reste inflexible. +1 Stress.');}},goOK:'maz_apero',goKO:'maz_apero_anto'},
+    {label:'Montrer patte blanche',hint:'Présenter un badge, un passe ou un appui reconnu',when:()=>ST.tags.has('Milo_Pass')||ST.tags.has('Collectif_Favor')||ST.tags.has('Noor_Trust')||ST.tags.has('Collectif_Pret')||ST.tags.has('BadgeTech')||ST.tags.has('BadgeTech_Used')||hasItem('Badge maintenance'),immediate:s=>{if(!s.tags.has('Kabe_AntoOK')){addObj('Ton signe de confiance ouvre la porte du Kabé.');}s.tags.add('Kabe_AntoOK');log('Anto « le Carné » reconnaît ton signe et entrouvre le passage.');},go:'maz_apero'},
     {label:'Reculer vers la cour',hint:'Laisser la porte scellée et observer encore',go:'maz_common'}
   ]
  },
