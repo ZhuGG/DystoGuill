@@ -518,6 +518,7 @@ a{color:var(--a)}
       <div class="saveActions">
         <button class="btn subtle" id="btnExport" type="button"><span class="btnLabel"><span class="btnIcon" aria-hidden="true">💾</span><span>Sauvegarder</span></span></button>
         <button class="btn subtle" id="btnImport" type="button"><span class="btnLabel"><span class="btnIcon" aria-hidden="true">⤴</span><span>Importer</span></span></button>
+        <button class="btn subtle" id="btnReset" type="button"><span class="btnLabel"><span class="btnIcon" aria-hidden="true">🔄</span><span>Nouvelle partie</span></span></button>
       </div>
     </div>
     <div class="pad">
@@ -937,9 +938,100 @@ function load(){try{const d=JSON.parse(localStorage.getItem(SAVE)||'null');if(!d
   Object.assign(ST,{stress:d.st??2,hp:d.h??5,flux:d.f??2,frag:d.g??2});ST.inv=d.i||ST.inv;ST.tags=new Set(d.t||[]);
   if(ST.tags.has('Kabe_GameWon')){ST.tags.delete('Kabe_GameWon');ST.tags.add('Kabe_RitualWon');}
   ST.scene=d.sc||'prologue';ST.objective=d.o||ST.objective;ST.objLog=d.ol||[];ST.visited=new Set(d.v||[]);ST.ascii=d.as!==false}catch(e){}}
+function resetGame(){
+  const diceOverlay=$('#diceOverlay');
+  if(diceOverlay){
+    diceOverlay.style.display='none';
+  }
+  const dieOne=$('#d1');
+  if(dieOne){
+    dieOne.classList.remove('anim');
+    dieOne.textContent='•';
+  }
+  const dieTwo=$('#d2');
+  if(dieTwo){
+    dieTwo.classList.remove('anim');
+    dieTwo.textContent='•';
+  }
+  const stopBtn=$('#btnStopDice');
+  if(stopBtn){
+    stopBtn.disabled=false;
+  }
+  const resolveBtn=$('#btnResolveDice');
+  if(resolveBtn){
+    resolveBtn.style.display='none';
+  }
+  const diceInfo=$('#diceInfo');
+  if(diceInfo){
+    diceInfo.innerHTML='';
+  }
+  const testPanel=$('#testPanel');
+  if(testPanel){
+    testPanel.style.display='none';
+  }
+  const testHint=$('#testHint');
+  if(testHint){
+    testHint.textContent='';
+  }
+  const resultBox=$('#testResult');
+  if(resultBox){
+    resultBox.textContent='';
+    resultBox.classList.remove('show','success','fail');
+  }
+  pending=null;
+  roll=null;
+  pendingOutcome=null;
+  const kabeModal=document.getElementById('kabeGameModal');
+  if(kabeModal){
+    kabeModal.style.display='none';
+    kabeModal.setAttribute('aria-hidden','true');
+  }
+  kabeGameState=null;
+  renderKabeGame();
+  kabeGameReturnFocus=null;
+  archReturnFocus=null;
+  const introModal=document.getElementById('introModal');
+  const archModal=document.getElementById('archModal');
+  if(archModal){
+    archModal.style.display='none';
+  }
+  ST.arch=null;
+  ST.stats={NEU:2,VOL:2,SOM:2,CIN:2};
+  ST.skills={};
+  ST.stress=2;
+  ST.hp=5;
+  ST.flux=2;
+  ST.frag=2;
+  ST.inv=[];
+  ST.tags=new Set();
+  ST.scene='prologue';
+  ST.objective='Tracer une voie sûre vers T1.';
+  ST.objLog=[];
+  ST.visited=new Set();
+  ST.ascii=true;
+  localStorage.removeItem(SAVE);
+  const logBox=$('#log');
+  if(logBox){
+    logBox.innerHTML='';
+  }
+  renderStats();
+  renderInventory();
+  renderAscii();
+  renderTimeline();
+  bars();
+  render();
+  if(introModal){
+    introModal.style.display='flex';
+    introModal.setAttribute('aria-hidden','false');
+  }
+  if(typeof openArch==='function'){
+    openArch();
+  }
+}
 /* exporter/importer */
 $('#btnExport').addEventListener('click',()=>{const blob=new Blob([localStorage.getItem(SAVE)||'{}'],{type:'application/json'});const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download='trame_douce_v6_4_sauvegarde.json';a.click();URL.revokeObjectURL(u)});
 $('#btnImport').addEventListener('click',()=>{const i=document.createElement('input');i.type='file';i.accept='application/json';i.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{localStorage.setItem(SAVE,r.result);load();render()};r.readAsText(f)};i.click()});
+$('#btnReset').addEventListener('click', resetGame);
 
 const KABE_GESTURES={
   brume:{name:'Brume d’absinthe',notes:'Assourdit la salle et adoucit la Sourdine.',tone:'#7fb3ff',icon:'💨'},
@@ -1915,6 +2007,7 @@ function selectArch(a,card){ sel=a; document.querySelectorAll('.arch').forEach(x
 $('#btnRandom').addEventListener('click',()=>{const i=Math.floor(Math.random()*ARCH.length);selectArch(ARCH[i], document.querySelectorAll('.arch')[i])});
 $('#btnConfirm').addEventListener('click',()=>{ ST.arch=sel; ST.stats={...sel.stats}; ST.skills={...sel.skills}; ST.inv=[...sel.start];
   addObj('Archétype: '+sel.name); const modal=document.getElementById('archModal'); if(modal){modal.style.display='none';}
+  const intro=document.getElementById('introModal'); if(intro){intro.style.display='none';intro.setAttribute('aria-hidden','true');}
   save(); render(); restoreFocus(archReturnFocus); archReturnFocus=null; });
 
 /* ======= INIT ======= */
