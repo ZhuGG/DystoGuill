@@ -546,7 +546,7 @@ a{color:var(--a)}
           </div>
           <div class="row testControls" style="align-items:center;margin-top:6px">
             <label class="badge"><input type="checkbox" id="useFlux"> +2 Flux</label>
-            <label class="badge"><input type="checkbox" id="usePush"> +2 Pousser sa chance</label>
+            <label class="badge"><input type="checkbox" id="usePush"> +2 Pousser sa chance (+1 Stress)</label>
             <label class="badge"><input type="checkbox" id="useFrag"> ✦ Fragment (indice fort, +1 Stress)</label>
             <button class="btn primary" id="rollBtn">Lancer les dés</button>
           </div>
@@ -1769,7 +1769,10 @@ function showTest(c){
   const pushBox=$('#usePush');
   const fragBox=$('#useFrag');
   if(fluxBox){fluxBox.checked=false; fluxBox.disabled=ST.flux<=0;}
-  if(pushBox){pushBox.checked=false;}
+  if(pushBox){
+    pushBox.checked=false;
+    pushBox.disabled=ST.stress>=5;
+  }
   if(fragBox){
     const needsFrag=!!c.test.needsFrag;
     fragBox.checked=needsFrag && ST.frag>0;
@@ -1823,10 +1826,14 @@ function gatherModifiers(test){
   }
   const pushEl=$('#usePush');
   if(pushEl && pushEl.checked){
-    result.mod+=2;
-    result.breakdown.push('Chance +2');
-    result.previewParts.push('Chance +2');
-    result.spendPush=true;
+    if(ST.stress<5){
+      result.mod+=2;
+      result.breakdown.push('Chance +2 (+1 Stress)');
+      result.previewParts.push('Chance +2 (+1 Stress)');
+      result.spendPush=true;
+    }else{
+      pushEl.checked=false;
+    }
   }
   const fragEl=$('#useFrag');
   if(fragEl && fragEl.checked && ST.frag>0){
@@ -1856,7 +1863,18 @@ function updateTestHint(){
   if(!hint) return;
   const test=pending?.test;
   const rollBtn=$('#rollBtn');
+  const pushEl=$('#usePush');
   const fragEl=$('#useFrag');
+  let pushWarning='';
+  if(pushEl){
+    if(ST.stress<5){
+      pushEl.disabled=false;
+    }else{
+      if(pushEl.checked){ pushEl.checked=false; }
+      pushEl.disabled=true;
+      pushWarning='Stress max atteint : impossible de pousser sa chance (+1 Stress).';
+    }
+  }
   if(!test){
     hint.textContent='';
     if(rollBtn) rollBtn.disabled=false;
@@ -1875,7 +1893,10 @@ function updateTestHint(){
   }
   if(needsFrag && !fragAvailable){
     if(rollBtn) rollBtn.disabled=true;
-    hint.textContent='Fragment requis (+1 Stress) indisponible.';
+    const messages=[];
+    if(pushWarning) messages.push(pushWarning);
+    messages.push('Fragment requis (+1 Stress) indisponible.');
+    hint.textContent=messages.join(' ');
     return;
   }
   if(rollBtn) rollBtn.disabled=false;
@@ -1886,7 +1907,8 @@ function updateTestHint(){
   }
   const parts=preview.parts.length?preview.parts:['Aucun modificateur'];
   const modSign=preview.mod>=0?`+${preview.mod}`:`${preview.mod}`;
-  hint.textContent=`${parts.join(' + ')} = ${modSign} (Total cible ${preview.dd})`;
+  const baseText=`${parts.join(' + ')} = ${modSign} (Total cible ${preview.dd})`;
+  hint.textContent=pushWarning?`${pushWarning} ${baseText}`:baseText;
 }
 function startDice(){
   if(!pending) return;
@@ -1947,6 +1969,7 @@ function resolveRoll(){
   const c=pending, outcome=pendingOutcome;
   if(outcome.spendFlux){ST.flux--;}
   if(outcome.spendFrag){ST.frag--;ST.stress=Math.min(5,ST.stress+1);log('Le fragment te mord. +1 Stress.');}
+  if(outcome.spendPush){ST.stress=Math.min(5,ST.stress+1);log('Tu forces ta chance. +1 Stress.');}
   log(`${c.test.stat}/${c.test.skill||'-'} DD${outcome.dd} — ${roll.a}+${roll.b}=${roll.sum} + ${outcome.mod} = ${outcome.total} → ${outcome.ok?'Réussite':'Échec'}`);
   let next=null;
   if(outcome.ok){
