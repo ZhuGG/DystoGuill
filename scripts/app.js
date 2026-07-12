@@ -31,6 +31,7 @@ const CONTACTS = [
   { key: 'mika', name: 'Mika', role: 'serrurier de Mazagran' },
   { key: 'yugs', name: 'Yugs', role: 'coursier des berges' },
   { key: 'chacha', name: 'Chacha', role: 'serveuse chez Kabe' },
+  { key: 'mymy', name: 'Mymy', role: 'relais des dettes Kabe' },
   { key: 'anette', name: 'Anette', role: 'memoire du quartier' },
   { key: 'laura', name: 'Laura', role: 'agente a la Regie' },
   { key: 'anto', name: 'Anto', role: 'vigile de Kabe' },
@@ -216,7 +217,7 @@ function resetGame() {
     flux: 2,
     frag: 1,
     pressure: 1,
-    relations: { zaza: 0, mika: 0, yugs: 0, chacha: 0, anette: 0, laura: 0, anto: 0, kabe: 0, pauline: 0 },
+    relations: { zaza: 0, mika: 0, yugs: 0, chacha: 0, mymy: 0, anette: 0, laura: 0, anto: 0, kabe: 0, pauline: 0 },
     usedItems: [],
     inv: [],
     tags: new Set(),
@@ -351,7 +352,7 @@ function renderTimeline() {
 }
 
 function renderCasePanel() {
-  const tags = [...ST.tags].filter(tag => tag.startsWith('Preuve_') || tag.startsWith('Acces_') || tag.includes('Allie')).slice(-6);
+  const tags = [...ST.tags].filter(tag => tag.startsWith('Preuve_') || tag.startsWith('Acces_') || tag.includes('Allie') || tag.includes('Dette') || tag.includes('Mymy') || tag.includes('Laura') || tag.includes('Antoine') || tag.includes('Nora')).slice(-6);
   $('#casePanel').innerHTML = `
     <div class="caseSummary">
       <div><span>Profil</span><strong>${ST.arch ? ST.arch.name : 'Non choisi'}</strong></div>
@@ -452,7 +453,7 @@ function renderKabeNetwork() {
   const prompt = $('#kabeGamePrompt');
   const sequence = $('#kabeGameSequence');
   const message = $('#kabeGameMessage');
-  prompt.innerHTML = '<strong>Reseau de Kabe</strong> - Chacha trie les rumeurs, Anto garde le seuil, les noms ont un prix.';
+  prompt.innerHTML = '<strong>Reseau de Kabe</strong> - Chacha trie les rumeurs, Mymy fait circuler les faveurs, Anto garde le seuil.';
   sequence.innerHTML = `<div class="kabeLedger"><span>Levier: <b>${ST.flux}</b></span><span>Preuves: <b>${ST.frag}</b></span><span>Pression: <b>${ST.pressure}/6</b></span></div>`;
   palette.innerHTML = '';
   KABE_ACTIONS.forEach(action => {

@@ -12,6 +12,7 @@ export const ST = {
     mika: 0,
     yugs: 0,
     chacha: 0,
+    mymy: 0,
     anette: 0,
     laura: 0,
     anto: 0,
