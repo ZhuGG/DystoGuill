@@ -7,30 +7,66 @@ const evidence = (state, label, count = 1) => {
 };
 
 const profileIntro = () => {
-  if (ST.arch?.id === 'journaliste') return '<p>Tu connais cette honte particuliere: revenir avec un carnet quand les autres ont surtout besoin de portes ouvertes.</p>';
-  if (ST.arch?.id === 'maintenance') return '<p>Les serrures neuves ont des habitudes anciennes. Certaines viennent de plans que tu as signes avant de comprendre qui les utiliserait.</p>';
-  if (ST.arch?.id === 'mediatrice') return '<p>Chaque visage te rappelle une permanence, une promesse repoussee, quelqu un que tu n as pas reussi a retenir.</p>';
+  if (ST.arch?.id === 'journaliste') return '<p>Tu connais cette honte particulière: revenir avec un carnet quand les autres ont surtout besoin de portes ouvertes.</p>';
+  if (ST.arch?.id === 'maintenance') return '<p>Les serrures neuves ont des habitudes anciennes. Certaines viennent de plans que tu as signés avant de comprendre qui les utiliserait.</p>';
+  if (ST.arch?.id === 'mediatrice') return '<p>Chaque visage te rappelle une permanence, une promesse repoussée, quelqu’un que tu n’as pas réussi à retenir.</p>';
   return '';
 };
 
-const pressurePulse = () => {
-  if (ST.pressure >= 5) return '<p class="pulseText">La ville sent l aube. Des portes restent fermees, les temoins parlent plus bas, les acces coutent plus cher.</p>';
-  if (ST.pressure >= 3) return '<p class="pulseText">La Place se contracte. Les rideaux descendent plus tot, les patrouilles tournent plus lentement, comme si elles avaient deja gagne.</p>';
-  return '<p class="pulseText">La nuit laisse encore quelques interstices, mais chaque detour rapproche les fourgons.</p>';
+const profileTrace = location => {
+  const lines = {
+    dossier_leyla: {
+      journaliste: 'Tu reconnais une source qui écrit contre sa propre disparition. Ce dossier ne te demande pas un angle; il te demande de ne pas trahir les noms.',
+      maintenance: 'Les numéros de lots correspondent à l’ancien plan de maintenance. Ton travail n’a pas expulsé les gens, mais il a appris au système où couper.',
+      mediatrice: 'Trois noms ont déjà appelé ta permanence. Tu avais classé leurs courriers dans la pile « à rappeler ». Cette pile te revient en pleine gueule.'
+    },
+    marseille_archive: {
+      journaliste: 'La formule « départ volontaire confirmé » est parfaite pour un démenti officiel: propre, courte, et complètement pourrie.',
+      maintenance: 'Le scellé utilise une boucle de contrôle que tu sais contourner. La Régie n’a même pas pris la peine de changer vos vieilles habitudes.',
+      mediatrice: 'Juliette ne te regarde pas comme une inconnue. Elle se souvient d’une réunion où tu avais promis que personne ne resterait seul.'
+    },
+    mazagran_local: {
+      journaliste: 'Un plan technique n’est pas une histoire, mais il peut empêcher Antoine de prétendre qu’il ne savait pas.',
+      maintenance: 'Tu reconnais ta propre écriture sous une couche de peinture. Quelqu’un a transformé une voie d’entretien en circuit d’effacement.',
+      mediatrice: 'Chaque gaine rejoint un immeuble habité. Pour toi, ce ne sont pas des lignes: ce sont des portes où tu as déjà frappé.'
+    },
+    kabe_salle: {
+      journaliste: 'Chacha te prévient: ici, un nom n’est pas une citation gratuite. Tu le publies, tu assumes ce qui lui tombe dessus.',
+      maintenance: 'Anto connaît les mêmes sous-sols que toi. La différence, c’est qu’il a vu ce qu’on y faisait aux gens.',
+      mediatrice: 'Mymy te reconnaît. « T’as toujours voulu aider tout le monde. C’est comme ça qu’on finit par choisir trop tard. »'
+    },
+    regie_entree: {
+      journaliste: 'Tu connais ce décor: l’endroit où le communiqué est déjà écrit avant que les faits aient lieu.',
+      maintenance: 'Le lecteur de badge porte encore l’étiquette de ton ancien service. Cette porte te reconnaît mieux que les gens qui l’utilisent.',
+      mediatrice: 'Derrière chaque numéro de dossier, tu entends une voix qui t’a demandé du temps. La Régie appelle ça du stock.'
+    }
+  };
+  const line = lines[location]?.[ST.arch?.id];
+  return line ? `<p class="profileTrace">${line}</p>` : '';
 };
 
-const kabeDebtLine = () => ST.tags.has('Kabe_Dette')
-  ? '<p>Mymy t a prevenu: Kabe protege les noms, mais aucune protection ne reste sans memoire.</p>'
+const pressurePulse = () => {
+  if (ST.pressure >= 5) return '<p class="pulseText">La ville sent l’aube. Des portes restent fermées, les témoins parlent plus bas, les accès coûtent plus cher.</p>';
+  if (ST.pressure >= 3) return '<p class="pulseText">La Place se contracte. Les rideaux descendent plus tôt, les patrouilles tournent plus lentement, comme si elles avaient déjà gagné.</p>';
+  return '<p class="pulseText">La nuit laisse encore quelques interstices, mais chaque détour rapproche les fourgons.</p>';
+};
+
+const returnLine = place => ST.visited.has(place)
+  ? '<p class="returnLine">Tu connais maintenant le bruit de cet endroit. Les regards ne sont plus les mêmes, et la nuit a avancé sans t attendre.</p>'
   : '';
 
-const noraFinalLine = () => ST.tags.has('LeylaAlive')
+const kabeDebtLine = () => ST.tags.has('Kabe_Dette')
+  ? '<p>Mymy t’a prévenu: Kabé protège les noms, mais aucune protection ne reste sans mémoire. « Ici, même les bonnes actions laissent une putain d’addition. »</p>'
+  : '';
+
+const noraFinalLine = () => ST.tags.has('NoraAlive')
   ? '<p>Nora te regarde comme si survivre ne suffisait pas. Elle veut savoir ce que tu vas laisser aux autres.</p>'
   : '<p>La voix de Nora reste dans tes notes: ne sauve pas seulement mon nom, sauve la preuve.</p>';
 
 const profileEndingLine = () => {
-  if (ST.arch?.id === 'journaliste') return 'Tu comprends trop bien la frontiere entre publier et prendre.';
-  if (ST.arch?.id === 'maintenance') return 'Tu reconnais chaque porte que tu forces: reparer commence parfois par saboter proprement.';
-  if (ST.arch?.id === 'mediatrice') return 'Tu sais que proteger quelqu un ne vaut rien si personne ne peut encore faire confiance demain.';
+  if (ST.arch?.id === 'journaliste') return 'Tu comprends trop bien la frontière entre publier et prendre.';
+  if (ST.arch?.id === 'maintenance') return 'Tu reconnais chaque porte que tu forces: réparer commence parfois par saboter proprement.';
+  if (ST.arch?.id === 'mediatrice') return 'Tu sais que protéger quelqu’un ne vaut rien si personne ne peut encore faire confiance demain.';
   return 'Tu restes avec une dette simple: ne pas laisser le quartier devenir une annexe de dossier.';
 };
 
@@ -43,6 +79,7 @@ export function createScenes({ addObj, gainItem, hasItem, log, openKabeNetwork, 
         <p>La Guillotiere n a pas disparu: elle a ete renumerotee. Les avis d evacuation recouvrent les menus des snacks. A 02 h 17, Nora t a appele: <i>"Ils effacent les baux vivants."</i> Depuis, silence.</p>
         ${profileIntro()}
         <p>A 06 h, la Regie des Quartiers Calmes vide trois immeubles. Sous les arcades, <b>Samia</b> vend de faux briquets, <b>Anette</b> compte les fourgons, et <b>Pauline</b> serre un courrier qu elle n ose pas ouvrir.</p>
+        ${returnLine('place')}
         ${pressurePulse()}`,
       choices: [
         { label: 'Ouvrir le dossier que Nora a laisse', hint: 'Comprendre l affaire avant de bouger', effect: '+Dossier', go: 'dossier_leyla' },
@@ -57,7 +94,9 @@ export function createScenes({ addObj, gainItem, hasItem, log, openKabeNetwork, 
       text: () => `
         <p>Dans l enveloppe: le bail de Nora, puis le meme bail au nom d une societe vide. Les signatures sont identiques, les dates impossibles. En marge, Nora a ecrit: Rue de Marseille, Mazagran, Berges.</p>
         <p>Une note glissee sous le bail dit: <i>"Si je disparais, ne me cherche pas seule. Cherche qui a accepte que je disparaisse."</i></p>
-        <p>Un nom revient sur les scans: <b>Antoine</b>, cadre intermediaire de la Regie. Un autre, raye trois fois: <b>Laura</b>, agente de nuit.</p>`,
+        <p>Au verso, une phrase plus intime: <i>« Je t’ai appelé parce que je ne sais plus si tu reviens pour nous ou pour une bonne histoire. Prouve-moi que j’ai eu raison. »</i></p>
+        <p>Un nom revient sur les scans: <b>Antoine</b>, cadre intermédiaire de la Régie. Un autre, rayé trois fois: <b>Laura</b>, agente de nuit.</p>
+        ${profileTrace('dossier_leyla')}`,
       choices: [
         { label: 'Classer les pieces du dossier', hint: 'DOC/Archives (9)', effect: '+Preuve | +Trace Nora', test: { stat: 'DOC', skill: 'Archives', dd: 9, ok: s => { evidence(s, 'Preuve_Bail'); s.tags.add('Nora_Trace'); s.objective = 'Remonter la chaine du bail falsifie.'; addObj('Preuve obtenue: bail falsifie de Nora.'); }, ko: s => { s.stress = Math.min(5, s.stress + 1); log('Les dates se contredisent. Stress +1.'); } }, goOK: 'place_pistes', goKO: 'place_pistes' },
         { label: 'Aller Rue de Marseille', hint: 'Juliette connait peut-etre le scelle', effect: '+Piste juridique', go: 'marseille_archive' },
@@ -85,7 +124,9 @@ export function createScenes({ addObj, gainItem, hasItem, log, openKabeNetwork, 
       title: 'Rue de Marseille - Permanence fermee',
       text: () => `
         <p>La permanence est fermee par un scelle prive. <b>Juliette</b>, juriste stagiaire, attend sous un store eteint. Elle a peur de Laura, d Antoine, de tout ce qui ressemble a une badgeuse.</p>
-        <p>A l interieur, l armoire a dossiers a ete forcee puis rangee trop proprement. Nora a laisse une phrase au crayon sur un coin de formulaire: <i>"Laura sait que les dates sont fausses."</i></p>`,
+        ${returnLine('marseille')}
+        <p>À l’intérieur, l’armoire à dossiers a été forcée puis rangée trop proprement. Nora a laissé une phrase au crayon sur un coin de formulaire: <i>« Laura sait que les dates sont fausses. »</i></p>
+        ${profileTrace('marseille_archive')}`,
       choices: [
         { label: 'Convaincre Juliette de parler', hint: 'SOC/Persuasion (10)', effect: '+Laura hesite | +Acces permanence', test: { stat: 'SOC', skill: 'Persuasion', dd: 10, ok: s => { s.tags.add('Juliette_Source'); s.tags.add('Laura_Hesite'); setRelation('laura', 1); addObj('Juliette donne le nom de Laura a la Regie.'); }, ko: s => { addPressure(1); log('Juliette recule. Pression +1.'); } }, goOK: 'marseille_dossiers', goKO: 'marseille_dossiers' },
         { label: 'Crocheter le scelle', hint: 'RUE/Discretion (10)', effect: '+Acces | echec: +Stress', test: { stat: 'RUE', skill: 'Discretion', dd: 10, ok: s => { s.tags.add('Acces_Permanence'); log('Le scelle se decolle en silence.'); }, ko: s => { s.stress = Math.min(5, s.stress + 1); addPressure(1); log('Une diode passe au rouge. Stress +1, Pression +1.'); } }, goOK: 'marseille_dossiers', goKO: 'marseille_dossiers' },
@@ -123,10 +164,11 @@ export function createScenes({ addObj, gainItem, hasItem, log, openKabeNetwork, 
       title: 'Mazagran - Local technique',
       text: () => `
         <p>Un plan mural relie Mazagran a l antenne de la Regie. Quelqu un a marque un chemin en vert: court, dangereux, hors cameras.</p>
-        <p>Une etiquette froissee porte le nom d Anto. Mika dit qu Anto travaillait avec Thanos avant de choisir Kabe, quand les expulsions s appelaient encore accompagnements.</p>`,
+        <p>Une étiquette froissée porte le nom d’Anto. Mika dit qu’Anto travaillait avec Thanos avant de choisir Kabé, quand les expulsions s’appelaient encore accompagnements.</p>
+        ${profileTrace('mazagran_local')}`,
       choices: [
-        { label: 'Photographier le plan des gaines', hint: 'Preuve et acces Regie', effect: '+Preuve | +Acces', immediate: s => { evidence(s, 'Preuve_Gaines'); s.tags.add('Acces_Gaines'); s.tags.add('Regie_Localisee'); addObj('Preuve obtenue: plan des gaines vers la Regie.'); }, go: 'place_pistes' },
-        { label: 'Garder l etiquette d Anto', hint: 'Signe credible pour Kabe', effect: '+Objet | +Acces Kabe', immediate: s => { gainItem('Ancienne etiquette Anto'); setRelation('anto', 1); s.tags.add('Signe_Anto'); addObj('Tu as de quoi parler a Anto sans jouer au dur.'); }, go: 'kabe_seuil' },
+        { id: 'mazagran:photographier-gaines', once: true, label: 'Photographier le plan des gaines', hint: 'Preuve et acces Regie', effect: '+Preuve | +Acces', immediate: s => { evidence(s, 'Preuve_Gaines'); s.tags.add('Acces_Gaines'); s.tags.add('Regie_Localisee'); addObj('Preuve obtenue: plan des gaines vers la Regie.'); }, go: 'place_pistes' },
+        { id: 'mazagran:garder-etiquette-anto', once: true, label: 'Garder l etiquette d Anto', hint: 'Signe credible pour Kabe', effect: '+Objet | +Acces Kabe', immediate: s => { gainItem('Ancienne etiquette Anto'); setRelation('anto', 1); s.tags.add('Signe_Anto'); addObj('Tu as de quoi parler a Anto sans jouer au dur.'); }, go: 'kabe_seuil' },
         { label: 'Rejoindre les berges', hint: 'Suivre la trace de pneu', effect: '+Yugs', go: 'berges_quai' }
       ]
     },
@@ -136,6 +178,7 @@ export function createScenes({ addObj, gainItem, hasItem, log, openKabeNetwork, 
       title: 'Kabe - Le seuil d Anto',
       text: () => `
         <p>Le bar n a pas d enseigne. Anto bloque l entree, calme comme une menace fatiguee. Derriere lui, <b>Chacha</b> observe qui ment par besoin et qui ment par metier.</p>
+        ${returnLine('kabe')}
         <p><b>Mymy</b> passe entre les tables avec un carnet sans couverture. Elle connait les dettes, les seuils de confiance, les gens qu il faut prevenir sans les nommer.</p>
         <p>"Kabe ne fait pas bureau des pleurs", dit Anto. Mais son regard s arrete sur ton sac, puis sur les avis colles dehors.</p>`,
       choices: () => {
@@ -156,11 +199,13 @@ export function createScenes({ addObj, gainItem, hasItem, log, openKabeNetwork, 
       title: 'Kabe - Bar d infos',
       text: () => `
         <p>Kabe trie les versions, cache les gens, garde les dettes dans une boite a biscuits. Chacha connait les rumeurs qui mentent. Mymy fait circuler les faveurs. Anto reste pres de la porte.</p>
-        <p>Ici, parler trop fort peut sauver quelqu un ou le livrer.</p>
+        <p>Ici, parler trop fort peut sauver quelqu’un ou le livrer. Mymy pose le cadre: « On protège les gens. Les belles intentions, on s’en fout un peu. »</p>
+        <p>Dans le carnet de Nora, une ligne barre deux noms: <i>Yugs a vu le transfert. Mymy connaît la sortie. Je leur ai demandé avant d’être sûre de pouvoir les couvrir.</i></p>
+        ${profileTrace('kabe_salle')}
         ${kabeDebtLine()}`,
       choices: [
-        { label: 'Ouvrir le reseau de Kabe', hint: 'Chacha, Mymy, Samia, Mika, Yugs, Antoine', effect: '+Actions sociales', immediate: () => openKabeNetwork() },
-        { label: 'Demander ce que Nora a laisse ici', hint: 'DOC/Archives (10)', effect: '+Preuve | +Nora vivante possible', test: { stat: 'DOC', skill: 'Archives', dd: 10, ok: s => { evidence(s, 'Preuve_NoraKabe'); s.tags.add('LeylaAlive'); s.tags.add('Nora_Trace'); addObj('Chacha remet une cle USB de Nora.'); }, ko: s => { s.stress = Math.min(5, s.stress + 1); log('Kabe te regarde comme si tu arrivais trop tard. Stress +1.'); } }, goOK: 'place_pistes', goKO: 'kabe_salle' },
+        { id: 'kabe:ouvrir-reseau', label: 'Ouvrir le reseau de Kabe', hint: 'Chacha, Mymy, Samia, Mika, Yugs, Antoine', effect: '+Actions sociales', immediate: () => openKabeNetwork() },
+        { label: 'Demander ce que Nora a laisse ici', hint: 'DOC/Archives (10)', effect: '+Preuve | +Nora vivante possible', test: { stat: 'DOC', skill: 'Archives', dd: 10, ok: s => { evidence(s, 'Preuve_NoraKabe'); s.tags.add('NoraAlive'); s.tags.add('Nora_Trace'); addObj('Chacha remet une cle USB de Nora.'); }, ko: s => { s.stress = Math.min(5, s.stress + 1); log('Kabe te regarde comme si tu arrivais trop tard. Stress +1.'); } }, goOK: 'place_pistes', goKO: 'kabe_salle' },
         { label: 'Sortir par l arriere vers les berges', hint: 'Anto connait le passage', effect: '+Berges', when: () => ST.tags.has('Anto_Allie') || ST.tags.has('Kabe_Tournee'), go: 'berges_quai' },
         { label: 'Revenir a la Place', hint: 'Continuer l enquete', effect: '+Carte', go: 'place_pistes' }
       ]
@@ -184,10 +229,10 @@ export function createScenes({ addObj, gainItem, hasItem, log, openKabeNetwork, 
       title: 'Berges - Temoin sous le pont',
       text: () => `
         <p>Yugs parle enfin: Nora n etait pas inconsciente, elle refusait de monter. Anto est arrive, pas pour la prendre. Pour empecher Thanos de faire pire.</p>
-        <p>Yugs veut une chose simple: ne pas finir dans le meme fichier que les autres. Il ajoute que Nora l a pousse a temoigner avant d etre sure de pouvoir le proteger.</p>`,
+        <p>Yugs veut une chose simple: ne pas finir dans le même fichier que les autres. Il ajoute que Nora l’a poussé à témoigner avant d’être sûre de pouvoir le protéger. « Elle avait raison sur le fond. Sur le reste, elle nous a foutus dans la lumière. »</p>`,
       choices: [
         { label: 'Le conduire chez Kabe', hint: 'SOC/Reseau (9)', effect: '+Temoin protege | +Dette Kabe', test: { stat: 'SOC', skill: 'Reseau', dd: 9, ok: s => { s.tags.add('TemoinProtege'); s.tags.add('Kabe_Dette'); setRelation('kabe', 1); setRelation('mymy', 1); addObj('Yugs est protege chez Kabe. Dette Kabe ouverte.'); }, ko: s => { s.stress = Math.min(5, s.stress + 1); log('Yugs disparait avant le pont. Stress +1.'); } }, goOK: 'kabe_salle', goKO: 'place_pistes' },
-        { label: 'Noter sa deposition sur dictaphone', hint: 'Preuve si tu as le dictaphone', effect: '+Preuve audio', when: () => hasItem('Dictaphone fendu'), immediate: s => { markItemUsed('Dictaphone fendu'); evidence(s, 'Preuve_Deposition'); addObj('Preuve obtenue: deposition audio de Yugs.'); }, go: 'regie_entree' },
+        { id: 'berges:deposition-yugs', once: true, label: 'Noter sa deposition sur dictaphone', hint: 'Preuve si tu as le dictaphone', effect: '+Preuve audio', when: () => hasItem('Dictaphone fendu') && !ST.usedItems.includes('Dictaphone fendu'), immediate: s => { markItemUsed('Dictaphone fendu'); evidence(s, 'Preuve_Deposition'); addObj('Preuve obtenue: deposition audio de Yugs.'); }, go: 'regie_entree' },
         { label: 'Aller directement a la Regie', hint: 'Il est tard', effect: '+Regie', go: 'regie_entree' }
       ]
     },
@@ -208,7 +253,8 @@ export function createScenes({ addObj, gainItem, hasItem, log, openKabeNetwork, 
       title: 'Antenne de la Regie - Entree de nuit',
       text: () => `
         <p>L antenne occupe un ancien bureau de bailleur social. A l accueil, <b>Laura</b> evite les cameras. Dans le couloir, <b>Antoine</b> signe des deplacements qu il appelle arbitrages.</p>
-        <p>Tu peux entrer par badge, par les gaines, ou avec assez de preuves pour faire hesiter Laura. Sur le mur, une affiche promet une <i>evacuation apaisee des situations non cooperatives</i>.</p>`,
+        <p>Tu peux entrer par badge, par les gaines, ou avec assez de preuves pour faire hésiter Laura. Sur le mur, une affiche promet une <i>évacuation apaisée des situations non coopératives</i>.</p>
+        ${profileTrace('regie_entree')}`,
       choices: () => {
         const arr = [];
         if (ST.tags.has('Badge_Regie') || hasItem('Badge Regie grille')) arr.push({ label: 'Badger comme un prestataire', hint: 'Acces direct', effect: '+Acces archives', immediate: () => markItemUsed('Badge Regie grille'), go: 'regie_archives' });
@@ -239,7 +285,7 @@ export function createScenes({ addObj, gainItem, hasItem, log, openKabeNetwork, 
       choices: [
         { label: 'Copier l export complet', hint: 'TEC/Maintenance (11)', effect: '+2 Preuves | Antoine alerte', test: { stat: 'TEC', skill: 'Maintenance', dd: 11, ok: s => { evidence(s, 'Preuve_Export', 2); s.tags.add('Antoine_Alerte'); addObj('Export complet copie. Preuves +2.'); }, ko: s => { s.stress = Math.min(5, s.stress + 1); log('La copie s interrompt a 63 %. Stress +1.'); } }, goOK: 'regie_vautrin', goKO: 'regie_vautrin' },
         { label: 'Chercher d abord Nora', hint: 'Sauvetage avant publication', effect: '+Nora', go: 'regie_vautrin' },
-        { label: 'Appeler Kabe depuis les archives', hint: 'Si Kabe ou Mymy te couvre', effect: '+Publication preparee', when: () => ST.tags.has('TemoinProtege') || ST.tags.has('Kabe_Couvre_Regie') || ST.tags.has('Mymy_Confiance'), immediate: s => { s.tags.add('Publication_Preparee'); addObj('Kabe prepare la sortie publique.'); }, go: 'regie_vautrin' }
+        { id: 'regie:preparer-publication', once: true, label: 'Appeler Kabe depuis les archives', hint: 'Si Kabe ou Mymy te couvre', effect: '+Publication preparee', when: () => (ST.tags.has('TemoinProtege') || ST.tags.has('Kabe_Couvre_Regie') || ST.tags.has('Mymy_Confiance')) && !ST.tags.has('Publication_Preparee'), immediate: s => { s.tags.add('Publication_Preparee'); addObj('Kabe prepare la sortie publique.'); }, go: 'regie_vautrin' }
       ]
     },
 
@@ -248,9 +294,10 @@ export function createScenes({ addObj, gainItem, hasItem, log, openKabeNetwork, 
       title: 'Sous-sol B - Nora',
       text: () => `
         <p>Nora est vivante. Fatiguee, lucide, furieuse de te voir seul. Antoine attend pres d une table sans ordinateur, seulement un dossier papier et deux stylos.</p>
-        <p>"Vous pouvez sauver une personne", dit-il. "Ou publier assez mal pour en perdre cent." Nora repond qu il appelle prudence ce qui ressemble surtout a une methode pour gagner une nuit de plus.</p>`,
+        <p>« Vous pouvez sauver une personne », dit-il. « Ou publier assez mal pour en perdre cent. » Nora serre les dents: « Arrêtez votre merde de gestionnaire. Vous appelez prudence la méthode qui vous permet de recommencer demain avec des fichiers plus propres. »</p>
+        <p>Elle se tourne vers toi. « Et toi, ne viens pas me sauver pour te débarrasser du reste. Si tu prends son marché, regarde au moins les gens que tu lui laisses. »</p>`,
       choices: [
-        { label: 'Sortir Nora par les gaines', hint: 'RUE/Discretion (11)', effect: '+Nora vivante', test: { stat: 'RUE', skill: 'Discretion', dd: 11, ok: s => { s.tags.add('LeylaAlive'); addObj('Nora sort de la Regie avec toi.'); }, ko: s => { s.hp = Math.max(0, s.hp - 1); log('La fuite tourne court. Etat -1.'); } }, goOK: 'final_choix', goKO: 'final_choix' },
+        { label: 'Sortir Nora par les gaines', hint: 'RUE/Discretion (11)', effect: '+Nora vivante', test: { stat: 'RUE', skill: 'Discretion', dd: 11, ok: s => { s.tags.add('NoraAlive'); addObj('Nora sort de la Regie avec toi.'); }, ko: s => { s.hp = Math.max(0, s.hp - 1); log('La fuite tourne court. Etat -1.'); } }, goOK: 'final_choix', goKO: 'final_choix' },
         { label: 'Faire parler Antoine en enregistrant', hint: 'DOC/Persuasion (12)', effect: '+Preuve aveu', test: { stat: 'DOC', skill: 'Persuasion', dd: 12, ok: s => { evidence(s, 'Preuve_Aveu'); addObj('Aveu d Antoine enregistre.'); }, ko: s => { s.stress = Math.min(5, s.stress + 1); log('Antoine sourit: il sait que tu enregistres. Stress +1.'); } }, goOK: 'final_choix', goKO: 'final_choix' },
         { label: 'Accepter d ecouter son marche', hint: 'Ouvrir la fin transaction', effect: '+Fin marche | Nora conteste', immediate: s => { s.tags.add('Vautrin_Marche'); s.tags.add('Antoine_Alerte'); addObj('Antoine propose Nora contre le silence.'); }, go: 'final_choix' }
       ]
@@ -266,7 +313,7 @@ export function createScenes({ addObj, gainItem, hasItem, log, openKabeNetwork, 
         ${kabeDebtLine()}`,
       choices: () => [
         { label: 'Publier le dossier maintenant', hint: ST.pressure >= 5 && !ST.tags.has('Publication_Preparee') && !ST.tags.has('Mymy_Confiance') ? 'La pression peut briser la sortie' : (ST.frag >= 3 ? 'Dossier solide' : 'Dossier fragile'), effect: '+Fin publique', go: () => (ST.pressure >= 5 && !ST.tags.has('Publication_Preparee') && !ST.tags.has('Mymy_Confiance')) ? pickEnding('lost') : (ST.frag >= 2 || ST.tags.has('Publication_Preparee') ? pickEnding('public') : pickEnding('lost')) },
-        { label: 'Sauver Nora et garder une copie', hint: 'Priorite humaine', effect: '+Fin Nora', when: () => ST.tags.has('LeylaAlive') || ST.tags.has('TemoinProtege'), go: () => pickEnding('save') },
+        { label: 'Sauver Nora et garder une copie', hint: 'Priorite humaine', effect: '+Fin Nora', when: () => ST.tags.has('NoraAlive') || ST.tags.has('TemoinProtege'), go: () => pickEnding('save') },
         { label: 'Accepter le marche d Antoine', hint: 'Silence contre protection immediate', effect: '+Fin marche', when: () => ST.tags.has('Vautrin_Marche'), go: () => pickEnding('market') },
         { label: 'Partir avec un dossier incomplet', hint: 'Personne ne gagne vraiment', effect: '+Fin perdue', go: () => pickEnding('lost') }
       ]

@@ -20,43 +20,49 @@ export const ST = {
     pauline: 0
   },
   usedItems: [],
+  resolvedChoices: new Set(),
   inv: [],
   tags: new Set(),
   scene: 'retour_place',
-  objective: 'Retrouver Nora avant l evacuation de 6 h.',
+  objective: 'Retrouver Nora avant l’évacuation de 6 h.',
   objLog: [],
   visited: new Set()
 };
 
 export const ITEM_META = {
   'Carte de presse perimee': {
-    type: 'Acces',
+    label: 'Carte de presse périmée',
+    type: 'Accès',
     use: 'Met la pression sur les patrouilles et les agents frileux.',
-    effect: '+Credibilite / risque de fichage',
+    effect: '+Crédibilité / risque de fichage',
     icon: 'PRESS'
   },
   'Dictaphone fendu': {
+    label: 'Dictaphone fendu',
     type: 'Preuve',
-    use: 'Fixe une deposition fragile avant qu un temoin disparaisse.',
+    use: 'Fixe une déposition fragile avant qu’un témoin disparaisse.',
     effect: '+Preuve audio',
     icon: 'REC'
   },
   'Carnet de mediatrice': {
+    label: 'Carnet de médiatrice',
     type: 'Social',
-    use: 'Rattache un nom a un appartement, une dette ou une audience.',
+    use: 'Rattache un nom à un appartement, une dette ou une audience.',
     effect: '+Relation',
     icon: 'NOM'
   },
   'Badge Regie grille': {
-    type: 'Acces',
+    label: 'Badge Régie grillé',
+    type: 'Accès',
     use: 'Ouvre une porte si personne ne regarde trop longtemps.',
-    effect: '+Acces Regie',
+    effect: '+Accès Régie',
     icon: 'BADGE'
   },
   'Ancienne etiquette Anto': {
+    label: 'Ancienne étiquette Anto',
     type: 'Seuil',
-    use: 'Prouve a Anto que tu connais son ancien chantier.',
-    effect: '+Acces Kabe',
+    use: 'Prouve à Anto que tu connais son ancien chantier.',
+    effect: '+Accès Kabé',
     icon: 'ANTO'
   }
 };
@@ -86,7 +92,7 @@ export function pickEnding(mode) {
   clearEndingTags();
   if (mode === 'public') {
     ST.tags.add('End_Public');
-    if (ST.tags.has('LeylaAlive') || ST.tags.has('TemoinProtege')) return 'ep_public_leyla';
+    if (ST.tags.has('NoraAlive') || ST.tags.has('TemoinProtege')) return 'ep_public_leyla';
     return 'ep_public';
   }
   if (mode === 'save') {
@@ -109,4 +115,5 @@ export function addPressure(delta = 1) {
   ST.pressure = Math.max(0, Math.min(6, ST.pressure + delta));
 }
 
-export const SAVE = 'bail_noir_v2';
+export const SAVE = 'bail_noir_v3';
+export const LEGACY_SAVE = 'bail_noir_v2';

@@ -12,17 +12,8 @@
   <div class="headerTop">
     <div class="title">BAIL NOIR — <span id="loc">Guillotière</span></div>
     <div class="headerControls">
-      <span class="badge viewBadge" id="viewIndicator">Vue : Tous</span>
+      <button class="iconBtn dossierAccess" id="dossierToggle" type="button" aria-expanded="false" aria-controls="dossierDrawer">Ouvrir le dossier</button>
       <button class="iconBtn audioBtn" id="audioToggle" type="button" aria-pressed="false" aria-label="Couper les sons">SFX</button>
-      <div class="menuWrap" id="navWrap">
-        <button class="iconBtn" id="navToggle" aria-haspopup="true" aria-expanded="false" aria-label="Changer de vue" aria-controls="navMenu">☰</button>
-        <div class="navMenu" id="navMenu" role="menu" aria-hidden="true">
-          <button class="tabbtn" data-viewto="all" aria-pressed="true" role="menuitem">Tous</button>
-          <button class="tabbtn" data-viewto="story" role="menuitem">Histoire</button>
-          <button class="tabbtn" data-viewto="profile" role="menuitem">Profil</button>
-          <button class="tabbtn" data-viewto="journal" role="menuitem">Dossier</button>
-        </div>
-      </div>
     </div>
     <div class="subtitle">Une enquête sociale nocturne avant évacuation administrative.</div>
   </div>
@@ -39,27 +30,51 @@
 </header>
 
 <main class="grid frame">
-  <aside class="col left">
-    <div class="pad">
-      <div class="sectionTitle">Profil</div>
-      <div class="row" id="statsRow"></div>
-      <div class="resbar">
-        <div class="res"><div class="lbl">Stress</div><div class="meter"><div class="fill bad" id="stressFill" style="width:40%"></div></div></div>
-        <div class="res"><div class="lbl">État</div><div class="meter"><div class="fill" id="hpFill" style="width:100%"></div></div></div>
-      </div>
-      <div class="sectionTitle">Pression</div>
-      <div class="pressureClock" id="pressureClock" aria-live="polite"></div>
-      <div class="sectionTitle">Carte d'enquête</div>
-      <div class="caseMap" id="caseMap" aria-label="Carte d'enquête"></div>
-      <div class="sectionTitle">Inventaire</div>
-      <div class="inventoryGrid" id="inventoryGrid" aria-live="polite"></div>
-      <div class="sectionTitle">Sauvegarde</div>
-      <p class="sectionIntro">Conserve le dossier localement ou importe une sauvegarde Bail Noir.</p>
-      <div class="saveActions">
-        <button class="btn subtle" id="btnExport" type="button">Sauvegarder</button>
-        <button class="btn subtle" id="btnImport" type="button">Importer</button>
-        <button class="btn subtle" id="btnReset" type="button">Nouvelle partie</button>
-      </div>
+  <aside class="col dossierDrawer" id="dossierDrawer" role="dialog" aria-modal="true" aria-labelledby="dossierTitle" aria-hidden="true">
+    <div class="dossierHead">
+      <div><span class="kicker">Pièces actives</span><strong id="dossierTitle">Dossier d'enquête</strong></div>
+      <button class="iconBtn" id="dossierClose" type="button" aria-label="Fermer le dossier">Fermer</button>
+    </div>
+    <div class="dossierTabs" role="tablist" aria-label="Sections du dossier">
+      <button class="dossierTab" id="tab-status" type="button" role="tab" aria-selected="true" aria-controls="pane-status" data-dossier-tab="status">Situation</button>
+      <button class="dossierTab" id="tab-map" type="button" role="tab" aria-selected="false" aria-controls="pane-map" data-dossier-tab="map">Carte & objets</button>
+      <button class="dossierTab" id="tab-case" type="button" role="tab" aria-selected="false" aria-controls="pane-case" data-dossier-tab="case">Preuves & contacts</button>
+      <button class="dossierTab" id="tab-game" type="button" role="tab" aria-selected="false" aria-controls="pane-game" data-dossier-tab="game">Partie</button>
+    </div>
+    <div class="dossierContent">
+      <section class="dossierPane" id="pane-status" role="tabpanel" aria-labelledby="tab-status" data-dossier-pane="status">
+        <div class="sectionTitle">Profil</div>
+        <div class="row" id="statsRow"></div>
+        <div class="resbar">
+          <div class="res"><div class="lbl">Stress</div><div class="meter"><div class="fill bad" id="stressFill" style="width:40%"></div></div></div>
+          <div class="res"><div class="lbl">État</div><div class="meter"><div class="fill" id="hpFill" style="width:100%"></div></div></div>
+        </div>
+        <div class="sectionTitle">Pression</div>
+        <div class="pressureClock" id="pressureClock" aria-live="polite"></div>
+      </section>
+      <section class="dossierPane" id="pane-map" role="tabpanel" aria-labelledby="tab-map" data-dossier-pane="map" hidden>
+        <div class="sectionTitle">Carte d'enquête</div>
+        <div class="caseMap" id="caseMap" aria-label="Carte d'enquête"></div>
+        <div class="sectionTitle">Inventaire</div>
+        <div class="inventoryGrid" id="inventoryGrid" aria-live="polite"></div>
+      </section>
+      <section class="dossierPane" id="pane-case" role="tabpanel" aria-labelledby="tab-case" data-dossier-pane="case" hidden>
+        <div class="sectionTitle">Preuves et chronologie</div>
+        <div class="timeline" id="timeline"></div>
+        <div class="sectionTitle">Contacts</div>
+        <div class="casePanel" id="casePanel"></div>
+        <div class="sectionTitle">Journal des dés</div>
+        <div class="log" id="log"></div>
+      </section>
+      <section class="dossierPane" id="pane-game" role="tabpanel" aria-labelledby="tab-game" data-dossier-pane="game" hidden>
+        <div class="sectionTitle">Sauvegarde et partie</div>
+        <p class="sectionIntro">Exporte le dossier, reprends une sauvegarde ou recommence l'enquête.</p>
+        <div class="saveActions">
+          <button class="btn primary" id="btnExport" type="button">Exporter la sauvegarde</button>
+          <button class="btn subtle" id="btnImport" type="button">Importer une sauvegarde</button>
+          <button class="btn danger" id="btnReset" type="button">Recommencer</button>
+        </div>
+      </section>
     </div>
   </aside>
 
@@ -87,44 +102,20 @@
         <h2 id="storyTitle">Retour</h2>
         <div id="storyText"></div>
         <div class="choices" id="choices"></div>
-        <div class="testPanel" id="testPanel" style="display:none">
-          <div class="row">
-            <span class="badge">Test: <span id="testName">-</span></span>
-            <span class="badge">DD <span id="testDD">10</span></span>
-          </div>
-          <div class="row testControls">
-            <label class="badge"><input type="checkbox" id="useLevier"> +2 Levier</label>
-            <label class="badge"><input type="checkbox" id="usePush"> +2 Forcer (+1 Stress)</label>
-            <label class="badge"><input type="checkbox" id="useFrag"> +2 Preuve</label>
-            <button class="btn primary" id="rollBtn">Lancer les dés</button>
-          </div>
-          <div class="small" id="testHint"></div>
-          <div class="testResult" id="testResult" role="status" aria-live="polite"></div>
-        </div>
       </div>
     </div>
   </section>
 
-  <aside class="col right">
-    <div class="pad">
-      <div class="sectionTitle">Journal des dés</div>
-      <div class="log" id="log"></div>
-      <div class="sectionTitle">Dossier</div>
-      <div class="timeline" id="timeline"></div>
-      <div class="sectionTitle">Contacts</div>
-      <div class="casePanel" id="casePanel"></div>
-    </div>
-  </aside>
 </main>
 
-<nav class="mobilebar">
-  <button class="tabbtn" data-viewto="story">Histoire</button>
-  <button class="tabbtn" data-viewto="profile">Profil</button>
-  <button class="tabbtn" data-viewto="journal">Dossier</button>
-  <button class="tabbtn" data-viewto="all">Tous</button>
+<nav class="mobilebar" aria-label="Accès rapide">
+  <button class="tabbtn" data-close-dossier>Histoire</button>
+  <button class="tabbtn" data-open-dossier="map">Carte</button>
+  <button class="tabbtn" data-open-dossier="case">Preuves</button>
+  <button class="tabbtn" data-open-dossier="game">Partie</button>
 </nav>
 
-<div id="diceOverlay"><div class="diceWrap">
+<div id="diceOverlay" role="dialog" aria-modal="true" aria-labelledby="diceTitle"><div class="diceWrap">
   <div class="diceHeader">
     <span class="kicker">Dossier animé</span>
     <strong id="diceTitle">2d6 — contrôle de terrain</strong>
@@ -133,8 +124,9 @@
     <div class="die modernDie" id="d1" data-face="1" aria-label="Dé 1"></div>
     <div class="die modernDie" id="d2" data-face="1" aria-label="Dé 2"></div>
   </div>
+  <div id="diceModifiers" class="diceModifiers" role="group" aria-label="Ressources pour ce test"></div>
   <div class="row diceActions">
-    <button class="btn primary" id="btnStopDice">Figer le résultat</button>
+    <button class="btn primary" id="btnRollDice">Lancer</button>
     <button class="btn" id="btnResolveDice" style="display:none">Continuer</button>
   </div>
   <div id="diceInfo" class="small" aria-live="polite"></div>
@@ -158,8 +150,8 @@
         <h3>Ta marge de manoeuvre</h3>
         <ul>
           <li>Accumuler des preuves.</li>
-          <li>Utiliser des leviers sans tout brûler.</li>
-          <li>Faire parler Kabé, Anto, Nour et les lieux.</li>
+          <li>Utilisér des leviers sans tout brûler.</li>
+          <li>Faire parler Chacha, Mymy, Anto et les lieux.</li>
         </ul>
       </div>
     </div>
@@ -182,17 +174,16 @@
 <div id="kabeGameModal" class="modalScreen" role="dialog" aria-modal="true" aria-labelledby="kabeGameModalTitle" style="display:none" aria-hidden="true">
   <div class="modalBox kabeGameBox">
     <h2 id="kabeGameModalTitle">Réseau de Kabé</h2>
-    <p class="kabeGameIntro">Kabé trie les versions. Anto garde la porte. Ici, une rumeur peut devenir preuve, dette ou protection.</p>
+    <p class="kabeGameIntro">Kabé n'est pas une réserve de bonus. C'est un réseau de personnes : tu demandes un geste précis, tu paies un coût, puis le réseau se souvient de ce qu'il a risqué pour toi.</p>
+    <div class="kabeGuide" aria-label="Comment utiliser Kabé">
+      <span><b>1</b> Lis l'effet</span><span><b>2</b> Paie le coût</span><span><b>3</b> Assume la dette ou le risque</span>
+    </div>
     <div id="kabeGamePrompt" class="kabeGamePrompt"></div>
     <div id="kabeGamePalette" class="kabeGamePalette" role="group" aria-live="polite"></div>
     <div id="kabeGameSequence" class="kabeGameSequence" aria-live="polite"></div>
     <div id="kabeGameMessage" class="kabeGameMessage" role="status" aria-live="polite"></div>
     <div class="row kabeGameActions">
-      <button class="btn subtle" id="kabeGameRetry" type="button">Rafraîchir</button>
       <button class="btn primary" id="kabeGameClose" type="button">Fermer</button>
-      <button class="btn subtle hiddenLegacy" id="kabeGameUndo" type="button">Annuler</button>
-      <button class="btn subtle hiddenLegacy" id="kabeGameReset" type="button">Réinitialiser</button>
-      <button class="btn primary hiddenLegacy" id="kabeGameServe" type="button">Servir</button>
     </div>
   </div>
 </div>

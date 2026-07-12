@@ -250,6 +250,23 @@ button,input{font:inherit}
   color:var(--paper);
 }
 .storyBody p{max-width:76ch;color:#ddd4c3}
+.storyBody .storyVoice{
+  margin:18px 0;
+  padding:14px 18px 14px 20px;
+  border-left:3px solid var(--sodium);
+  background:linear-gradient(90deg,rgba(214,154,66,.12),rgba(214,154,66,.025));
+  color:#f0dec0!important;
+  font-style:italic;
+  box-shadow:inset 24px 0 36px -34px rgba(214,154,66,.85);
+}
+.storyBody .storyVoice::before{content:"VOIX CAPTÉE";display:block;margin-bottom:7px;color:var(--sodium);font:700 10px 'IBM Plex Mono',monospace;letter-spacing:.12em;font-style:normal}
+.storyBody .storyTrace{padding-left:15px;border-left:1px dashed rgba(216,208,189,.36);color:#cfc6b5!important}
+.profileTrace{
+  border-left:2px solid var(--sodium);
+  padding:8px 0 8px 14px;
+  color:#f1dfba!important;
+  font-style:italic;
+}
 
 .choices{display:flex;flex-direction:column;gap:10px;margin-top:16px}
 .choice{
@@ -461,6 +478,24 @@ button,input{font:inherit}
 }
 .contactCard.warm{border-color:rgba(214,154,66,.5)}
 .contactCard.warm i{background:var(--sodium);color:#141008}
+.contactCard.hasPortrait{
+  min-height:112px;
+  padding-top:58px;
+  background-image:linear-gradient(to bottom,transparent 22%,rgba(12,12,11,.96) 68%),var(--contact-portrait);
+  background-size:cover;
+  background-position:center 24%;
+}
+.sceneEntering .storyImage{animation:sceneImageIn .55s cubic-bezier(.2,.75,.25,1)}
+.sceneEntering .storyBody{animation:sceneCopyIn .42s ease-out}
+.sceneEntering .choice{animation:choiceIn .35s ease-out both}
+.sceneEntering .choice:nth-child(2){animation-delay:.05s}
+.sceneEntering .choice:nth-child(3){animation-delay:.1s}
+.sceneEntering .choice:nth-child(4){animation-delay:.15s}
+.pressureClock{transition:border-color .3s ease,box-shadow .3s ease}
+body:has(.pressureMeta span:first-of-type) .clockNeedle{transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+@keyframes sceneImageIn{from{opacity:.35;transform:scale(1.025);filter:contrast(1.2) brightness(.65)}to{opacity:1;transform:none;filter:none}}
+@keyframes sceneCopyIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes choiceIn{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:none}}
 .evidenceStrip{display:flex;flex-wrap:wrap;gap:6px}
 .evidenceStrip span{
   border:1px solid rgba(169,75,63,.35);
@@ -470,19 +505,6 @@ button,input{font:inherit}
   font-size:11px;
   font-family:'IBM Plex Mono',monospace;
 }
-
-.testPanel{
-  margin-top:14px;
-  border:1px dashed rgba(216,208,189,.28);
-  padding:14px;
-  background:rgba(8,9,7,.62);
-}
-.testControls{align-items:center;margin-top:8px}
-.testControls label{flex:1 1 160px}
-.testResult{display:none;margin-top:10px;padding:10px;border:1px solid rgba(216,208,189,.25)}
-.testResult.show{display:block}
-.testResult.success{color:var(--good);border-color:var(--good)}
-.testResult.fail{color:var(--bad);border-color:var(--bad)}
 
 #diceOverlay,.modalScreen{
   position:fixed;
@@ -535,9 +557,15 @@ button,input{font:inherit}
     url('../assets/bail-noir/ui-kabe.jpg') center/620px;
 }
 .kabeGameIntro,.kabeGameMessage{color:#ead9bf}
-.kabeGamePalette{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:12px 0}
-.kabeAction{display:flex;flex-direction:column;align-items:flex-start;text-align:left;min-height:96px}
-.kabeAction small{color:var(--mut)}
+.kabeGuide{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0;padding:10px;border:1px solid rgba(214,154,66,.3);background:rgba(214,154,66,.07);color:#e9dbc4;font-size:12px}
+.kabeGuide span{display:flex;align-items:center;gap:6px}.kabeGuide b{display:grid;place-items:center;width:18px;height:18px;background:var(--sodium);color:#161008;font:800 11px 'IBM Plex Mono',monospace}
+.kabeGamePrompt{display:grid;gap:4px;margin:12px 0;color:var(--mut)}.kabeGamePrompt strong{color:var(--paper)}
+.kabeGamePalette{display:grid;gap:14px;margin:14px 0}
+.kabeLane{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:9px;border-top:1px solid rgba(216,208,189,.19);padding-top:10px}
+.kabeLane h3{grid-column:1/-1;margin:0;color:var(--sodium);font:700 11px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase}
+.kabeAction{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start;text-align:left;min-height:154px;padding:13px}
+.kabeAction small,.kabeOutcome,.kabeCost{grid-column:1/-1;color:var(--mut);font-size:12px;line-height:1.35}.kabeAction b{color:var(--paper);font:700 10px 'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.06em}
+.kabeAction:disabled{opacity:.48;filter:grayscale(.55)}
 .kabeGestureLabel{display:flex;gap:10px;align-items:center}
 .kabeGestureBadge{display:grid;place-items:center;width:26px;height:26px;background:var(--sodium);color:#120e08;font-weight:800}
 .kabeLedger{display:flex;gap:8px;flex-wrap:wrap}
@@ -591,6 +619,78 @@ button,input{font:inherit}
 @keyframes diceSettle{0%{transform:translateY(-15px) rotate(-18deg)}55%{transform:translateY(5px) rotate(8deg)}100%{transform:none}}
 .diceStatus.success{color:var(--good)}.diceStatus.fail{color:var(--bad)}
 
+/* The investigation is a drawer, not a permanent dashboard. */
+.dossierDrawer{display:none}
+main.grid:has(.dossierDrawer){grid-template-columns:minmax(0,1fr)}
+main.grid:has(.dossierDrawer) .mid{grid-column:1}
+body.dossierOpen{overflow:hidden}
+body.dossierOpen .dossierDrawer{
+  display:flex;
+  flex-direction:column;
+  position:fixed;
+  z-index:40;
+  top:0;
+  right:0;
+  bottom:0;
+  width:min(760px,94vw);
+  overflow:hidden;
+  background:
+    linear-gradient(90deg,rgba(5,7,8,.97),rgba(5,8,11,.82) 56%,rgba(5,7,8,.94)),
+    url('../assets/bail-noir/ui-dossier-atlas-fal.png') center/cover;
+  border-left:1px solid rgba(214,154,66,.38);
+  box-shadow:0 0 0 100vmax rgba(5,6,4,.7),-18px 0 38px rgba(0,0,0,.5);
+}
+.dossierHead{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:18px 20px;
+  border-bottom:1px solid rgba(216,208,189,.2);
+  background:linear-gradient(90deg,rgba(169,75,63,.28),rgba(9,14,17,.62) 62%,transparent);
+}
+.dossierHead strong{display:block;margin-top:3px;font-size:clamp(20px,3vw,30px);color:var(--paper)}
+.dossierTabs{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  border-bottom:1px solid rgba(216,208,189,.2);
+  background:rgba(5,6,4,.7);
+}
+.dossierTab{
+  min-height:52px;
+  border:0;
+  border-right:1px solid rgba(216,208,189,.16);
+  border-bottom:3px solid transparent;
+  background:transparent;
+  color:var(--mut);
+  font:700 12px 'IBM Plex Mono',monospace;
+  text-transform:uppercase;
+  cursor:pointer;
+}
+.dossierTab:hover,.dossierTab:focus-visible{color:var(--paper);background:rgba(214,154,66,.08)}
+.dossierTab[aria-selected="true"]{color:var(--sodium);border-bottom-color:var(--sodium);background:rgba(214,154,66,.1)}
+.dossierContent{flex:1;min-height:0;overflow:auto;padding:20px;background:linear-gradient(90deg,rgba(7,10,11,.84),rgba(7,10,11,.58))}
+.dossierPane{display:flex;flex-direction:column;gap:14px;animation:dossierIn .38s cubic-bezier(.2,.78,.25,1)}
+.dossierPane[hidden]{display:none}
+.dossierPane .caseMap{min-height:360px}
+.dossierPane .inventoryGrid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.dossierPane .timeline,.dossierPane .log{height:auto;max-height:270px;min-height:150px}
+.dossierPane .saveActions{display:grid;grid-template-columns:1fr;gap:10px;max-width:440px}
+.btn.danger{border-color:rgba(224,109,94,.55);color:#f0b7ae;background:rgba(169,75,63,.1)}
+.dossierAccess{border-color:rgba(214,154,66,.48);color:var(--sodium)}
+.dossierDrawer::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(110deg,transparent 0 42%,rgba(216,208,189,.045) 49%,transparent 56%);transform:translateX(-130%);animation:dossierSweep 7s ease-in-out infinite}
+.dossierHead,.dossierTabs,.dossierContent{position:relative;z-index:1}
+@keyframes dossierIn{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes dossierSweep{0%,66%,100%{transform:translateX(-130%)}80%{transform:translateX(130%)}}
+.diceModifiers{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+.diceModifiers .badge{cursor:pointer}
+.is-updated{animation:casePulse .4s ease-out}
+.is-success .diceTable{box-shadow:0 0 0 3px rgba(155,191,122,.3)}
+.is-failure .diceTable{box-shadow:0 0 0 3px rgba(224,109,94,.3)}
+.is-entering .storyBody,.sceneEntering .storyBody{animation:sceneCopyIn .42s ease-out}
+.is-entering .storyImage,.sceneEntering .storyImage{animation:sceneImageIn .55s cubic-bezier(.2,.75,.25,1)}
+@keyframes casePulse{50%{border-color:var(--sodium);box-shadow:0 0 0 4px rgba(214,154,66,.18)}}
+
 [data-view="story"] .left,[data-view="story"] .right{display:none}
 [data-view="profile"] .mid,[data-view="profile"] .right{display:none}
 [data-view="journal"] .left,[data-view="journal"] .mid{display:none}
@@ -629,6 +729,11 @@ button,input{font:inherit}
   .mapPin small{display:none}
   .caseSummary{grid-template-columns:1fr}
   .diceTable{min-height:150px}
+  body.dossierOpen .dossierDrawer{width:100vw;border-left:0}
+  .dossierHead{padding:14px}
+  .dossierTabs{grid-template-columns:repeat(2,1fr)}
+  .dossierContent{padding:14px;padding-bottom:calc(88px + var(--safe-bottom))}
+  .dossierPane .caseMap{min-height:320px}
 }
 @media (prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important}
