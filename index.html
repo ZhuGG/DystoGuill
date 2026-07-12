@@ -3,45 +3,38 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>TRAME DOUCE — Guillotière (v6.4)</title>
+<title>BAIL NOIR — Guillotière</title>
 <link rel="stylesheet" href="styles/main.css">
 </head>
 <body data-view="all">
-<div class="aura"></div>
-<div class="noise"></div>
+<div class="paperGrain"></div>
 <header class="header" data-collapsed="false">
   <div class="headerTop">
-    <div class="title">⟡ TRAME DOUCE — <span id="loc">Guillotière</span></div>
+    <div class="title">BAIL NOIR — <span id="loc">Guillotière</span></div>
     <div class="headerControls">
       <span class="badge viewBadge" id="viewIndicator">Vue : Tous</span>
-      <button class="btn ghost" id="asciiBtn">HUD ASCII ✓</button>
+      <button class="iconBtn audioBtn" id="audioToggle" type="button" aria-pressed="false" aria-label="Couper les sons">SFX</button>
       <div class="menuWrap" id="navWrap">
-        <button class="iconBtn" id="navToggle" aria-haspopup="true" aria-expanded="false" aria-label="Changer de vue" aria-controls="navMenu">⋯</button>
+        <button class="iconBtn" id="navToggle" aria-haspopup="true" aria-expanded="false" aria-label="Changer de vue" aria-controls="navMenu">☰</button>
         <div class="navMenu" id="navMenu" role="menu" aria-hidden="true">
           <button class="tabbtn" data-viewto="all" aria-pressed="true" role="menuitem">Tous</button>
           <button class="tabbtn" data-viewto="story" role="menuitem">Histoire</button>
           <button class="tabbtn" data-viewto="profile" role="menuitem">Profil</button>
-          <button class="tabbtn" data-viewto="journal" role="menuitem">Journal</button>
+          <button class="tabbtn" data-viewto="journal" role="menuitem">Dossier</button>
         </div>
       </div>
     </div>
-    <div class="subtitle">Traversée magnétique du quartier, sous la pluie et la Sourdine.</div>
-    <button class="headerCollapseBtn" id="headerCollapseBtn" type="button" aria-expanded="true" aria-controls="headerMeta" aria-label="Replier le briefing Sourdine">
-      <span class="collapseIcon" aria-hidden="true">▾</span>
-      <span class="collapseLabel">Briefing Sourdine</span>
-    </button>
+    <div class="subtitle">Une enquête sociale nocturne avant évacuation administrative.</div>
   </div>
-
   <div class="headerMeta" id="headerMeta">
-    <p class="headerLore">La pluie magnétique se mêle à la poussière rouge. Chaque décision illumine — ou condamne — les couloirs désertés.</p>
-    <div class="headerTicker" aria-hidden="true"><span>Transmission pirate : &nbsp; «&nbsp;Quartier sous quarantaine douce. Cherche signaux stables. Méfiance envers la milice de la Sourdine.&nbsp;» ✶ Transmission pirate : &nbsp; «&nbsp;Quartier sous quarantaine douce. Cherche signaux stables. Méfiance envers la milice de la Sourdine.&nbsp;»</span></div>
+    <p class="headerLore">Nora a disparu après avoir découvert des baux falsifiés. À 6 h, la Régie des Quartiers Calmes vide la Place du Pont.</p>
+    <div class="headerTicker" aria-hidden="true"><span>AVIS // occupation requalifiée // audiences différées // départ volontaire confirmé // dossier incomplet // témoin à protéger //</span></div>
     <div class="row headerBadges">
-      <span class="badge"><img class="icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Heart_coraz%C3%B3n.svg/32px-Heart_coraz%C3%B3n.svg.png"> Stress <span id="stressVal">2</span>/5</span>
-      <span class="badge"><img class="icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/OOjs_UI_icon_firstaid-ltr.svg/32px-OOjs_UI_icon_firstaid-ltr.svg.png"> Blessures <span id="hpVal">5</span>/5</span>
-      <span class="badge"><img class="icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Circle-icons-bulb.svg/32px-Circle-icons-bulb.svg.png"> Flux ◆ <span id="fluxVal">2</span></span>
-      <span class="badge"><img class="icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Noun_Project_document_icon_1409169_cc.svg/32px-Noun_Project_document_icon_1409169_cc.svg.png"> Fragments ✦ <span id="fragVal">2</span></span>
+      <span class="badge">Stress <span id="stressVal">2</span>/5</span>
+      <span class="badge">État <span id="hpVal">5</span>/5</span>
+      <span class="badge">Levier <span id="levierVal">2</span></span>
+      <span class="badge">Preuves <span id="preuveVal">1</span></span>
     </div>
-
   </div>
 </header>
 
@@ -52,47 +45,57 @@
       <div class="row" id="statsRow"></div>
       <div class="resbar">
         <div class="res"><div class="lbl">Stress</div><div class="meter"><div class="fill bad" id="stressFill" style="width:40%"></div></div></div>
-        <div class="res"><div class="lbl">Blessures</div><div class="meter"><div class="fill bad" id="hpFill" style="width:100%"></div></div></div>
+        <div class="res"><div class="lbl">État</div><div class="meter"><div class="fill" id="hpFill" style="width:100%"></div></div></div>
       </div>
-      <div class="sectionTitle">Mini-carte</div>
-      <div class="ascii" id="miniMap"></div>
+      <div class="sectionTitle">Pression</div>
+      <div class="pressureClock" id="pressureClock" aria-live="polite"></div>
+      <div class="sectionTitle">Carte d'enquête</div>
+      <div class="caseMap" id="caseMap" aria-label="Carte d'enquête"></div>
       <div class="sectionTitle">Inventaire</div>
-      <ul class="inventory" id="inventoryList" aria-live="polite"></ul>
+      <div class="inventoryGrid" id="inventoryGrid" aria-live="polite"></div>
       <div class="sectionTitle">Sauvegarde</div>
-      <p class="sectionIntro">Enregistre ta progression en local ou reprends une partie précédente depuis un fichier.</p>
+      <p class="sectionIntro">Conserve le dossier localement ou importe une sauvegarde Bail Noir.</p>
       <div class="saveActions">
-        <button class="btn subtle" id="btnExport" type="button"><span class="btnLabel"><span class="btnIcon" aria-hidden="true">💾</span><span>Sauvegarder</span></span></button>
-        <button class="btn subtle" id="btnImport" type="button"><span class="btnLabel"><span class="btnIcon" aria-hidden="true">⤴</span><span>Importer</span></span></button>
-        <button class="btn subtle" id="btnReset" type="button"><span class="btnLabel"><span class="btnIcon" aria-hidden="true">🔄</span><span>Nouvelle partie</span></span></button>
+        <button class="btn subtle" id="btnExport" type="button">Sauvegarder</button>
+        <button class="btn subtle" id="btnImport" type="button">Importer</button>
+        <button class="btn subtle" id="btnReset" type="button">Nouvelle partie</button>
       </div>
-    </div>
-    <div class="pad">
-      <div class="sectionTitle">HUD ASCII</div>
-      <div class="ascii" id="asciiHud"></div>
     </div>
   </aside>
 
   <section class="col mid">
     <div class="pad">
-      <div class="storyImage">
-        <img id="storyImg" loading="lazy" src="https://cdn.midjourney.com/2dad9bcd-090b-477d-915d-6fc46c5cc0ad/0_1.png" alt="">
-        <div class="legend" id="imgLegend">Guillotière — pluie sous la Sourdine</div>
+      <div class="sceneDeck" aria-label="État de la scène">
+        <div>
+          <span class="kicker">Scène courante</span>
+          <strong id="sceneVal">Retour</strong>
+        </div>
+        <div>
+          <span class="kicker">Objectif actif</span>
+          <strong id="objectiveText">Retrouver Nora avant l'évacuation de 6 h.</strong>
+        </div>
+        <div class="pulseStack" aria-label="Ressources">
+          <span>Levier <b id="deckLevierVal">2</b></span>
+          <span>Preuves <b id="deckPreuveVal">1</b></span>
+        </div>
       </div>
-      <div class="row"><span class="badge">Objectif: <span id="objectiveText">Tracer une voie sûre vers T1.</span></span></div>
+      <div class="storyImage">
+        <img id="storyImg" loading="lazy" src="assets/bail-noir/place-du-pont.png" alt="">
+        <div class="legend" id="imgLegend">Place du Pont - avis d'évacuation</div>
+      </div>
       <div class="storyBody">
-        <h2 id="storyTitle">Prologue</h2>
+        <h2 id="storyTitle">Retour</h2>
         <div id="storyText"></div>
         <div class="choices" id="choices"></div>
         <div class="testPanel" id="testPanel" style="display:none">
           <div class="row">
-            <span class="badge">Test: <span id="testName">—</span></span>
+            <span class="badge">Test: <span id="testName">-</span></span>
             <span class="badge">DD <span id="testDD">10</span></span>
-            <div style="margin-left:auto"></div>
           </div>
-          <div class="row testControls" style="align-items:center;margin-top:6px">
-            <label class="badge"><input type="checkbox" id="useFlux"> +2 Flux</label>
-            <label class="badge"><input type="checkbox" id="usePush"> +2 Pousser sa chance (+1 Stress)</label>
-            <label class="badge"><input type="checkbox" id="useFrag"> ✦ Fragment (indice fort, +1 Stress)</label>
+          <div class="row testControls">
+            <label class="badge"><input type="checkbox" id="useLevier"> +2 Levier</label>
+            <label class="badge"><input type="checkbox" id="usePush"> +2 Forcer (+1 Stress)</label>
+            <label class="badge"><input type="checkbox" id="useFrag"> +2 Preuve</label>
             <button class="btn primary" id="rollBtn">Lancer les dés</button>
           </div>
           <div class="small" id="testHint"></div>
@@ -106,68 +109,70 @@
     <div class="pad">
       <div class="sectionTitle">Journal des dés</div>
       <div class="log" id="log"></div>
-      <div class="sectionTitle">Journal d’objectifs</div>
+      <div class="sectionTitle">Dossier</div>
       <div class="timeline" id="timeline"></div>
+      <div class="sectionTitle">Contacts</div>
+      <div class="casePanel" id="casePanel"></div>
     </div>
   </aside>
 </main>
 
-<!-- Mobile bottom bar -->
 <nav class="mobilebar">
   <button class="tabbtn" data-viewto="story">Histoire</button>
   <button class="tabbtn" data-viewto="profile">Profil</button>
-  <button class="tabbtn" data-viewto="journal">Journal</button>
+  <button class="tabbtn" data-viewto="journal">Dossier</button>
   <button class="tabbtn" data-viewto="all">Tous</button>
 </nav>
 
-<!-- Dice overlay -->
 <div id="diceOverlay"><div class="diceWrap">
-  <div>2d6 — maintien = animation</div>
-  <div class="cubes"><div class="cube anim" id="d1">•</div><div class="cube anim" id="d2">•</div></div>
-  <div class="row diceActions" style="justify-content:center">
-    <button class="btn primary" id="btnStopDice" aria-label="Figer le résultat du lancer">Figer le résultat</button>
+  <div class="diceHeader">
+    <span class="kicker">Dossier animé</span>
+    <strong id="diceTitle">2d6 — contrôle de terrain</strong>
+  </div>
+  <div class="diceTable">
+    <div class="die modernDie" id="d1" data-face="1" aria-label="Dé 1"></div>
+    <div class="die modernDie" id="d2" data-face="1" aria-label="Dé 2"></div>
+  </div>
+  <div class="row diceActions">
+    <button class="btn primary" id="btnStopDice">Figer le résultat</button>
     <button class="btn" id="btnResolveDice" style="display:none">Continuer</button>
   </div>
   <div id="diceInfo" class="small" aria-live="polite"></div>
 </div></div>
 
-<!-- Intro -->
 <div id="introModal" class="modalScreen" role="dialog" aria-modal="true" aria-labelledby="introModalTitle">
-  <div class="modalBox introBox" style="max-width:900px">
-    <h2 id="introModalTitle">TRAME DOUCE — Préambule</h2>
-    <p class="introLead">La Guillotière est engluée sous <b>la Sourdine</b>, un grondement électromagnétique qui brouille les voix, avale les souvenirs et dérègle les capteurs. Les habitants s’accrochent aux fragments de mémoire qui restent.</p>
-    <p class="introLead">Pendant que la pluie polit les façades, la sous-station <b>T1</b> décroche du réseau. Si personne ne rétablit le flux, le quartier s’éteint et les voies d’évacuation se referment.</p>
+  <div class="modalBox introBox">
+    <h2 id="introModalTitle">BAIL NOIR — Préambule</h2>
+    <p class="introLead">Tu reviens à la Guillotière après un message de Nora, ancienne organisatrice de locataires. Elle a découvert que la Régie des Quartiers Calmes déclare des habitants "partis volontaires" avant même les audiences.</p>
+    <p class="introLead">Nora a disparu. À 6 h, la Place du Pont doit être évacuée. Il faut retrouver la personne, le dossier, ou assez de preuves pour empêcher la ville d'effacer les vivants proprement.</p>
     <div class="introColumns">
       <div>
-        <h3>Ce que fait la Sourdine</h3>
+        <h3>Ce qui menace le quartier</h3>
         <ul>
-          <li><b>Étire le temps</b> : sans notes, les souvenirs s’effacent.</li>
-          <li><b>Ferme des portes</b> : chaque refus alimente la méfiance des communautés.</li>
-          <li><b>Désoriente la technologie</b> : le HUD ASCII reste le moyen le plus fiable de suivre ta progression.</li>
+          <li>Des baux réécrits par algorithme.</li>
+          <li>Des vigiles privés payés pour éviter les témoins.</li>
+          <li>Une administration qui appelle violence "médiation".</li>
         </ul>
       </div>
       <div>
-        <h3>Ta mission</h3>
+        <h3>Ta marge de manoeuvre</h3>
         <ul>
-          <li>Cartographier une traversée sûre de la Place du Pont jusqu’à <b>T1</b>.</li>
-          <li>Composer avec les acteurs du quartier pour gagner du <b>Flux</b> et des <b>Fragments</b>.</li>
-          <li>Choisir un archétype dont les talents peuvent renverser la situation.</li>
+          <li>Accumuler des preuves.</li>
+          <li>Utiliser des leviers sans tout brûler.</li>
+          <li>Faire parler Kabé, Anto, Nour et les lieux.</li>
         </ul>
       </div>
     </div>
-    <p class="introLead">Chaque scène offre des choix, parfois des tests de dés. Négocier, détourner ou réparer modifie la tension, ouvre des routes ou t’enferme dans des impasses.</p>
-    <p class="introLead">Quand tu es prêt·e, sélectionne un archétype. Sa manière de parler au quartier définira les opportunités qui se dévoilent.</p>
-    <div class="introNote">Ton avancée est conservée dans ton navigateur. Sauvegarde régulièrement pour garder la trace de ce que la Sourdine pourrait faire oublier.</div>
-    <div class="row introActions"><button class="btn primary" id="btnChooseArch">Choisir un archétype</button></div>
+    <div class="introNote">Les anciennes sauvegardes sont ignorées. Bail Noir utilise un nouveau dossier local.</div>
+    <div class="row introActions"><button class="btn primary" id="btnChooseArch">Choisir un profil</button></div>
   </div>
 </div>
 
-<!-- Archetypes -->
-<div id="archModal" class="modalScreen" role="dialog" aria-modal="true" aria-labelledby="archModalTitle" style="display:none">
+<div id="archModal" class="modalScreen" role="dialog" aria-modal="true" aria-labelledby="archModalTitle" style="display:none" aria-hidden="true">
   <div class="modalBox">
-    <h2 id="archModalTitle">Choisis ton archétype</h2>
+    <h2 id="archModalTitle">Choisis ton profil</h2>
     <div class="arches" id="archList"></div>
-    <div class="row" style="justify-content:flex-end">
+    <div class="row modalActions">
       <button class="btn" id="btnRandom">Au hasard</button>
       <button class="btn primary" id="btnConfirm" disabled>Valider</button>
     </div>
@@ -176,18 +181,18 @@
 
 <div id="kabeGameModal" class="modalScreen" role="dialog" aria-modal="true" aria-labelledby="kabeGameModalTitle" style="display:none" aria-hidden="true">
   <div class="modalBox kabeGameBox">
-    <h2 id="kabeGameModalTitle">Rituel du Kabé clandestin</h2>
-    <p class="kabeGameIntro">Kabé, maître des apéros clandestins, orchestre un rituel d’infusion pour garder la salle accordée. Enchaîne les gestes dans le bon ordre pour offrir une bouffée de douceur.</p>
+    <h2 id="kabeGameModalTitle">Réseau de Kabé</h2>
+    <p class="kabeGameIntro">Kabé trie les versions. Anto garde la porte. Ici, une rumeur peut devenir preuve, dette ou protection.</p>
     <div id="kabeGamePrompt" class="kabeGamePrompt"></div>
     <div id="kabeGamePalette" class="kabeGamePalette" role="group" aria-live="polite"></div>
     <div id="kabeGameSequence" class="kabeGameSequence" aria-live="polite"></div>
     <div id="kabeGameMessage" class="kabeGameMessage" role="status" aria-live="polite"></div>
     <div class="row kabeGameActions">
-      <button class="btn subtle" id="kabeGameUndo" type="button">Annuler le dernier geste</button>
-      <button class="btn subtle" id="kabeGameReset" type="button">Réinitialiser</button>
-      <button class="btn primary" id="kabeGameServe" type="button">Servir la coupe</button>
-      <button class="btn subtle" id="kabeGameRetry" type="button">Nouveau rituel</button>
+      <button class="btn subtle" id="kabeGameRetry" type="button">Rafraîchir</button>
       <button class="btn primary" id="kabeGameClose" type="button">Fermer</button>
+      <button class="btn subtle hiddenLegacy" id="kabeGameUndo" type="button">Annuler</button>
+      <button class="btn subtle hiddenLegacy" id="kabeGameReset" type="button">Réinitialiser</button>
+      <button class="btn primary hiddenLegacy" id="kabeGameServe" type="button">Servir</button>
     </div>
   </div>
 </div>

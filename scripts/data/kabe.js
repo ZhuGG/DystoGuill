@@ -1,48 +1,81 @@
-export const KABE_GESTURES = {
-  brume: { name: 'Brume d’absinthe', notes: 'Assourdit la salle et adoucit la Sourdine.', tone: '#7fb3ff', icon: '💨' },
-  braise: { name: 'Braise confite', notes: 'Chaleur fumée qui tient les cœurs éveillés.', tone: '#ff8a5c', icon: '🔥' },
-  givre: { name: 'Givre de menthe noire', notes: 'Froid sec qui tranche les excès.', tone: '#8cecff', icon: '❄️' },
-  pulse: { name: 'Pulse magnétique', notes: 'Battement salin qui cale la ronde.', tone: '#b89cff', icon: '🎚️' },
-  sève: { name: 'Sève cardée', notes: 'Épaisseur végétale qui rassure les nerfs.', tone: '#6fdd9d', icon: '🌿' },
-  voile: { name: 'Voile de sureau', notes: 'Fleurs blanches qui filtrent la Sourdine.', tone: '#ffb0f7', icon: '🫧' },
-  zeste: { name: 'Zeste d’orage', notes: 'Agrume électrique qui réveille le palais.', tone: '#ffd86b', icon: '⚡️' },
-  sel: { name: 'Sel de darse', notes: 'Cristaux salins qui rappellent le quai.', tone: '#8ed6ff', icon: '🧂' }
-};
-
-export const KABE_RITUALS = [
+export const KABE_ACTIONS = [
   {
-    id: 'velours',
-    name: 'Velours de veille',
-    clue: 'Kabé veut endormir les capteurs : couvre la salle, stabilise, puis scelle avec une chaleur douce.',
-    sequence: ['voile', 'sève', 'braise'],
-    palette: ['voile', 'pulse', 'sève', 'braise', 'zeste']
+    id: 'chacha',
+    name: 'Demander a Chacha de trier une rumeur',
+    cost: 'Gratuit',
+    notes: 'Elle separe les mythos utiles des vraies alertes.',
+    when: state => !state.tags.has('Kabe_Rumeur'),
+    apply: ({ state, addObj, log, setRelation }) => {
+      state.tags.add('Kabe_Rumeur');
+      setRelation('chacha', 1);
+      state.objective = 'Verifier la fourgonnette blanche aux berges.';
+      addObj('Chacha confirme la fourgonnette de la Regie pres des berges.');
+      log('Chacha baisse le son: "La fourgonnette revient toujours par le quai."');
+    }
   },
   {
-    id: 'orage',
-    name: 'Orage contenu',
-    clue: 'Il faut réveiller la ronde sans casser le silence : une pointe vive, calmer aussitôt, puis verrouiller par un souffle froid.',
-    sequence: ['zeste', 'brume', 'givre'],
-    palette: ['zeste', 'brume', 'givre', 'braise', 'pulse']
+    id: 'zaza',
+    name: 'Faire passer un mot a Samia',
+    cost: '1 Levier',
+    notes: 'Samia peut rendre la Place plus bavarde pendant dix minutes.',
+    when: state => state.flux > 0 && !state.tags.has('Zaza_Couvre'),
+    apply: ({ state, addObj, log, setRelation }) => {
+      state.flux -= 1;
+      state.tags.add('Zaza_Couvre');
+      setRelation('zaza', 1);
+      setRelation('pauline', 1);
+      state.stress = Math.max(0, state.stress - 1);
+      addObj('Samia couvre Pauline et fait circuler les noms menaces. Stress -1.');
+      log('La Place parle sans regarder les cameras.');
+    }
   },
   {
-    id: 'rebond',
-    name: 'Rebond des habitués',
-    clue: 'Kabé réclame un rythme rebondissant : pulse la table, lie avec un voile, puis relève par une douceur végétale.',
-    sequence: ['pulse', 'voile', 'sève'],
-    palette: ['pulse', 'voile', 'sève', 'brume', 'givre']
+    id: 'mika',
+    name: 'Appeler Mika pour une serrure',
+    cost: '1 Preuve',
+    notes: 'Mika ouvre une piste technique, mais il veut une garantie.',
+    when: state => state.frag > 0 && !state.tags.has('Mika_Passe'),
+    apply: ({ state, addObj, gainItem, log, setRelation }) => {
+      state.frag -= 1;
+      state.tags.add('Mika_Passe');
+      state.tags.add('Badge_Regie');
+      setRelation('mika', 1);
+      gainItem('Badge Regie grille');
+      addObj('Mika prepare un badge Regie grille. Preuve -1, objet +1.');
+      log('Mika: "Je ne garantis pas la porte. Je garantis trois secondes."');
+    }
   },
   {
-    id: 'rade',
-    name: 'Ancre des darses',
-    clue: 'Les mariniers veulent oublier la vase : appelle la brume, verse le sel des quais, termine par une braise confite.',
-    sequence: ['brume', 'sel', 'braise'],
-    palette: ['brume', 'sel', 'braise', 'sève', 'zeste']
+    id: 'yugs',
+    name: 'Proteger Yugs',
+    cost: 'Risque',
+    notes: 'Anto le fait entrer par l arriere avant que Thanos remonte sa trace.',
+    when: state => (state.tags.has('Kabe_Rumeur') || state.tags.has('Yugs_Temoin')) && !state.tags.has('TemoinProtege'),
+    apply: ({ state, addObj, log, setRelation, addPressure }) => {
+      state.tags.add('TemoinProtege');
+      state.tags.add('Kabe_Dette');
+      setRelation('yugs', 1);
+      setRelation('anto', 1);
+      addPressure(1);
+      addObj('Yugs est cache chez Kabe. Pression +1, temoin protege.');
+      log('Anto referme le rideau metallique. Quelqu un dehors comprend trop tard.');
+    }
   },
   {
-    id: 'clair',
-    name: 'Clair sous la Sourdine',
-    clue: 'Pour garder les idées claires : givre l’esprit, impose une pulse régulière, referme avec un voile protecteur.',
-    sequence: ['givre', 'pulse', 'voile'],
-    palette: ['givre', 'pulse', 'voile', 'brume', 'sève']
+    id: 'antoine',
+    name: 'Confronter le nom d Antoine',
+    cost: 'Pression',
+    notes: 'Anto connait l organigramme officieux de la Regie.',
+    when: state => state.tags.has('Kabe_Rumeur') && !state.tags.has('Anto_Allie'),
+    apply: ({ state, addObj, log, setRelation, addPressure }) => {
+      state.tags.add('Anto_Allie');
+      state.tags.add('Regie_Localisee');
+      setRelation('anto', 1);
+      setRelation('kabe', 1);
+      state.frag += 1;
+      addPressure(1);
+      addObj('Anto donne un nom: Antoine, cadre de la Regie. Preuve +1, Pression +1.');
+      log('Anto parle bas: "Antoine signe les departs avant les audiences."');
+    }
   }
 ];
