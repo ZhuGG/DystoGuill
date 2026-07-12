@@ -1,29 +1,29 @@
 export const ARCH = [
   {
-    id: 'noor',
-    name: 'Noor — Dormeuse du pont',
-    img: 'https://cdn.midjourney.com/a3b1416e-ee0e-4c20-930a-7ffd8a11813f/0_0.png',
-    back: 'Tu dors sous le tablier quand il fait doux. Tu sais écouter quand les autres parlent trop.',
-    stats: { NEU: 2, VOL: 3, SOM: 1, CIN: 3 },
-    skills: { Furtivité: 1, Empathie: 1 },
-    start: ['Feuillet-mica', 'Cutter', 'Gants usés']
+    id: 'journaliste',
+    name: 'Ancien journaliste local',
+    img: 'assets/bail-noir/arch-journaliste.jpg',
+    back: 'Tu as quitte la Guillotiere quand ton journal a ferme. Nora t a laisse un message avant de disparaitre. Tu sais lire les dossiers, recouper les dates et faire parler les silences.',
+    stats: { DOC: 3, SOC: 2, TEC: 1, RUE: 2 },
+    skills: { Archives: 1, Persuasion: 1 },
+    start: ['Carte de presse perimee', 'Carnet a spirale', 'Dictaphone fendu']
   },
   {
-    id: 'milo',
-    name: 'Milo — Revendeur d’appoint',
-    img: 'https://cdn.midjourney.com/80762336-8ec1-4cc1-8c37-7c4107864bab/0_2.png',
-    back: 'Piles refondues, médocs, rumeurs. Tu parles cash et sens la merde à quinze mètres.',
-    stats: { NEU: 3, VOL: 3, SOM: 1, CIN: 2 },
-    skills: { Intimidation: 1, Déduction: 1 },
-    start: ['Lampe plate', 'Note marquée', 'Briquet']
+    id: 'maintenance',
+    name: 'Ex-agent de maintenance',
+    img: 'assets/bail-noir/arch-maintenance.jpg',
+    back: 'Tu connais les sous-sols, les boitiers et les portes qui ferment mal. La Regie a privatise ton ancien service et efface ton badge, mais pas tes habitudes.',
+    stats: { DOC: 1, SOC: 2, TEC: 3, RUE: 2 },
+    skills: { Maintenance: 1, Discretion: 1 },
+    start: ['Badge grille', 'Cle triangulaire', 'Lampe frontale']
   },
   {
-    id: 'rayan',
-    name: 'Rayan — Électricien clandestin',
-    img: 'https://cdn.midjourney.com/0e627014-f83a-41bd-9c3f-e4d828a9e555/0_3.png',
-    back: 'Tu connais les coffrets et les gaines qui chantent. Tu parles au cuivre comme à un gosse têtu.',
-    stats: { NEU: 3, VOL: 2, SOM: 3, CIN: 2 },
-    skills: { Mécanique: 1, Cryptanalyse: 1 },
-    start: ['Tournevis isolé', 'Aimant-alu', 'Ruban textile']
+    id: 'mediatrice',
+    name: 'Médiatrice de quartier',
+    img: 'assets/bail-noir/arch-mediatrice.jpg',
+    back: 'Tu as tenu des permanences dans les cages d escalier et les salles prêtées. Tu connais les colères, les dettes, les familles qui n appellent plus la police.',
+    stats: { DOC: 2, SOC: 3, TEC: 1, RUE: 2 },
+    skills: { Mediation: 1, Reseau: 1 },
+    start: ['Repertoire papier', 'Trousse de secours', 'Cle du local commun']
   }
 ];

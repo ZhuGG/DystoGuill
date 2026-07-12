@@ -1,890 +1,737 @@
 import { ARCH } from './data/arch.js';
 import { IMG } from './data/images.js';
-import { ST, markVisited, SAVE } from './data/state.js';
-import { KABE_GESTURES, KABE_RITUALS } from './data/kabe.js';
+import { ST, markVisited, SAVE, ITEM_META, addPressure, setRelation } from './data/state.js';
+import { KABE_ACTIONS } from './data/kabe.js';
 import { createScenes } from './data/scenes.js';
 
-/* ======= HELPERS ======= */
-const VIEW_LABELS={all:'Tous',story:'Histoire',profile:'Profil',journal:'Journal'};
-const $=q=>document.querySelector(q);
-const navWrap=document.getElementById('navWrap');
-const navToggle=document.getElementById('navToggle');
-const navMenu=document.getElementById('navMenu');
-const header=document.querySelector('.header');
-const headerCollapseBtn=document.getElementById('headerCollapseBtn');
-const mobileHeaderMQ=window.matchMedia('(max-width: 900px)');
-let headerCollapsed=false;
-let lastScrollY=window.scrollY;
-function revealHeader(){if(header)header.classList.remove('header-hidden');}
-function setHeaderCollapsed(state){
-  if(!header)return;
-  headerCollapsed=!!state;
-  header.classList.toggle('collapsed',headerCollapsed);
-  header.setAttribute('data-collapsed',headerCollapsed?'true':'false');
-  if(headerCollapseBtn){
-    headerCollapseBtn.setAttribute('aria-expanded',headerCollapsed?'false':'true');
-    headerCollapseBtn.setAttribute('aria-label',headerCollapsed?'Déployer le briefing Sourdine':'Replier le briefing Sourdine');
-  }
-}
-function syncHeaderForViewport(){
-  if(!header)return;
-  if(mobileHeaderMQ.matches){
-    setHeaderCollapsed(true);
-    revealHeader();
-  }else{
-    setHeaderCollapsed(false);
-    revealHeader();
-  }
-  lastScrollY=window.scrollY;
-}
-function handleHeaderScroll(){
-  if(!header||!mobileHeaderMQ.matches)return;
-  const currentY=window.scrollY;
-  if(navWrap?.classList.contains('open')){lastScrollY=currentY;return;}
-  if(currentY>lastScrollY+16&&currentY>80){
-    header.classList.add('header-hidden');
-  }else if(currentY<lastScrollY-12||currentY<16){
-    header.classList.remove('header-hidden');
-  }
-  lastScrollY=currentY;
-}
-syncHeaderForViewport();
-if(typeof mobileHeaderMQ.addEventListener==='function'){
-  mobileHeaderMQ.addEventListener('change',()=>{syncHeaderForViewport();});
-}else if(typeof mobileHeaderMQ.addListener==='function'){
-  mobileHeaderMQ.addListener(()=>{syncHeaderForViewport();});
-}
-if(headerCollapseBtn){
-  headerCollapseBtn.addEventListener('click',()=>{
-    setHeaderCollapsed(!headerCollapsed);
-    revealHeader();
-  });
-}
-window.addEventListener('scroll',handleHeaderScroll,{passive:true});
-const slotLabel=idx=>String(idx+1).padStart(2,'0');
-const hasItem=name=>ST.inv.includes(name);
-function gainItem(name){
-  if(!ST.inv.includes(name)){
-    ST.inv.push(name);
-  }
+const VIEW_LABELS = { all: 'Tous', story: 'Histoire', profile: 'Profil', journal: 'Dossier' };
+const STAT_LABELS = { DOC: 'Dossier', SOC: 'Social', TEC: 'Technique', RUE: 'Rue' };
+const AUDIO_SAVE = 'bail_noir_audio_muted';
+const SFX = {
+  click: 'assets/bail-noir/audio/dossier-click.mp3',
+  dice: 'assets/bail-noir/audio/dice-roll.mp3',
+  success: 'assets/bail-noir/audio/success.mp3',
+  failure: 'assets/bail-noir/audio/failure.mp3',
+  kabe: 'assets/bail-noir/audio/kabe-action.mp3'
+};
+const $ = q => document.querySelector(q);
+const FOCUSABLE = 'a[href],button:not([disabled]),textarea:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])';
+
+const MAP_NODES = [
+  { key: 'place', label: 'Place', x: 18, y: 34, role: 'Disparition de Nora' },
+  { key: 'marseille', label: 'Marseille', x: 45, y: 22, role: 'Archives et juristes' },
+  { key: 'mazagran', label: 'Mazagran', x: 30, y: 64, role: 'Technique et acces' },
+  { key: 'kabe', label: 'Kabe', x: 62, y: 55, role: 'Reseau clandestin' },
+  { key: 'berges', label: 'Berges', x: 78, y: 36, role: 'Fourgonnette' },
+  { key: 'regie', label: 'Regie', x: 84, y: 72, role: 'Confrontation' }
+];
+
+const CONTACTS = [
+  { key: 'zaza', name: 'Samia', role: 'informatrice de la Place' },
+  { key: 'mika', name: 'Mika', role: 'serrurier de Mazagran' },
+  { key: 'yugs', name: 'Yugs', role: 'coursier des berges' },
+  { key: 'chacha', name: 'Chacha', role: 'serveuse chez Kabe' },
+  { key: 'anette', name: 'Anette', role: 'memoire du quartier' },
+  { key: 'laura', name: 'Laura', role: 'agente a la Regie' },
+  { key: 'anto', name: 'Anto', role: 'vigile de Kabe' },
+  { key: 'pauline', name: 'Pauline', role: 'habitante menacee' },
+  { key: 'kabe', name: 'Kabe', role: 'hub social' }
+];
+
+let pending = null;
+let pendingOutcome = null;
+let selectedArch = null;
+let archReturnFocus = null;
+let kabeReturnFocus = null;
+let diceTimer = null;
+let audioMuted = localStorage.getItem(AUDIO_SAVE) === 'true';
+let audioReady = false;
+const audioClips = Object.fromEntries(Object.entries(SFX).map(([key, src]) => {
+  const clip = new Audio(src);
+  clip.preload = 'auto';
+  clip.volume = key === 'dice' ? 0.42 : 0.35;
+  return [key, clip];
+}));
+
+const hasItem = name => ST.inv.includes(name);
+const gainItem = name => {
+  if (!ST.inv.includes(name)) ST.inv.push(name);
+};
+const slotLabel = idx => String(idx + 1).padStart(2, '0');
+
+function visible(el) {
+  return !!(el && (el.offsetWidth || el.offsetHeight || el.getClientRects().length));
 }
 
-const FOCUSABLE_SELECTOR='a[href],button:not([disabled]),textarea:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])';
-let archReturnFocus=null;
-let kabeGameReturnFocus=null;
-
-function isElementVisible(el){
-  return !!(el && (el.offsetWidth||el.offsetHeight||el.getClientRects().length));
+function focusables(container) {
+  if (!container) return [];
+  return Array.from(container.querySelectorAll(FOCUSABLE)).filter(el => !el.disabled && visible(el));
 }
-function getFocusableElements(container){
-  if(!container) return [];
-  return Array.from(container.querySelectorAll(FOCUSABLE_SELECTOR)).filter(el=>{
-    if(el.hasAttribute('disabled')) return false;
-    if(el.getAttribute('aria-hidden')==='true') return false;
-    return isElementVisible(el);
+
+function focusFirst(container) {
+  const list = focusables(container);
+  if (list[0]) list[0].focus({ preventScroll: true });
+}
+
+function restoreFocus(el) {
+  if (el && document.contains(el) && typeof el.focus === 'function') el.focus({ preventScroll: true });
+}
+
+function syncAudioToggle() {
+  const button = $('#audioToggle');
+  if (!button) return;
+  button.setAttribute('aria-pressed', audioMuted ? 'true' : 'false');
+  button.setAttribute('aria-label', audioMuted ? 'Activer les sons' : 'Couper les sons');
+  button.textContent = audioMuted ? 'SFX off' : 'SFX';
+}
+
+function unlockAudio() {
+  if (audioReady || audioMuted) return;
+  audioReady = true;
+  Object.values(audioClips).forEach(clip => {
+    clip.load();
   });
 }
-function focusFirstFocusable(container){
-  const focusables=getFocusableElements(container);
-  if(focusables.length){
-    try{
-      focusables[0].focus({preventScroll:true});
-    }catch(e){
-      focusables[0].focus();
+
+function playSfx(name) {
+  if (audioMuted) return;
+  unlockAudio();
+  const clip = audioClips[name];
+  if (!clip) return;
+  clip.currentTime = 0;
+  clip.play().catch(() => {});
+}
+
+function toggleAudio() {
+  audioMuted = !audioMuted;
+  localStorage.setItem(AUDIO_SAVE, String(audioMuted));
+  if (audioMuted) Object.values(audioClips).forEach(clip => clip.pause());
+  syncAudioToggle();
+  if (!audioMuted) playSfx('click');
+}
+
+function trapFocus(modalBox) {
+  modalBox.addEventListener('keydown', event => {
+    if (event.key !== 'Tab') return;
+    const screen = modalBox.closest('.modalScreen');
+    if (!screen || screen.style.display === 'none' || screen.getAttribute('aria-hidden') === 'true') return;
+    const list = focusables(modalBox);
+    if (!list.length) return;
+    const first = list[0];
+    const last = list[list.length - 1];
+    if (event.shiftKey && (document.activeElement === first || !modalBox.contains(document.activeElement))) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && (document.activeElement === last || !modalBox.contains(document.activeElement))) {
+      event.preventDefault();
+      first.focus();
     }
-  }
-}
-function restoreFocus(el){
-  if(!el||typeof el.focus!=='function') return;
-  if(!document.contains(el)) return;
-  try{
-    el.focus({preventScroll:true});
-  }catch(e){
-    el.focus();
-  }
-}
-function setupFocusTrap(modalBox){
-  if(!modalBox) return;
-  modalBox.addEventListener('keydown',event=>{
-    if(event.key!=='Tab') return;
-    const modalScreen=modalBox.closest('.modalScreen');
-    if(!modalScreen) return;
-    const style=window.getComputedStyle(modalScreen);
-    if(style.display==='none'||style.visibility==='hidden'||modalScreen.getAttribute('aria-hidden')==='true') return;
-    const focusables=getFocusableElements(modalBox);
-    if(!focusables.length) return;
-    const first=focusables[0];
-    const last=focusables[focusables.length-1];
-    const active=document.activeElement;
-    if(event.shiftKey){
-      if(active===first||!modalBox.contains(active)){
-        event.preventDefault();
-        last.focus();
-      }
-    }else{
-      if(active===last||!modalBox.contains(active)){
-        event.preventDefault();
-        first.focus();
-      }
-    }
   });
 }
-document.querySelectorAll('.modalBox').forEach(setupFocusTrap);
 
-function updateViewIndicator(v){const badge=$('#viewIndicator'); if(badge){badge.textContent='Vue : '+(VIEW_LABELS[v]||'Tous');}}
-function openNavMenu(){
-  if(!navWrap)return;
-  revealHeader();
-  navWrap.classList.add('open');
-  if(navToggle)navToggle.setAttribute('aria-expanded','true');
-  if(navMenu)navMenu.setAttribute('aria-hidden','false');
+document.querySelectorAll('.modalBox').forEach(trapFocus);
+
+function log(text) {
+  const line = document.createElement('div');
+  line.className = 'line';
+  line.textContent = text;
+  $('#log')?.prepend(line);
 }
-function closeNavMenu(){
-  if(!navWrap)return;
-  navWrap.classList.remove('open');
-  if(navToggle)navToggle.setAttribute('aria-expanded','false');
-  if(navMenu)navMenu.setAttribute('aria-hidden','true');
-}
-function toggleNavMenu(){if(navWrap?.classList.contains('open')){closeNavMenu();}else{openNavMenu();}}
-updateViewIndicator(document.body.getAttribute('data-view')||'all');
-if(navToggle){navToggle.addEventListener('click',e=>{e.stopPropagation();toggleNavMenu();});}
-document.addEventListener('click',e=>{if(navWrap&&!navWrap.contains(e.target)){closeNavMenu();}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeNavMenu();closeKabeGame();}});
-function log(t){const L=$('#log');const d=document.createElement('div');d.className='line';d.textContent=t;L.prepend(d)}
-function addObj(t){ST.objLog.push({t:Date.now(),text:t}); renderTimeline() }
-function setView(v){
-  document.body.setAttribute('data-view',v);
-  document.querySelectorAll('[data-viewto]').forEach(b=>b.setAttribute('aria-pressed', b.getAttribute('data-viewto')===v ? 'true' : 'false'));
-  updateViewIndicator(v);
-}
-function setupNav(){
-  document.querySelectorAll('[data-viewto]').forEach(b=>{
-    b.addEventListener('click', e=>{ setView(b.getAttribute('data-viewto')); closeNavMenu(); });
-  });
-}
-$('#asciiBtn').addEventListener('click',()=>{ST.ascii=!ST.ascii;renderAscii();$('#asciiBtn').textContent='HUD ASCII '+(ST.ascii?'✓':'✗')});
-function bars(){ $('#stressVal').textContent=ST.stress; $('#hpVal').textContent=ST.hp; $('#fluxVal').textContent=ST.flux; $('#fragVal').textContent=ST.frag;
-  $('#stressFill').style.width=(ST.stress/5*100)+'%'; $('#hpFill').style.width=(ST.hp/5*100)+'%'; }
-function renderStats(){const r=$('#statsRow');r.innerHTML='';const s=ST.stats;
-  const mk=(cls,nm,v)=>`<div class="stat ${cls}"><div class="dot"></div><div class="name">${nm}</div><div class="val">${v}</div></div>`;
-  r.insertAdjacentHTML('beforeend',mk('neu','Neuro',s.NEU)); r.insertAdjacentHTML('beforeend',mk('vol','Volonté',s.VOL));
-  r.insertAdjacentHTML('beforeend',mk('som','Somatique',s.SOM)); r.insertAdjacentHTML('beforeend',mk('cin','Cinétique',s.CIN));
-}
-function renderInventory(){
-  const list=$('#inventoryList');
-  if(!list) return;
-  list.innerHTML='';
-  if(!ST.inv.length){
-    const empty=document.createElement('li');
-    empty.className='inventory-empty';
-    empty.textContent='Aucun objet.';
-    list.appendChild(empty);
-    return;
-  }
-  ST.inv.forEach((item,idx)=>{
-    const li=document.createElement('li');
-    li.innerHTML=`<span class="inventory-slot">${slotLabel(idx)}</span><span class="inventory-item">${item}</span>`;
-    list.appendChild(li);
-  });
-}
-function renderAscii(){ if(!ST.ascii){$('#asciiHud').textContent='(désactivé)'; $('#miniMap').textContent='(désactivé)'; return;}
-  const asciiLines=[
-    '╔══[ ATH ]══════════════════════════════════════╗',
-    `║ ${ST.arch?ST.arch.name:'—'}`,
-    `║ NEU ${ST.stats.NEU} VOL ${ST.stats.VOL} SOM ${ST.stats.SOM} CIN ${ST.stats.CIN}`,
-    `║ Stress ${'█'.repeat(ST.stress)}${'░'.repeat(5-ST.stress)}  Bless ${'█'.repeat(ST.hp)}${'░'.repeat(5-ST.hp)}`,
-    `║ Flux ◆${ST.flux}  Frag ✦${ST.frag}`,
-    '║ Inventaire:'
-  ];
-  if(ST.inv.length){ ST.inv.forEach((item,idx)=>{ asciiLines.push(`║   ${slotLabel(idx)} ▸ ${item}`); }); }
-  else { asciiLines.push('║   (vide)'); }
-  asciiLines.push(`║ Scène: ${ST.scene}`);
-  asciiLines.push(`║ Tags: ${[...ST.tags].join(', ')||'—'}`);
-  asciiLines.push('╚════════════════════════════════════════════════╝');
-  $('#asciiHud').textContent=asciiLines.join('\n'); renderMiniMap(); }
-function renderMiniMap(){const v=s=>ST.visited.has(s)?'●':'○';
- $('#miniMap').textContent=`[Guillotière]
-  ${v('prologue')} Prologue
-  ├─ ${v('place')} Place du Pont
-  │   └─ ${v('collectif')} Assemblée couverte
-  ├─ ${v('maz')} Mazagran
-  │   ├─ ${v('kabe')} Kabé — apéros clandestins
-  │   └─ ${v('atelier')} Atelier de fortune
-  ├─ ${v('ber')} Berges
-  │   └─ ${v('patrouille')} Patrouille fluviale
-  ├─ ${v('pon')} Pont de la Guill’
-  │   └─ ${v('ombre')} Contre-voie
-  └─ ${v('t1')} T1
-      └─ ${v('perimetre')} Périmètre interne
-`; }
-function renderTimeline(){const T=$('#timeline');T.innerHTML='';ST.objLog.slice().reverse().forEach(o=>{const d=document.createElement('div');d.className='item';d.innerHTML=`<div>${o.text}</div><div class="when">${new Date(o.t).toLocaleTimeString()}</div>`;T.appendChild(d)})}
-function save(){localStorage.setItem(SAVE,JSON.stringify({a:ST.arch?.id,s:ST.stats,k:ST.skills,st:ST.stress,h:ST.hp,f:ST.flux,g:ST.frag,i:ST.inv,t:[...ST.tags],sc:ST.scene,o:ST.objective,ol:ST.objLog,v:[...ST.visited],as:ST.ascii}))}
-function load(){try{const d=JSON.parse(localStorage.getItem(SAVE)||'null');if(!d)return;ST.arch=ARCH.find(x=>x.id===d.a)||null; if(ST.arch){ST.stats={...ST.arch.stats};ST.skills={...ST.arch.skills};ST.inv=[...ST.arch.start]}
-  Object.assign(ST,{stress:d.st??2,hp:d.h??5,flux:d.f??2,frag:d.g??2});ST.inv=d.i||ST.inv;ST.tags=new Set(d.t||[]);
-  if(ST.tags.has('Kabe_GameWon')){ST.tags.delete('Kabe_GameWon');ST.tags.add('Kabe_RitualWon');}
-  ST.scene=d.sc||'prologue';ST.objective=d.o||ST.objective;ST.objLog=d.ol||[];ST.visited=new Set(d.v||[]);ST.ascii=d.as!==false}catch(e){}}
-function resetGame(){
-  const diceOverlay=$('#diceOverlay');
-  if(diceOverlay){
-    diceOverlay.style.display='none';
-  }
-  const dieOne=$('#d1');
-  if(dieOne){
-    dieOne.classList.remove('anim');
-    dieOne.textContent='•';
-  }
-  const dieTwo=$('#d2');
-  if(dieTwo){
-    dieTwo.classList.remove('anim');
-    dieTwo.textContent='•';
-  }
-  const stopBtn=$('#btnStopDice');
-  if(stopBtn){
-    stopBtn.disabled=false;
-  }
-  const resolveBtn=$('#btnResolveDice');
-  if(resolveBtn){
-    resolveBtn.style.display='none';
-  }
-  const diceInfo=$('#diceInfo');
-  if(diceInfo){
-    diceInfo.innerHTML='';
-  }
-  const testPanel=$('#testPanel');
-  if(testPanel){
-    testPanel.style.display='none';
-  }
-  const testHint=$('#testHint');
-  if(testHint){
-    testHint.textContent='';
-  }
-  const resultBox=$('#testResult');
-  if(resultBox){
-    resultBox.textContent='';
-    resultBox.classList.remove('show','success','fail');
-  }
-  pending=null;
-  roll=null;
-  pendingOutcome=null;
-  const kabeModal=document.getElementById('kabeGameModal');
-  if(kabeModal){
-    kabeModal.style.display='none';
-    kabeModal.setAttribute('aria-hidden','true');
-  }
-  kabeGameState=null;
-  renderKabeGame();
-  kabeGameReturnFocus=null;
-  archReturnFocus=null;
-  const introModal=document.getElementById('introModal');
-  const archModal=document.getElementById('archModal');
-  if(archModal){
-    archModal.style.display='none';
-  }
-  ST.arch=null;
-  ST.stats={NEU:2,VOL:2,SOM:2,CIN:2};
-  ST.skills={};
-  ST.stress=2;
-  ST.hp=5;
-  ST.flux=2;
-  ST.frag=2;
-  ST.inv=[];
-  ST.tags=new Set();
-  ST.scene='prologue';
-  ST.objective='Tracer une voie sûre vers T1.';
-  ST.objLog=[];
-  ST.visited=new Set();
-  ST.ascii=true;
-  localStorage.removeItem(SAVE);
-  const logBox=$('#log');
-  if(logBox){
-    logBox.innerHTML='';
-  }
-  renderStats();
-  renderInventory();
-  renderAscii();
+
+function addObj(text) {
+  ST.objLog.push({ t: Date.now(), text });
   renderTimeline();
-  bars();
+}
+
+function markItemUsed(name) {
+  if (name && !ST.usedItems.includes(name)) ST.usedItems.push(name);
+}
+
+function consequence(text) {
+  if (!text) return '';
+  return `<div class="choiceEffects">${text.split('|').map(part => `<span>${part.trim()}</span>`).join('')}</div>`;
+}
+
+function save() {
+  localStorage.setItem(SAVE, JSON.stringify({
+    a: ST.arch?.id,
+    s: ST.stats,
+    k: ST.skills,
+    st: ST.stress,
+    h: ST.hp,
+    f: ST.flux,
+    g: ST.frag,
+    p: ST.pressure,
+    r: ST.relations,
+    u: ST.usedItems,
+    i: ST.inv,
+    t: [...ST.tags],
+    sc: ST.scene,
+    o: ST.objective,
+    ol: ST.objLog,
+    v: [...ST.visited]
+  }));
+}
+
+function load() {
+  try {
+    const data = JSON.parse(localStorage.getItem(SAVE) || 'null');
+    if (!data) return;
+    ST.arch = ARCH.find(arch => arch.id === data.a) || null;
+    if (ST.arch) {
+      ST.stats = { ...ST.arch.stats };
+      ST.skills = { ...ST.arch.skills };
+    }
+    Object.assign(ST, {
+      stress: data.st ?? 2,
+      hp: data.h ?? 5,
+      flux: data.f ?? 2,
+      frag: data.g ?? 1,
+      pressure: data.p ?? 1,
+      relations: { ...ST.relations, ...(data.r || {}) },
+      usedItems: data.u || [],
+      inv: data.i || ST.inv,
+      scene: data.sc || 'retour_place',
+      objective: data.o || ST.objective,
+      objLog: data.ol || []
+    });
+    ST.tags = new Set(data.t || []);
+    ST.visited = new Set(data.v || []);
+  } catch {
+    localStorage.removeItem(SAVE);
+  }
+}
+
+function resetGame() {
+  pending = null;
+  pendingOutcome = null;
+  clearInterval(diceTimer);
+  localStorage.removeItem(SAVE);
+  Object.assign(ST, {
+    arch: null,
+    stats: { DOC: 2, SOC: 2, TEC: 2, RUE: 2 },
+    skills: {},
+    stress: 2,
+    hp: 5,
+    flux: 2,
+    frag: 1,
+    pressure: 1,
+    relations: { zaza: 0, mika: 0, yugs: 0, chacha: 0, anette: 0, laura: 0, anto: 0, kabe: 0, pauline: 0 },
+    usedItems: [],
+    inv: [],
+    tags: new Set(),
+    scene: 'retour_place',
+    objective: 'Retrouver Nora avant l evacuation de 6 h.',
+    objLog: [],
+    visited: new Set()
+  });
+  $('#log').innerHTML = '';
+  $('#testPanel').style.display = 'none';
+  $('#diceOverlay').style.display = 'none';
+  closeKabeNetwork(false);
   render();
-  if(introModal){
-    introModal.style.display='flex';
-    introModal.setAttribute('aria-hidden','false');
-  }
-  if(typeof openArch==='function'){
-    openArch();
-  }
-}
-/* exporter/importer */
-$('#btnExport').addEventListener('click',()=>{const blob=new Blob([localStorage.getItem(SAVE)||'{}'],{type:'application/json'});const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download='trame_douce_v6_4_sauvegarde.json';a.click();URL.revokeObjectURL(u)});
-$('#btnImport').addEventListener('click',()=>{const i=document.createElement('input');i.type='file';i.accept='application/json';i.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{localStorage.setItem(SAVE,r.result);load();render()};r.readAsText(f)};i.click()});
-$('#btnReset').addEventListener('click', resetGame);
-
-let kabeGameState=null;
-
-function openKabeGame(){
-  kabeGameReturnFocus=document.activeElement instanceof HTMLElement ? document.activeElement : null;
-  startKabeRitual();
-  const modal=document.getElementById('kabeGameModal');
-  if(modal){
-    modal.style.display='flex';
-    modal.setAttribute('aria-hidden','false');
-    focusFirstFocusable(modal.querySelector('.modalBox'));
-  }
+  openIntro();
 }
 
-function closeKabeGame(){
-  const modal=document.getElementById('kabeGameModal');
-  const wasOpen=modal && modal.style.display!=='none';
-  if(modal){
-    modal.style.display='none';
-    modal.setAttribute('aria-hidden','true');
-  }
-  kabeGameState=null;
-  renderKabeGame();
-  if(wasOpen){
-    render();
-    restoreFocus(kabeGameReturnFocus);
-  }
-  kabeGameReturnFocus=null;
+function setView(view) {
+  document.body.setAttribute('data-view', view);
+  document.querySelectorAll('[data-viewto]').forEach(button => {
+    button.setAttribute('aria-pressed', button.getAttribute('data-viewto') === view ? 'true' : 'false');
+  });
+  const badge = $('#viewIndicator');
+  if (badge) badge.textContent = 'Vue : ' + (VIEW_LABELS[view] || 'Tous');
 }
 
-function startKabeRitual(){
-  const ritual=KABE_RITUALS[Math.floor(Math.random()*KABE_RITUALS.length)];
-  kabeGameState={ritual,selected:[],locked:false,feedback:null,firstWin:false};
-  renderKabeGame();
+function setupNav() {
+  document.querySelectorAll('[data-viewto]').forEach(button => {
+    button.addEventListener('click', () => setView(button.getAttribute('data-viewto')));
+  });
+  $('#audioToggle')?.addEventListener('click', toggleAudio);
+  const navWrap = $('#navWrap');
+  const navToggle = $('#navToggle');
+  const navMenu = $('#navMenu');
+  navToggle?.addEventListener('click', event => {
+    event.stopPropagation();
+    const open = navWrap.classList.toggle('open');
+    navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    navMenu.setAttribute('aria-hidden', open ? 'false' : 'true');
+  });
+  document.addEventListener('click', event => {
+    if (!navWrap?.contains(event.target)) {
+      navWrap?.classList.remove('open');
+      navToggle?.setAttribute('aria-expanded', 'false');
+      navMenu?.setAttribute('aria-hidden', 'true');
+    }
+  });
 }
 
-function handleKabeGesture(id){
-  if(!kabeGameState||kabeGameState.locked) return;
-  if(!KABE_GESTURES[id]) return;
-  if(kabeGameState.selected.includes(id)) return;
-  const len=kabeGameState.ritual.sequence.length;
-  if(kabeGameState.selected.length>=len) return;
-  kabeGameState.selected.push(id);
-  kabeGameState.feedback=null;
-  renderKabeGame();
+function bars() {
+  $('#stressVal').textContent = ST.stress;
+  $('#hpVal').textContent = ST.hp;
+  $('#levierVal').textContent = ST.flux;
+  $('#preuveVal').textContent = ST.frag;
+  $('#deckLevierVal').textContent = ST.flux;
+  $('#deckPreuveVal').textContent = ST.frag;
+  $('#stressFill').style.width = `${ST.stress / 5 * 100}%`;
+  $('#hpFill').style.width = `${ST.hp / 5 * 100}%`;
 }
 
-function undoKabeGesture(){
-  if(!kabeGameState||kabeGameState.locked) return;
-  if(kabeGameState.selected.length===0) return;
-  kabeGameState.selected.pop();
-  kabeGameState.feedback=null;
-  renderKabeGame();
+function renderStats() {
+  const row = $('#statsRow');
+  row.innerHTML = '';
+  Object.entries(ST.stats).forEach(([key, value]) => {
+    row.insertAdjacentHTML('beforeend', `<div class="stat ${key.toLowerCase()}"><div class="dot"></div><div class="name">${STAT_LABELS[key] || key}</div><div class="val">${value}</div></div>`);
+  });
 }
 
-function resetKabeGesture(){
-  if(!kabeGameState||kabeGameState.locked) return;
-  kabeGameState.selected=[];
-  kabeGameState.feedback=null;
-  renderKabeGame();
-}
-
-function serveKabeRitual(){
-  if(!kabeGameState||kabeGameState.locked) return;
-  const {ritual,selected}=kabeGameState;
-  const needed=ritual.sequence.length;
-  if(selected.length<needed){
-    kabeGameState.feedback='incomplete';
-    renderKabeGame();
+function renderInventoryCards() {
+  const list = $('#inventoryGrid');
+  list.innerHTML = '';
+  if (!ST.inv.length) {
+    list.insertAdjacentHTML('beforeend', '<div class="inventoryEmpty">Aucun objet classe pour l instant.</div>');
     return;
   }
-  const success=ritual.sequence.every((step,idx)=>selected[idx]===step);
-  if(success){
-    const firstWin=!ST.tags.has('Kabe_RitualWon');
-    kabeGameState.locked=true;
-    kabeGameState.feedback='success';
-    kabeGameState.firstWin=firstWin;
-    if(firstWin){
-      if(ST.stress>0){
-        ST.stress=Math.max(0,ST.stress-1);
-      }
-      ST.tags.add('Kabe_RitualWon');
-      addObj('Rituel de Kabé maîtrisé : stress allégé.');
-      log('Kabé approuve le rituel parfait. Stress -1.');
-    }else{
-      log('Kabé sourit : la séquence est impeccable.');
-    }
-    bars();
-    renderAscii();
+  ST.inv.forEach((item, idx) => {
+    const meta = ITEM_META[item] || { type: 'Indice', use: 'A utiliser quand une scene le reclame.', effect: '+Option', icon: slotLabel(idx) };
+    const used = ST.usedItems.includes(item);
+    list.insertAdjacentHTML('beforeend', `
+      <article class="inventoryCard ${used ? 'used' : ''}">
+        <div class="inventoryTop">
+          <span class="inventoryStamp">${meta.icon || slotLabel(idx)}</span>
+          <span class="inventoryType">${meta.type}</span>
+        </div>
+        <strong>${item}</strong>
+        <p>${meta.use}</p>
+        <div class="inventoryEffect">${used ? 'Utilise' : meta.effect}</div>
+      </article>`);
+  });
+}
+
+function renderPressureClock() {
+  const pct = Math.min(100, (ST.pressure / 6) * 100);
+  const minutes = Math.min(223, Math.round(ST.pressure * 37));
+  const hour = String(2 + Math.floor((17 + minutes) / 60)).padStart(2, '0');
+  const minute = String((17 + minutes) % 60).padStart(2, '0');
+  const label = ST.pressure >= 5 ? 'Aube imminente' : ST.pressure >= 3 ? 'Quartier sous tension' : 'Nuit encore ouverte';
+  $('#pressureClock').innerHTML = `
+    <div class="clockFace">
+      <div class="clockNeedle" style="--pressure:${pct}"></div>
+      <div class="clockTime">${hour}:${minute}</div>
+      <div class="clockLimit">06:00</div>
+    </div>
+    <div class="pressureMeta">
+      <strong>${label}</strong>
+      <span>${ST.pressure}/6 Pression</span>
+      <div class="pressureBar"><i style="width:${pct}%"></i></div>
+    </div>`;
+}
+
+function renderCaseMap() {
+  $('#caseMap').innerHTML = `
+    <div class="mapBoard">
+      <svg class="mapLines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M18 34 L45 22 L62 55 L78 36 L84 72 L30 64 L18 34" />
+      </svg>
+      ${MAP_NODES.map(node => {
+        const active = ST.scene.includes(node.key) || (node.key === 'place' && ST.scene === 'retour_place');
+        const visited = ST.visited.has(node.key);
+        return `<button class="mapPin ${visited ? 'visited' : ''} ${active ? 'active' : ''}" style="left:${node.x}%;top:${node.y}%" type="button" title="${node.role}" aria-label="${node.label}: ${node.role}">
+          <span></span><b>${node.label}</b><small>${node.role}</small>
+        </button>`;
+      }).join('')}
+    </div>`;
+}
+
+function renderTimeline() {
+  const timeline = $('#timeline');
+  timeline.innerHTML = '';
+  ST.objLog.slice().reverse().forEach(item => {
+    timeline.insertAdjacentHTML('beforeend', `<div class="item"><div>${item.text}</div><div class="when">${new Date(item.t).toLocaleTimeString()}</div></div>`);
+  });
+}
+
+function renderCasePanel() {
+  const tags = [...ST.tags].filter(tag => tag.startsWith('Preuve_') || tag.startsWith('Acces_') || tag.includes('Allie')).slice(-6);
+  $('#casePanel').innerHTML = `
+    <div class="caseSummary">
+      <div><span>Profil</span><strong>${ST.arch ? ST.arch.name : 'Non choisi'}</strong></div>
+      <div><span>Preuves</span><strong>${ST.frag}</strong></div>
+      <div><span>Levier</span><strong>${ST.flux}</strong></div>
+    </div>
+    <div class="contactGrid">
+      ${CONTACTS.map(contact => `<div class="contactCard contact-${contact.key} ${ST.relations[contact.key] > 0 ? 'warm' : ''}">
+        <strong>${contact.name}</strong>
+        <span>${contact.role}</span>
+        <i>${ST.relations[contact.key] || 0}</i>
+      </div>`).join('')}
+    </div>
+    <div class="evidenceStrip">
+      ${tags.length ? tags.map(tag => `<span>${tag.replaceAll('_', ' ')}</span>`).join('') : '<span>Aucune preuve classee visible.</span>'}
+    </div>`;
+}
+
+function openIntro() {
+  const intro = $('#introModal');
+  intro.style.display = 'flex';
+  intro.setAttribute('aria-hidden', 'false');
+  focusFirst(intro.querySelector('.modalBox'));
+}
+
+function closeIntro() {
+  const intro = $('#introModal');
+  intro.style.display = 'none';
+  intro.setAttribute('aria-hidden', 'true');
+}
+
+function openArch() {
+  archReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  const list = $('#archList');
+  list.innerHTML = '';
+  selectedArch = ST.arch || null;
+  $('#btnConfirm').disabled = !selectedArch;
+  ARCH.forEach(arch => {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'arch';
+    card.setAttribute('aria-selected', selectedArch?.id === arch.id ? 'true' : 'false');
+    card.innerHTML = `<img src="${arch.img}" alt=""><div class="pad"><h3>${arch.name}</h3><p>${arch.back}</p><div class="statrow">${Object.entries(arch.stats).map(([k, v]) => `<span class="b">${k} ${v}</span>`).join('')}</div></div>`;
+    card.addEventListener('click', () => selectArch(arch, card));
+    list.appendChild(card);
+  });
+  const modal = $('#archModal');
+  modal.style.display = 'flex';
+  modal.setAttribute('aria-hidden', 'false');
+  focusFirst(modal.querySelector('.modalBox'));
+}
+
+function selectArch(arch, card) {
+  selectedArch = arch;
+  document.querySelectorAll('.arch').forEach(el => el.setAttribute('aria-selected', 'false'));
+  if (card) card.setAttribute('aria-selected', 'true');
+  $('#btnConfirm').disabled = false;
+}
+
+function confirmArch() {
+  if (!selectedArch) return;
+  ST.arch = selectedArch;
+  ST.stats = { ...selectedArch.stats };
+  ST.skills = { ...selectedArch.skills };
+  ST.inv = [...selectedArch.start];
+  addObj('Profil choisi: ' + selectedArch.name);
+  $('#archModal').style.display = 'none';
+  $('#archModal').setAttribute('aria-hidden', 'true');
+  closeIntro();
+  save();
+  render();
+  restoreFocus(archReturnFocus);
+}
+
+function openKabeNetwork() {
+  kabeReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  const modal = $('#kabeGameModal');
+  modal.style.display = 'flex';
+  modal.setAttribute('aria-hidden', 'false');
+  renderKabeNetwork();
+  focusFirst(modal.querySelector('.modalBox'));
+}
+
+function closeKabeNetwork(shouldRender = true) {
+  const modal = $('#kabeGameModal');
+  if (!modal) return;
+  modal.style.display = 'none';
+  modal.setAttribute('aria-hidden', 'true');
+  if (shouldRender) {
     save();
-  }else{
-    kabeGameState.feedback='fail';
+    render();
+    restoreFocus(kabeReturnFocus);
   }
-  renderKabeGame();
 }
 
-function renderKabeGame(){
-  const palette=document.getElementById('kabeGamePalette');
-  const prompt=document.getElementById('kabeGamePrompt');
-  const sequenceBox=document.getElementById('kabeGameSequence');
-  const message=document.getElementById('kabeGameMessage');
-  if(!palette||!prompt||!sequenceBox||!message){
-    return;
-  }
-  if(!kabeGameState){
-    palette.innerHTML='';
-    prompt.textContent='';
-    sequenceBox.innerHTML='';
-    message.textContent='';
-    const undo=document.getElementById('kabeGameUndo');
-    const reset=document.getElementById('kabeGameReset');
-    const serve=document.getElementById('kabeGameServe');
-    if(undo) undo.disabled=true;
-    if(reset) reset.disabled=true;
-    if(serve) serve.disabled=true;
-    return;
-  }
-  const {ritual,selected,locked,feedback}=kabeGameState;
-  prompt.innerHTML=`<strong>${ritual.name}</strong> — ${ritual.clue}`;
-  palette.innerHTML='';
-  const badgeFor=info=>{
-    if(!info) return '';
-    const icon=info.icon||info.name?.charAt(0)||'•';
-    const tone=info.tone?` style="--kabe-tone:${info.tone}"`:'';
-    return `<span class="kabeGestureBadge"${tone} aria-hidden="true">${icon}</span>`;
-  };
-  ritual.palette.forEach(id=>{
-    const info=KABE_GESTURES[id];
-    if(!info) return;
-    const btn=document.createElement('button');
-    btn.type='button';
-    btn.className='btn';
-    if(locked) btn.classList.add('locked');
-    if(selected.includes(id)) btn.classList.add('selected');
-    btn.disabled=locked||selected.includes(id);
-    const gestureLabel=`<span class="kabeGestureLabel">${badgeFor(info)}<span class="kabeGestureName">${info.name}</span></span>`;
-    btn.innerHTML=`${gestureLabel}<small>${info.notes}</small>`;
-    btn.addEventListener('click',()=>handleKabeGesture(id));
-    palette.appendChild(btn);
+function renderKabeNetwork() {
+  const palette = $('#kabeGamePalette');
+  const prompt = $('#kabeGamePrompt');
+  const sequence = $('#kabeGameSequence');
+  const message = $('#kabeGameMessage');
+  prompt.innerHTML = '<strong>Reseau de Kabe</strong> - Chacha trie les rumeurs, Anto garde le seuil, les noms ont un prix.';
+  sequence.innerHTML = `<div class="kabeLedger"><span>Levier: <b>${ST.flux}</b></span><span>Preuves: <b>${ST.frag}</b></span><span>Pression: <b>${ST.pressure}/6</b></span></div>`;
+  palette.innerHTML = '';
+  KABE_ACTIONS.forEach(action => {
+    const available = !action.when || action.when(ST);
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'btn kabeAction';
+    button.disabled = !available;
+    button.innerHTML = `<span class="kabeGestureLabel"><span class="kabeGestureBadge" aria-hidden="true">${available ? '!' : '-'}</span><span class="kabeGestureName">${action.name}</span></span><small>${action.cost} - ${action.notes}</small>`;
+    button.addEventListener('click', () => {
+      playSfx('kabe');
+      action.apply({ state: ST, addObj, gainItem, hasItem, log, addPressure, setRelation });
+      save();
+      renderKabeNetwork();
+    });
+    palette.appendChild(button);
   });
-
-  const seqLen=ritual.sequence.length;
-  const steps=document.createElement('div');
-  steps.className='steps';
-  for(let i=0;i<seqLen;i++){
-    const wrap=document.createElement('div');
-    wrap.className='step';
-    const chosen=selected[i];
-    if(!chosen){
-      wrap.classList.add('pending');
-      wrap.innerHTML=`<div class="kabeStepHeading"><strong>${i+1}.</strong><span class="kabeStepGesture">En attente</span></div>`;
-    }else{
-      const info=KABE_GESTURES[chosen];
-      const label=info
-        ? `${badgeFor(info)}<span class="kabeGestureName">${info.name}</span>`
-        : `<span class="kabeGestureName">${chosen}</span>`;
-      wrap.innerHTML=`<div class="kabeStepHeading"><strong>${i+1}.</strong><span class="kabeStepGesture">${label}</span></div>`;
-      if((locked||feedback==='fail') && ritual.sequence[i]===chosen){
-        wrap.classList.add('success');
-      }else if((locked||feedback==='fail') && ritual.sequence[i]!==chosen){
-        wrap.classList.add('fail');
-      }
-    }
-    steps.appendChild(wrap);
-  }
-  sequenceBox.innerHTML='';
-  sequenceBox.appendChild(steps);
-
-  let msg='';
-  if(locked && feedback==='success'){
-    msg=kabeGameState.firstWin
-      ? 'Kabé approuve : le rituel parfait calme la salle. Stress -1.'
-      : 'Kabé acquiesce. Tu maîtrises encore la séquence.';
-  }else if(feedback==='fail'){
-    const missIndex=ritual.sequence.findIndex((step,idx)=>selected[idx]!==step);
-    if(missIndex>=0){
-      const expected=KABE_GESTURES[ritual.sequence[missIndex]];
-      const expName=expected?expected.name:'un autre geste';
-      msg=`La coupe manque d’équilibre. Kabé attendait ${expName} en ${missIndex+1}ᵉ geste.`;
-    }else{
-      msg='La coupe manque d’équilibre. Annule un geste ou recommence la séquence.';
-    }
-  }else if(feedback==='incomplete'){
-    msg='La coupe n’est pas prête : complète la séquence avant de servir.';
-  }else if(selected.length===0){
-    msg=`Choisis ${seqLen} gestes dans l’ordre. Kabé observe chaque mouvement.`;
-  }else if(selected.length<seqLen){
-    msg=`Geste ${selected.length+1} sur ${seqLen} : écoute la salle avant de poursuivre.`;
-  }else{
-    msg='Quand tu es prêt·e, sers la coupe pour que Kabé juge la ronde.';
-  }
-  message.textContent=msg;
-
-  const undo=document.getElementById('kabeGameUndo');
-  const reset=document.getElementById('kabeGameReset');
-  const serve=document.getElementById('kabeGameServe');
-  if(undo) undo.disabled=locked||selected.length===0;
-  if(reset) reset.disabled=locked||selected.length===0;
-  if(serve) serve.disabled=locked||selected.length<seqLen;
+  message.textContent = 'Une action peut ouvrir une porte, creer une dette ou faire monter la pression.';
 }
 
-const kabeRetry=document.getElementById('kabeGameRetry');
-if(kabeRetry){
-  kabeRetry.addEventListener('click',()=>{
-    startKabeRitual();
-  });
-}
-const kabeClose=document.getElementById('kabeGameClose');
-if(kabeClose){
-  kabeClose.addEventListener('click',()=>{
-    closeKabeGame();
-  });
-}
-const kabeUndo=document.getElementById('kabeGameUndo');
-if(kabeUndo){
-  kabeUndo.addEventListener('click',()=>{
-    undoKabeGesture();
-  });
-}
-const kabeReset=document.getElementById('kabeGameReset');
-if(kabeReset){
-  kabeReset.addEventListener('click',()=>{
-    resetKabeGesture();
-  });
-}
-const kabeServe=document.getElementById('kabeGameServe');
-if(kabeServe){
-  kabeServe.addEventListener('click',()=>{
-    serveKabeRitual();
-  });
-}
+const SC = createScenes({ addObj, gainItem, hasItem, log, openKabeNetwork, addPressure, setRelation, markItemUsed });
 
-/* ======= SCENES ======= */
-const SC = createScenes({ addObj, gainItem, hasItem, log, openKabeGame });
-
-/* ======= RENDER ENGINE ======= */
-function render(){
+function render() {
   markVisited(ST.scene);
-  const sc=SC[ST.scene]; if(!sc) return;
-  if(ST.scene==='prologue'){ST.objective='Tracer une voie sûre vers T1.';}
-  $('#storyTitle').textContent=sc.title;
-  $('#storyText').innerHTML=sc.text?sc.text():'';
-  const i=sc.img||IMG.place; $('#storyImg').src=i.src; $('#imgLegend').textContent=i.lg||'';
-  const box=$('#choices'); box.innerHTML='';
-  const arr=typeof sc.choices==='function'?sc.choices():sc.choices;
-  (arr||[]).forEach((c,idx)=>{
-    if(c.when && !c.when()) return;
-    const div=document.createElement('div'); div.className='choice';
-    if(c.test && c.test.stat) div.classList.add('attr-'+c.test.stat);
-    const testTags=c.test?`<span class="tag">${c.test.stat}</span><span class="tag">${c.test.skill||''}</span><span class="tag">DD ${c.test.dd}</span>`:'';
-    div.innerHTML=`<strong>${idx+1}. ${c.label}</strong><small>${c.hint||''}</small><div class="tags">${testTags}</div>`;
-    div.addEventListener('click',()=>handleChoice(c));
-    box.appendChild(div);
+  const scene = SC[ST.scene];
+  if (!scene) return;
+  document.body.classList.toggle('kabeMode', ST.scene.includes('kabe'));
+  $('#storyTitle').textContent = scene.title;
+  $('#sceneVal').textContent = scene.title;
+  $('#storyText').innerHTML = scene.text ? scene.text() : '';
+  const image = scene.img || IMG.place;
+  $('#storyImg').src = image.src;
+  $('#imgLegend').textContent = image.lg || '';
+  const choices = typeof scene.choices === 'function' ? scene.choices() : scene.choices;
+  const box = $('#choices');
+  box.innerHTML = '';
+  (choices || []).forEach((choice, idx) => {
+    if (choice.when && !choice.when()) return;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'choice';
+    if (choice.test?.stat) button.classList.add('attr-' + choice.test.stat);
+    const tags = choice.test ? `<span class="tag">${choice.test.stat}</span><span class="tag">${choice.test.skill || ''}</span><span class="tag">DD ${choice.test.dd}</span>` : '';
+    button.innerHTML = `<strong>${idx + 1}. ${choice.label}</strong><small>${choice.hint || ''}</small><div class="tags">${tags}</div>${consequence(choice.effect)}`;
+    button.addEventListener('click', () => handleChoice(choice));
+    box.appendChild(button);
   });
-  bars(); renderStats(); renderInventory(); renderAscii(); $('#objectiveText').textContent=ST.objective;
+  bars();
+  renderStats();
+  renderInventoryCards();
+  renderPressureClock();
+  renderCaseMap();
+  renderTimeline();
+  renderCasePanel();
+  $('#objectiveText').textContent = ST.objective;
 }
-let pending=null, roll=null, pendingOutcome=null;
-function resolveSceneTarget(target,outcome){
-  if(typeof target==='function'){
-    return target(ST,outcome)||null;
+
+function handleChoice(choice) {
+  playSfx('click');
+  if (choice.immediate) choice.immediate(ST);
+  if (choice.test) {
+    pending = choice;
+    showTest(choice);
+    return;
   }
-  return target||null;
+  const target = resolveTarget(choice.go);
+  if (target) moveTo(target);
+  else {
+    save();
+    render();
+  }
 }
-function handleChoice(c){
-  const immediateOnly = !!c.immediate && !c.go && !c.test;
-  if(c.immediate) c.immediate(ST);
-  if(c.go && !c.test){
-    const target=resolveSceneTarget(c.go);
-    if(target){
-      ST.scene=target;
-      const nextSc=SC[ST.scene];
-      addObj('Déplacement: '+(nextSc?nextSc.title:ST.scene));
-      save(); render();
-      return;
-    }
-  }
-  if(c.test){ pending=c; showTest(c); return; }
-  if(immediateOnly){ save(); render(); return; }
-  if(c.immediate){ save(); render(); }
+
+function resolveTarget(target) {
+  if (typeof target === 'function') return target(ST);
+  return target || null;
 }
-function showTest(c){
-  $('#testPanel').style.display='block';
-  $('#testName').textContent=`${c.test.stat}/${c.test.skill||'-'}`;
-  $('#testDD').textContent=c.test.dd;
-  const fluxBox=$('#useFlux');
-  const pushBox=$('#usePush');
-  const fragBox=$('#useFrag');
-  if(fluxBox){fluxBox.checked=false; fluxBox.disabled=ST.flux<=0;}
-  if(pushBox){
-    pushBox.checked=false;
-    pushBox.disabled=ST.stress>=5;
-  }
-  if(fragBox){
-    const needsFrag=!!c.test.needsFrag;
-    fragBox.checked=needsFrag && ST.frag>0;
-    fragBox.disabled=ST.frag<=0;
-  }
-  const rollBtn=$('#rollBtn');
-  if(rollBtn){rollBtn.disabled=false; rollBtn.onclick=()=>startDice();}
-  const resultBox=$('#testResult');
-  if(resultBox){resultBox.textContent='';resultBox.classList.remove('show','success','fail');}
+
+function moveTo(sceneId) {
+  ST.scene = sceneId;
+  const scene = SC[sceneId];
+  addObj('Deplacement: ' + (scene ? scene.title : sceneId));
+  $('#testPanel').style.display = 'none';
+  save();
+  render();
+}
+
+function showTest(choice) {
+  $('#testPanel').style.display = 'block';
+  $('#testName').textContent = `${choice.test.stat}/${choice.test.skill || '-'}`;
+  $('#testDD').textContent = choice.test.dd;
+  ['#useLevier', '#usePush', '#useFrag'].forEach(sel => {
+    const el = $(sel);
+    if (el) el.checked = false;
+  });
+  $('#useLevier').disabled = ST.flux <= 0;
+  $('#useFrag').disabled = ST.frag <= 0;
+  $('#usePush').disabled = ST.stress >= 5;
+  $('#testResult').textContent = '';
+  $('#testResult').className = 'testResult';
   updateTestHint();
 }
 
-function gatherModifiers(test){
-  const result={mod:0,breakdown:[],previewParts:[],spendFlux:false,spendPush:false,spendFrag:false};
-  if(!test) return result;
-  if(test.stat){
-    const base=ST.stats[test.stat]||0;
-    result.mod+=base;
-    result.breakdown.push(`Attribut ${test.stat} +${base}`);
-    result.previewParts.push(`Base ${test.stat} ${base}`);
+function gatherModifiers(test) {
+  const result = { mod: ST.stats[test.stat] || 0, spendLevier: false, spendFrag: false, spendPush: false, parts: [`${test.stat} +${ST.stats[test.stat] || 0}`] };
+  if (test.skill && ST.skills[test.skill]) {
+    result.mod += 1;
+    result.parts.push(`${test.skill} +1`);
   }
-  const skillName=test.skill||null;
-  if(skillName){
-    if(ST.skills[skillName]>0){
-      result.mod+=1;
-      result.breakdown.push(`Compétence ${skillName} +1`);
-      result.previewParts.push(`Compétence ${skillName} +1`);
-    }
-    if(skillName==='Furtivité'&&ST.arch?.id==='noor'){
-      result.mod+=1;
-      result.breakdown.push('Noor +1 Furtivité');
-      result.previewParts.push('Noor +1 Furtivité');
-    }
-    if(skillName==='Intimidation'&&ST.arch?.id==='milo'){
-      result.mod+=1;
-      result.breakdown.push('Milo +1 Intimidation');
-      result.previewParts.push('Milo +1 Intimidation');
-    }
-    if(skillName==='Mécanique'&&ST.arch?.id==='rayan'){
-      result.mod+=1;
-      result.breakdown.push('Rayan +1 Mécanique');
-      result.previewParts.push('Rayan +1 Mécanique');
-    }
+  if ($('#useLevier').checked && ST.flux > 0) {
+    result.mod += 2;
+    result.spendLevier = true;
+    result.parts.push('Levier +2');
   }
-  const fluxEl=$('#useFlux');
-  if(fluxEl && fluxEl.checked && ST.flux>0){
-    result.mod+=2;
-    result.breakdown.push('Flux +2');
-    result.previewParts.push('Flux +2');
-    result.spendFlux=true;
+  if ($('#usePush').checked && ST.stress < 5) {
+    result.mod += 2;
+    result.spendPush = true;
+    result.parts.push('Forcer +2');
   }
-  const pushEl=$('#usePush');
-  if(pushEl && pushEl.checked){
-    if(ST.stress<5){
-      result.mod+=2;
-      result.breakdown.push('Chance +2 (+1 Stress)');
-      result.previewParts.push('Chance +2 (+1 Stress)');
-      result.spendPush=true;
-    }else{
-      pushEl.checked=false;
-    }
-  }
-  const fragEl=$('#useFrag');
-  if(fragEl && fragEl.checked && ST.frag>0){
-    result.mod+=2;
-    result.breakdown.push('Fragment +2 (stress +1)');
-    result.previewParts.push('Fragment +2 (+1 Stress)');
-    result.spendFrag=true;
+  if ($('#useFrag').checked && ST.frag > 0) {
+    result.mod += 2;
+    result.spendFrag = true;
+    result.parts.push('Preuve +2');
   }
   return result;
 }
 
-function previewOutcome(test=pending?.test){
-  if(!test) return null;
-  const mods=gatherModifiers(test);
-  return {
-    mod:mods.mod,
-    dd:test.dd||0,
-    parts:mods.previewParts,
-    spendFlux:mods.spendFlux,
-    spendPush:mods.spendPush,
-    spendFrag:mods.spendFrag
-  };
+function updateTestHint() {
+  if (!pending) {
+    $('#testHint').textContent = '';
+    return;
+  }
+  const mods = gatherModifiers(pending.test);
+  $('#testHint').textContent = `${mods.parts.join(' + ')} = +${mods.mod} (DD ${pending.test.dd})`;
 }
 
-function updateTestHint(){
-  const hint=$('#testHint');
-  if(!hint) return;
-  const test=pending?.test;
-  const rollBtn=$('#rollBtn');
-  const pushEl=$('#usePush');
-  const fragEl=$('#useFrag');
-  let pushWarning='';
-  if(pushEl){
-    if(ST.stress<5){
-      pushEl.disabled=false;
-    }else{
-      if(pushEl.checked){ pushEl.checked=false; }
-      pushEl.disabled=true;
-      pushWarning='Stress max atteint : impossible de pousser sa chance (+1 Stress).';
-    }
-  }
-  if(!test){
-    hint.textContent='';
-    if(rollBtn) rollBtn.disabled=false;
-    return;
-  }
-  const needsFrag=!!test.needsFrag;
-  const fragAvailable=ST.frag>0;
-  if(fragEl){
-    if(needsFrag){
-      if(fragAvailable && !fragEl.checked){ fragEl.checked=true; }
-      if(!fragAvailable){ fragEl.checked=false; }
-      fragEl.disabled=!fragAvailable;
-    }else{
-      fragEl.disabled=ST.frag<=0;
-    }
-  }
-  if(needsFrag && !fragAvailable){
-    if(rollBtn) rollBtn.disabled=true;
-    const messages=[];
-    if(pushWarning) messages.push(pushWarning);
-    messages.push('Fragment requis (+1 Stress) indisponible.');
-    hint.textContent=messages.join(' ');
-    return;
-  }
-  if(rollBtn) rollBtn.disabled=false;
-  const preview=previewOutcome(test);
-  if(!preview){
-    hint.textContent='';
-    return;
-  }
-  const parts=preview.parts.length?preview.parts:['Aucun modificateur'];
-  const modSign=preview.mod>=0?`+${preview.mod}`:`${preview.mod}`;
-  const baseText=`${parts.join(' + ')} = ${modSign} (Total cible ${preview.dd})`;
-  hint.textContent=pushWarning?`${pushWarning} ${baseText}`:baseText;
+function setDieFace(el, value) {
+  el.dataset.face = value;
+  el.setAttribute('aria-label', `De ${value}`);
 }
-function startDice(){
-  if(!pending) return;
-  roll=null; pendingOutcome=null;
-  $('#diceOverlay').style.display='flex';
-  $('#d1').classList.add('anim'); $('#d2').classList.add('anim');
-  $('#d1').textContent='•'; $('#d2').textContent='•';
-  $('#diceInfo').innerHTML='<div class="diceSummary">Les dés roulent…</div><div class="diceBreakdown">Appuie sur « Figer le résultat » quand tu es prêt·e.</div>';
-  const stop=$('#btnStopDice'), cont=$('#btnResolveDice');
-  if(stop){stop.disabled=false;}
-  if(cont){cont.style.display='none';}
+
+function startDice() {
+  if (!pending) return;
+  playSfx('dice');
+  pendingOutcome = null;
+  $('#diceOverlay').style.display = 'flex';
+  $('#btnStopDice').disabled = false;
+  $('#btnResolveDice').style.display = 'none';
+  $('#diceTitle').textContent = `${pending.test.stat}/${pending.test.skill || '-'} - DD ${pending.test.dd}`;
+  $('#d1').classList.add('rolling');
+  $('#d2').classList.add('rolling');
+  clearInterval(diceTimer);
+  diceTimer = setInterval(() => {
+    setDieFace($('#d1'), 1 + Math.floor(Math.random() * 6));
+    setDieFace($('#d2'), 1 + Math.floor(Math.random() * 6));
+  }, 70);
+  $('#diceInfo').innerHTML = '<div class="diceSummary">Le dossier tourne. Fige le resultat quand tu prends le risque.</div>';
 }
-function computeOutcome(){
-  if(!pending||!roll) return null;
-  const mods=gatherModifiers(pending.test);
-  const total=roll.sum+mods.mod;
-  const dd=pending.test.dd;
-  const ok=total>=dd;
-  return {
-    mod:mods.mod,
-    total,
-    dd,
-    ok,
-    spendFlux:mods.spendFlux,
-    spendFrag:mods.spendFrag,
-    spendPush:mods.spendPush,
-    breakdown:mods.breakdown
+
+function stopDice() {
+  if (!pending || pendingOutcome) return;
+  clearInterval(diceTimer);
+  const a = 1 + Math.floor(Math.random() * 6);
+  const b = 1 + Math.floor(Math.random() * 6);
+  setDieFace($('#d1'), a);
+  setDieFace($('#d2'), b);
+  $('#d1').classList.remove('rolling');
+  $('#d2').classList.remove('rolling');
+  $('#d1').classList.add('settle');
+  $('#d2').classList.add('settle');
+  setTimeout(() => {
+    $('#d1').classList.remove('settle');
+    $('#d2').classList.remove('settle');
+  }, 520);
+  const mods = gatherModifiers(pending.test);
+  const total = a + b + mods.mod;
+  pendingOutcome = { ...mods, a, b, sum: a + b, total, ok: total >= pending.test.dd };
+  $('#diceInfo').innerHTML = `
+    <div class="diceSummary">${a} + ${b} = ${a + b}</div>
+    <div class="diceBreakdown">${mods.parts.join(' / ')}</div>
+    <div class="diceStatus ${pendingOutcome.ok ? 'success' : 'fail'}">${pendingOutcome.ok ? 'Reussite' : 'Echec'} - ${total} contre DD ${pending.test.dd}</div>`;
+  $('#btnStopDice').disabled = true;
+  $('#btnResolveDice').style.display = 'inline-flex';
+  $('#btnResolveDice').focus();
+}
+
+function resolveRoll() {
+  if (!pending || !pendingOutcome) return;
+  const choice = pending;
+  const outcome = pendingOutcome;
+  if (outcome.spendLevier) ST.flux -= 1;
+  if (outcome.spendFrag) ST.frag -= 1;
+  if (outcome.spendPush) {
+    ST.stress = Math.min(5, ST.stress + 1);
+    addPressure(1);
+  }
+  log(`${choice.test.stat}/${choice.test.skill || '-'} - ${outcome.ok ? 'Reussite' : 'Echec'} (${outcome.total})`);
+  playSfx(outcome.ok ? 'success' : 'failure');
+  if (outcome.ok && choice.test.ok) choice.test.ok(ST);
+  if (!outcome.ok && choice.test.ko) choice.test.ko(ST);
+  const target = resolveTarget(outcome.ok ? (choice.goOK || choice.go) : (choice.goKO || choice.go));
+  $('#diceOverlay').style.display = 'none';
+  $('#testResult').textContent = `${outcome.ok ? 'Reussite' : 'Echec'} - ${outcome.total} (DD ${choice.test.dd})`;
+  $('#testResult').className = `testResult show ${outcome.ok ? 'success' : 'fail'}`;
+  pending = null;
+  pendingOutcome = null;
+  if (target) moveTo(target);
+  else {
+    save();
+    render();
+  }
+}
+
+$('#btnExport').addEventListener('click', () => {
+  playSfx('click');
+  const blob = new Blob([localStorage.getItem(SAVE) || '{}'], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'bail_noir_v2_sauvegarde.json';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+$('#btnImport').addEventListener('click', () => {
+  playSfx('click');
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'application/json';
+  input.onchange = event => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      localStorage.setItem(SAVE, reader.result);
+      load();
+      render();
+    };
+    reader.readAsText(file);
   };
-}
-function stopDice(){
-  if(!pending||pendingOutcome) return;
-  $('#d1').classList.remove('anim'); $('#d2').classList.remove('anim');
-  const a=1+Math.floor(Math.random()*6), b=1+Math.floor(Math.random()*6);
-  $('#d1').textContent=a; $('#d2').textContent=b;
-  roll={a,b,sum:a+b};
-  pendingOutcome=computeOutcome();
-  let html=`<div class="diceSummary">Résultat : ${a} + ${b} = ${roll.sum}</div>`;
-  if(pendingOutcome){
-    const mods=pendingOutcome.breakdown.length?pendingOutcome.breakdown.join(' · '):'Aucun modificateur';
-    html+=`<div class="diceBreakdown">Modificateurs : ${mods}</div>`;
-    html+=`<div class="diceBreakdown">Total : ${roll.sum} + ${pendingOutcome.mod} = ${pendingOutcome.total}</div>`;
-    html+=`<div class="diceStatus ${pendingOutcome.ok?'success':'fail'}">${pendingOutcome.ok?'Réussite':'Échec'} — ${pendingOutcome.total} (DD ${pendingOutcome.dd})</div>`;
-    html+=`<div class="diceBreakdown">Clique sur « Continuer » pour résoudre ce lancer.</div>`;
-  }
-  $('#diceInfo').innerHTML=html;
-  const stop=$('#btnStopDice'), cont=$('#btnResolveDice');
-  if(stop){stop.disabled=true;}
-  if(cont){cont.style.display='inline-flex';cont.focus();}
-}
+  input.click();
+});
+$('#btnReset').addEventListener('click', () => {
+  playSfx('click');
+  resetGame();
+});
+$('#btnChooseArch').addEventListener('click', () => {
+  playSfx('click');
+  closeIntro();
+  openArch();
+});
+$('#btnRandom').addEventListener('click', () => {
+  playSfx('click');
+  const arch = ARCH[Math.floor(Math.random() * ARCH.length)];
+  const card = Array.from(document.querySelectorAll('.arch')).find(el => el.textContent.includes(arch.name));
+  selectArch(arch, card);
+});
+$('#btnConfirm').addEventListener('click', () => {
+  playSfx('click');
+  confirmArch();
+});
 $('#btnStopDice').addEventListener('click', stopDice);
 $('#btnResolveDice').addEventListener('click', resolveRoll);
-['#useFlux','#usePush','#useFrag'].forEach(sel=>{
-  const el=$(sel);
-  if(el){ el.addEventListener('change', updateTestHint); }
+$('#rollBtn').addEventListener('click', startDice);
+['#useLevier', '#usePush', '#useFrag'].forEach(sel => $(sel).addEventListener('change', updateTestHint));
+$('#kabeGameClose').addEventListener('click', () => {
+  playSfx('click');
+  closeKabeNetwork(true);
 });
-function resolveRoll(){
-  if(!pending||!roll||!pendingOutcome) return;
-  const c=pending, outcome=pendingOutcome;
-  if(outcome.spendFlux){ST.flux--;}
-  if(outcome.spendFrag){ST.frag--;ST.stress=Math.min(5,ST.stress+1);log('Le fragment te mord. +1 Stress.');}
-  if(outcome.spendPush){ST.stress=Math.min(5,ST.stress+1);log('Tu forces ta chance. +1 Stress.');}
-  log(`${c.test.stat}/${c.test.skill||'-'} DD${outcome.dd} — ${roll.a}+${roll.b}=${roll.sum} + ${outcome.mod} = ${outcome.total} → ${outcome.ok?'Réussite':'Échec'}`);
-  let next=null;
-  if(outcome.ok){
-    if(c.test.ok) c.test.ok(ST);
-    next=resolveSceneTarget(c.goOK||c.go,outcome);
-  }else{
-    if(c.test.ko) c.test.ko(ST);
-    next=resolveSceneTarget(c.goKO||c.go,outcome);
-  }
-  const resultBox=$('#testResult');
-  if(resultBox){
-    resultBox.textContent=`${outcome.ok?'Réussite':'Échec'} — ${outcome.total} (DD ${outcome.dd})`;
-    resultBox.classList.remove('show','success','fail');
-    resultBox.classList.add('show', outcome.ok?'success':'fail');
-  }
-  pending=null; roll=null; pendingOutcome=null;
-  updateTestHint();
-  const stop=$('#btnStopDice'), cont=$('#btnResolveDice');
-  if(stop){stop.disabled=false;}
-  if(cont){cont.style.display='none';}
-  $('#diceOverlay').style.display='none';
-  if(next){
-    ST.scene=next;
-    const nextSc=SC[next];
-    addObj('Déplacement: '+(nextSc?nextSc.title:next));
-    $('#testPanel').style.display='none';
-  }
-  else { $('#testPanel').style.display='block'; }
-  save(); render();
-}
+$('#kabeGameRetry').addEventListener('click', () => {
+  playSfx('click');
+  renderKabeNetwork();
+});
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') closeKabeNetwork(true);
+});
 
-/* ======= ARCHETYPES ======= */
-$('#btnChooseArch').addEventListener('click',()=>{ $('#introModal').style.display='none'; openArch(); });
-let sel=null;
-function openArch(){
-  archReturnFocus=document.activeElement instanceof HTMLElement ? document.activeElement : null;
-  const list=$('#archList'); list.innerHTML='';
-  sel=ST.arch||null;
-  $('#btnConfirm').disabled=!sel;
-  ARCH.forEach(a=>{ const card=document.createElement('div'); card.className='arch'; card.innerHTML=`
-    <img src="${a.img}" alt="${a.name}"><div class="pad"><h3>${a.name}</h3><p>${a.back}</p>
-    <div class="statrow"><span class="b">NEU ${a.stats.NEU}</span><span class="b">VOL ${a.stats.VOL}</span><span class="b">SOM ${a.stats.SOM}</span><span class="b">CIN ${a.stats.CIN}</span></div></div>`;
-    card.setAttribute('role','button');
-    card.setAttribute('tabindex','0');
-    card.setAttribute('aria-selected','false');
-    card.addEventListener('click',()=>selectArch(a,card));
-    card.addEventListener('keydown',e=>{
-      if(e.key==='Enter'||e.key===' '||e.key==='Spacebar'){e.preventDefault();selectArch(a,card);} });
-    if(ST.arch && ST.arch.id===a.id){ sel=a; card.setAttribute('aria-selected','true'); $('#btnConfirm').disabled=false; }
-    list.appendChild(card); });
-  const modal=document.getElementById('archModal');
-  if(modal){
-    modal.style.display='flex';
-    focusFirstFocusable(modal.querySelector('.modalBox'));
-  }
-}
-function selectArch(a,card){ sel=a; document.querySelectorAll('.arch').forEach(x=>x.setAttribute('aria-selected','false')); card.setAttribute('aria-selected','true'); $('#btnConfirm').disabled=false; }
-$('#btnRandom').addEventListener('click',()=>{const i=Math.floor(Math.random()*ARCH.length);selectArch(ARCH[i], document.querySelectorAll('.arch')[i])});
-$('#btnConfirm').addEventListener('click',()=>{ ST.arch=sel; ST.stats={...sel.stats}; ST.skills={...sel.skills}; ST.inv=[...sel.start];
-  bars(); renderStats(); renderAscii();
-  addObj('Archétype: '+sel.name); const modal=document.getElementById('archModal'); if(modal){modal.style.display='none';}
-  const intro=document.getElementById('introModal'); if(intro){intro.style.display='none';intro.setAttribute('aria-hidden','true');}
-  save(); render(); restoreFocus(archReturnFocus); archReturnFocus=null; });
-
-/* ======= INIT ======= */
-setupNav(); // header + mobile bar
-const mobileMq=window.matchMedia ? window.matchMedia('(max-width: 900px)') : null;
-const syncView=e=>{
-  if(!e.matches && document.body.getAttribute('data-view')!=='all'){
-    setView('all');
-  }
-};
-if(mobileMq){
-  syncView(mobileMq);
-  if(mobileMq.addEventListener){ mobileMq.addEventListener('change',syncView); }
-  else if(mobileMq.addListener){ mobileMq.addListener(syncView); }
-}
-setView(document.body.getAttribute('data-view')||'all');
+setupNav();
+syncAudioToggle();
+setView('all');
 load();
-renderStats(); renderInventory(); renderAscii(); renderTimeline(); bars(); render();
-if(!ST.arch){ $('#introModal').style.display='flex'; }
-
+render();
+if (!ST.arch) openIntro();

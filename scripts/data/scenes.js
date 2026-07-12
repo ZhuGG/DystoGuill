@@ -1,439 +1,246 @@
 import { IMG } from './images.js';
-import { ST, clearEndingTags, markEndingApproach, pickEnding } from './state.js';
+import { ST, pickEnding } from './state.js';
 
-export function createScenes({ addObj, gainItem, hasItem, log, openKabeGame }) {
-  return {
- prologue:{
-  img:IMG.pro,title:'Prologue — La Sourdine',text:()=>`
-  <p>La pluie plaque les enseignes de la Place du Pont et étire les halos des néons. Sous <b>la Sourdine</b>, les voix deviennent feutrées, les souvenirs glissent et ton HUD vacille par à-coups.</p>
-  <p>La sous-station <b>T1</b> décroche du réseau : si elle lâche, la Guill’ s’assombrit et les voies d’évacuation se referment.</p>
-  <p>Il te faut un itinéraire sûr. <i>Noor</i> connaît les caves, <i>Milo</i> négocie avec les guetteurs, ou tu peux lire seul·e le courant qui serpente sous la pluie.</p>`,
-  choices:[
-    {label:'Retrouver Noor, la dormeuse du pont',hint:'Guide discret vers les Berges (furtivité)',go:'place_noor'},
-    {label:'Marcher vers Milo, le revendeur',hint:'Passe-droit potentiel au Pont',go:'place_milo'},
-    {label:'Observer la foule par toi-même',hint:'Tracer une route sans allié',go:'place_solo'}
-  ]
- },
- place_noor:{
- img:IMG.place,title:'Place du Pont — Noor',text:()=>`
-  <p>Noor s’abrite sous une bâche plastique, capuche rabattue, regard calme mais précis. Elle connaît les caves qui mènent aux <b>Berges</b> et repère déjà les issues derrière toi.</p>
-  <p>Elle ouvrira la voie si tu récupères <b>son sac</b> oublié à <b>Mazagran</b>, celui qui contient un feuillet d’itinéraires griffonné à la main.</p>`,
-  choices:[
-    {label:'Accepter et récupérer son sac',hint:'Nouvel objectif : ramener le sac de Noor',immediate:s=>{s.tags.add('Noor');s.objective='Ramener le sac de Noor pour ouvrir la voie des caves.';addObj('Nouvel objectif : rapporter le sac de Noor.');},go:'maz_noor'},
-    {label:'Refuser mais prendre son indice',hint:'Indice de trappe sans accompagnement',immediate:s=>{s.tags.add('Indice_Trappe');s.objective='Trouver la trappe technique indiquée par Noor.';addObj('Indice obtenu : emplacement de la trappe.');},go:'maz_common'},
-    {label:'Rester sur la Place et observer',hint:'Ouvrir d’autres approches sous l’auvent',go:'place_return'}
-  ]
- },
- place_milo:{
- img:IMG.place,title:'Place du Pont — Milo',text:()=>`
-  <p>Milo recompte des câbles sous un parapluie troué. Son réseau alimente les guetteurs du <b>Pont</b>. Il peut obtenir un laissez-passer si tu récupères un <b>coffret</b> caché à <b>Mazagran</b>.</p>
-  <p>Le deal est clair : tu rapportes le coffret, il parle aux guetteurs et partage un code de reconnaissance gravé sur le plomb.</p>`,
-  choices:[
-    {label:'Accepter le deal du coffret',hint:'Passe-droit à gagner si tu réussis',immediate:s=>{s.tags.add('Milo');s.objective='Ramener le coffret scellé à Milo pour obtenir le passe.';addObj('Nouvel objectif : récupérer le coffret de Milo.');},go:'maz_milo'},
-    {label:'Refuser et rester indépendant·e',hint:'Route neutre vers Mazagran',immediate:s=>{s.objective='Chercher un passage neutre par Mazagran.';},go:'maz_common'},
-    {label:'Explorer la Place par soi-même',hint:'Observer les assemblées abritées',go:'place_return'}
-  ]
- },
- place_solo:{
- img:IMG.place,title:'Place du Pont — Lire la foule',text:()=>`
-  <p>Tu te laisses porter par la foule. La pluie trace des courants sur le bitume et les rumeurs roulent d’un abri à l’autre. Tout converge vers <b>Mazagran</b> avant de glisser vers les <b>Berges</b>.</p>
-  <p>Reste à décider si tu suis le courant, si tu glanes des indices sous l’auvent ou si tu forces un passage direct.</p>`,
-  choices:[
-    {label:'Suivre le flux jusqu’à Mazagran',hint:'Collecter des indices avant les Berges',go:'maz_common'},
-    {label:'Forcer un passage vers les Berges',hint:'Contourner la friche sans aide',go:'ber_entry'},
-    {label:'Se glisser sous l’auvent du Collectif',hint:'Voie sociale potentielle',go:'place_collectif'}
-  ]
- },
-
- place_return:{
-  img:IMG.place,title:'Place du Pont — Carrefour sous la Sourdine',text:()=>{
-   const notes=[];
-   if(ST.tags.has('Noor_Sac')&&!ST.tags.has('Noor_Trust')){notes.push('Noor surveille ton sac, prête à filer vers les caves.');}
-   else if(ST.tags.has('Noor_Trust')){notes.push('Noor garde la trappe entrouverte, signe discret de confiance.');}
-   if(ST.tags.has('Coffret_Milo')&&!ST.tags.has('Milo_Pass')){notes.push('Milo attend le coffret, parapluie battant.');}
-   else if(ST.tags.has('Milo_Pass')){notes.push('Le laissez-passer de Milo luit brièvement sous la pluie.');}
-   if(ST.tags.has('Collectif_Favor')&&!ST.tags.has('Collectif_Pret')){notes.push('Le Collectif suit chacun de tes gestes, prêt à te couvrir jusqu’au Pont.');}
-   else if(ST.tags.has('Collectif_Pret')){notes.push('L’escorte du Collectif attend un signe pour t’accompagner au Pont.');}
-   if(ST.inv.includes('Badge maintenance')){notes.push('Un badge de maintenance pulse dans ta poche, promesse d’un accès technique.');}
-   const extra=notes.join(' ')||'Les regards glissent vers Mazagran, vers le Pont, vers ceux qui bricolent leur survie.';
-   return `<p>La Place du Pont clignote sous la Sourdine, les bâches claquent au rythme des pas.</p><p>${extra}</p>`;
-  },
-  choices:()=>{
-   const arr=[];
-   if(ST.tags.has('Noor')&&ST.tags.has('Noor_Sac')&&!ST.tags.has('Noor_Trust')){
-    arr.push({label:'Remettre le sac à Noor',hint:'Voie sociale vers les caves',immediate:s=>{s.tags.delete('Noor_Sac');s.tags.add('Noor_Trust');s.objective='Suivre Noor par les caves vers les Berges.';addObj('Noor récupère son sac et t’offre la trappe des caves.');},go:'place_return'});
-   }
-   if(ST.tags.has('Milo')&&ST.tags.has('Coffret_Milo')&&!ST.tags.has('Milo_Pass')){
-    arr.push({label:'Livrer le coffret à Milo',hint:'Passe-droit vers le Pont',immediate:s=>{s.tags.delete('Coffret_Milo');s.tags.add('Milo_Pass');s.inv=s.inv.filter(it=>it!=='Coffret (Milo)'&&it!=='Coffret scellé');s.objective='Utiliser le laissez-passer de Milo pour franchir le Pont.';addObj('Milo tamponne ton laissez-passer et te fait un clin d’œil.');},go:'place_return'});
-   }
-   if(ST.tags.has('Collectif_Favor')&&!ST.tags.has('Collectif_Pret')){
-    arr.push({label:'Prévenir le Collectif de ton départ',hint:'Prépare une escorte sociale',immediate:s=>{s.tags.add('Collectif_Pret');s.objective='Rejoindre le Pont avec l’appui du Collectif.';addObj('Le Collectif prépare une escorte pour le Pont.');},go:'place_return'});
-   }
-   if(hasItem('Feuillet-mica')&&!ST.tags.has('Feuillet_Map')){
-    arr.push({label:'Déplier le feuillet-mica',hint:'Cartographier un conduit oublié vers T1',immediate:s=>{s.tags.add('Feuillet_Map');s.objective='Suivre les repères du feuillet vers une gaine discrète.';addObj('Les tracés UV du feuillet révèlent un détour sûr.');},go:'place_return'});
-   }
-    arr.push({label:'Rejoindre l’assemblée sous l’auvent',hint:'Chercher des appuis sociaux',go:'place_collectif'});
-   arr.push({label:'Retourner vers Mazagran',hint:'Explorer la friche encore humide',go:'maz_common'});
-   arr.push({label:'Descendre vers les Berges',hint:'Retrouver la trappe technique',go:'ber_entry'});
-   arr.push({label:'S’approcher du Pont',hint:'Tester les contrôles en place',go:'pon_pass'});
-   return arr;
-  }
- },
- place_collectif:{
-  img:IMG.place,title:'Place du Pont — Assemblée couverte',text:()=>`
-  <p>Sous l’auvent, des tables pliantes croulent sous les radios démontées. Les membres du Collectif griffonnent des plans pour contourner la Sourdine.</p>
-  <p>Ils peuvent fournir escortes, rumeurs ou accès techniques si tu prouves ta valeur.</p>`,
-  choices:[
-    {label:'Partager la note marquée de Milo',hint:'Utiliser la recommandation pour convaincre',when:()=>hasItem('Note marquée')&&!ST.tags.has('Collectif_Favor'),immediate:s=>{s.tags.add('Collectif_Favor');s.objective='Le Collectif peut préparer une escorte vers le Pont.';addObj('La note marquée circule sous l’auvent : confiance gagnée.');},go:'place_return'},
-    {label:'Partager ton itinéraire',hint:'VOL/Empathie (10) — obtenir une escorte',when:()=>!ST.tags.has('Collectif_Favor'),test:{stat:'VOL',skill:'Empathie',dd:10,
-      ok:s=>{s.tags.add('Collectif_Favor');s.objective='Le Collectif peut préparer une escorte vers le Pont.';addObj('Le Collectif accepte de couvrir ton passage.');},
-      ko:s=>{s.stress=Math.min(5,s.stress+1);log('La discussion s’échauffe. +1 Stress.');}
-    },goOK:'place_return',goKO:'place_collectif'},
-    {label:'Écouter sans être vu',hint:'CIN/Furtivité (11) — récupérer le planning des guetteurs',when:()=>!ST.tags.has('Collectif_Dossier'),test:{stat:'CIN',skill:'Furtivité',dd:11,
-      ok:s=>{s.tags.add('Collectif_Dossier');s.objective='Exploiter le planning des guetteurs pour traverser le Pont.';addObj('Planning des guetteurs mémorisé.');},
-      ko:s=>{s.stress=Math.min(5,s.stress+1);log('Un regard te fixe. +1 Stress.');}
-    },goOK:'place_return',goKO:'place_collectif'},
-    {label:'Rétablir leur relais radio',hint:'NEU/Mécanique (11) — badge de maintenance',when:()=>!ST.tags.has('BadgeTech'),test:{stat:'NEU',skill:'Mécanique',dd:11,
-      ok:s=>{gainItem('Badge maintenance');s.tags.add('BadgeTech');s.objective='Utiliser le badge pour contourner la surveillance du Pont.';addObj('Badge de maintenance prêt pour les contrôles.');},
-      ko:s=>{s.hp=Math.max(0,s.hp-1);log('Une étincelle te mord. +1 Blessure.');}
-    },goOK:'place_return',goKO:'place_collectif'},
-    {label:'Revenir vers la Place principale',hint:'Faire le point avec tes contacts',go:'place_return'}
-  ]
- },
- maz_common:{
- img:IMG.maz,title:'Friche Mazagran — Cour',text:()=>`
-  <p>Le conteneur-atelier bourdonne. Une échelle plonge vers la cave. Sur l’établi : un <b>feuillet-mémoire</b> annoté. En bas, un <b>coffret scellé</b> attend dans l’ombre.</p>`,
-  choices:()=>{
-   const goKabe=ST.tags.has('Kabe_AntoOK')?'maz_apero':'maz_apero_anto';
-   return [
-    {label:'Lire le feuillet annoté',hint:'NEU/Mnémographie (10) — repérer la trappe',test:{stat:'NEU',skill:'Mnémographie',dd:10,
-      ok:s=>{s.tags.add('Motif_R');s.objective='Atteindre la trappe technique depuis les Berges.';addObj('Indice : localisation de la trappe technique vers T1.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Le motif te vrille. +1 Stress.');}}},
-    {label:'Saisir le coffret scellé',hint:'Ajouter l’objet à ton inventaire',immediate:s=>{s.tags.add('Coffret_Milo');gainItem('Coffret (Milo)');s.objective='Apporter le coffret à Milo pour obtenir le laissez-passer.';addObj('Coffret (Milo) rangé dans ton sac.');}},
-    {label:'Franchir la porte du Kabé',hint:'Respirer un instant loin de la Sourdine',when:()=>ST.stress>0&&!ST.tags.has('Kabe_Apero'),go:goKabe},
-    {label:'Descendre vers les Berges',hint:'Prendre la cave jusqu’aux darses',go:'ber_entry'},
-    {label:'Se faufiler vers l’atelier latéral',hint:'Rencontrer les ouvriers de la friche',go:'maz_atelier'},
-    {label:'Retourner vers la Place du Pont',hint:'Faire le point avec Noor, Milo ou le Collectif',go:'place_return'}
-   ];
-  }
- },
- maz_apero_anto:{
-  img:IMG.maz,title:'Mazagran — Seuil du Kabé',text:()=>`
-  <p>Anto aka le Carné, colosse chauve au doigt cassé strié de résine, verrouille la porte blindée du Kabé. Sa carrure tamise la lanière de lumière ambrée qui fuit du refuge.</p>
-  <p>On dit qu’il a mémorisé chaque visage toléré par Kabé : son doigt réparé glisse sur la poignée comme sur un registre invisible tandis qu’il écoute la Sourdine frapper la cour.</p>
-  <p>Il attend un signe de reconnaissance — badge, parole ou regard complice — avant de relâcher le verrou que le Kabé lui confie.</p>`,
-  choices:()=>[
-    {label:'Convaincre Anto « le Carné » de te laisser passer',hint:'VOL/Empathie (10) — apaiser sa vigilance',test:{stat:'VOL',skill:'Empathie',dd:10,
-      ok:s=>{if(!s.tags.has('Kabe_AntoOK')){addObj('Anto « le Carné » hoche la tête : accès assuré au Kabé.');}s.tags.add('Kabe_AntoOK');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Anto « le Carné » reste inflexible. +1 Stress.');}},goOK:'maz_apero',goKO:'maz_apero_anto'},
-    {label:'Montrer patte blanche',hint:'Présenter un badge, un passe ou un appui reconnu',when:()=>ST.tags.has('Milo_Pass')||ST.tags.has('Collectif_Favor')||ST.tags.has('Noor_Trust')||ST.tags.has('Collectif_Pret')||ST.tags.has('BadgeTech')||ST.tags.has('BadgeTech_Used')||hasItem('Badge maintenance'),immediate:s=>{if(!s.tags.has('Kabe_AntoOK')){addObj('Ton signe de confiance ouvre la porte du Kabé.');}s.tags.add('Kabe_AntoOK');log('Anto « le Carné » reconnaît ton signe et entrouvre le passage.');},go:'maz_apero'},
-    {label:'Reculer vers la cour',hint:'Laisser la porte scellée et observer encore',go:'maz_common'}
-  ]
- },
- maz_apero:{
-  img:IMG.maz,title:'Mazagran — Kabé clandestin',text:()=>{
-   const first=!ST.tags.has('Kabe_Apero');
-   if(first){
-    ST.tags.add('Kabe_Apero');
-    ST.stress=Math.max(0,ST.stress-1);
-    addObj('Kabé clandestin : tu respires avec la ronde. Stress -1.');
-    log('Le Kabé te délasse. -1 Stress.');
-   }
-  const souffle=first
-   ? 'Un verre tiède passe de main en main, la rumeur couvre la Sourdine. Ton souffle ralentit.'
-   : 'Les habitué·es te reconnaissent et gardent une place au chaud.';
-  const defi=ST.tags.has('Kabe_RitualWon')
-   ? 'Kabé t’invite à rejouer le rituel pour garder la salle accordée : la séquence est devenue votre signe discret.'
-   : 'Kabé, maître des apéros clandestins, te propose un rituel d’infusion : enchaîner les gestes parfaits pour chasser la pression.';
-   return `
-  <p>Kabé orchestre le refuge : il dirige les apéros clandestins, rythme les souffles et surveille la Sourdine qui cogne.</p>
-  <p>${souffle}</p>
-  <p>${defi}</p>`;
-  },
-  choices:()=>[
-    {label:'Composer le rituel du Kabé',hint:ST.tags.has('Kabe_RitualWon')?'Mini-jeu : rejouer pour le panache':'Mini-jeu : aligner la bonne séquence (stress -1 à la première victoire)',immediate:()=>openKabeGame()},
-    {label:'Chuchoter un merci et ressortir',hint:'Retourner à la cour de Mazagran',go:'maz_common'},
-    {label:'Suivre l’escalier vers les Berges',hint:'Retrouver la cave en douceur',go:'ber_entry'},
-    {label:'Remonter vers la Place du Pont',hint:'Partager la chaleur du Kabé avec tes contacts',go:'place_return'}
-  ]
- },
- maz_noor:{
- img:IMG.maz,title:'Mazagran — Le sac de Noor',text:()=>`
-  <p>Le sac de Noor est coincé derrière un banc soudé. Les sangles collées à la rouille cèdent par à-coups tandis que l’eau goutte des bâches avec un rythme patient.</p>
-  <p>Tu peux forcer le métal, t’aider de ton matériel ou descendre par la cave pour ressortir discrètement.</p>`,
-  choices:[
-    {label:'Forcer le banc',hint:'SOM/Mécanique (12) — libérer le sac (échec : +1 Blessure)',test:{stat:'SOM',skill:'Mécanique',dd:12,
-      ok:s=>{s.tags.add('Noor_Sac');s.objective='Ramener le sac à Noor sur la Place du Pont.';addObj('Sac de Noor récupéré.');},ko:s=>{s.hp=Math.max(0,s.hp-1);log('Tu t’écorches sur le métal. +1 Blessure.')}}},
-    {label:'Passer par la cave',hint:'CIN/Furtivité (10) — ressortir sans alerter',test:{stat:'CIN',skill:'Furtivité',dd:10,
-      ok:s=>{s.tags.add('Sortie_Discrète');log('Personne ne t’a vu.');},ko:s=>{log('Lampe qui claque. Pas de dégâts.')}}},
-    {label:'Découper les sangles au cutter',hint:'Utiliser ton outil pour libérer le sac sans bruit',when:()=>hasItem('Cutter')&&!ST.tags.has('Noor_Sac'),immediate:s=>{s.tags.add('Noor_Sac');s.objective='Ramener le sac à Noor sur la Place du Pont.';addObj('Le cutter entaille les sangles : sac de Noor libéré.');log('Le cutter grignote la rouille.');},go:'place_return'},
-    {label:'Faire levier avec le tournevis isolé',hint:'Exploiter ton tournevis pour dégager le banc',when:()=>hasItem('Tournevis isolé')&&!ST.tags.has('Noor_Sac'),immediate:s=>{s.tags.add('Noor_Sac');s.tags.add('Sortie_Discrète');s.objective='Ramener le sac à Noor sur la Place du Pont.';addObj('Le tournevis isolé fait céder le banc sans déclencher d’alarme.');},go:'place_return'},
-    {label:'Filer aux Berges',hint:'Rejoindre les darses sans perdre de temps',go:'ber_entry'},
-    {label:'Investir l’atelier voisin',hint:'Tenter un détour social ou technique',go:'maz_atelier'},
-    {label:'Retourner à la Place du Pont',hint:'Remettre le sac ou chercher du soutien',go:'place_return'}
-  ]
- },
- maz_milo:{
- img:IMG.maz,title:'Mazagran — Le coffret de Milo',text:()=>`
-  <p>Le coffret frappé du sceau de Milo est sanglé à un crochet. Des motifs gravés luisent sous la pluie ; le plomb est déjà ébréché et un code y est poinçonné.</p>`,
-  choices:[
-    {label:'Détacher le coffret pour Milo',hint:'Prépare le passe au Pont',immediate:s=>{s.tags.add('Coffret_Milo');gainItem('Coffret (Milo)');s.objective='Apporter le coffret à Milo pour obtenir le laissez-passer.';addObj('Coffret de Milo sécurisé.');}},
-    {label:'Inspecter le coffret à la lampe plate',hint:'Révéler le code gravé (sans l’ouvrir)',when:()=>hasItem('Lampe plate')&&!ST.tags.has('Milo_Code'),immediate:s=>{s.tags.add('Milo_Code');s.objective='Utiliser le code de Milo pour traverser le Pont sans montrer le coffret.';addObj('Le faisceau révèle le code du coffret de Milo.');log('La lampe rase les motifs et révèle des chiffres cachés.');},go:'maz_milo'},
-    {label:'Prendre la cave vers les Berges',hint:'Continuer vers la trappe technique',go:'ber_entry'},
-    {label:'Se glisser vers l’atelier latéral',hint:'Approcher les ouvriers en douce',go:'maz_atelier'},
-    {label:'Retourner vers la Place du Pont',hint:'Négocier le laissez-passer avec Milo',go:'place_return'}
-  ]
- },
-
- maz_atelier:{
-  img:IMG.maz,title:'Mazagran — Atelier latéral',text:()=>`
-  <p>À l’intérieur, des ouvriers alignent des batteries sur des palettes et recalent une <b>nacelle</b> suspendue au-dessus de la vase.</p>
-  <p>Ils cherchent des bras, des infos ou un coup de main technique.</p>`,
-  choices:[
-    {label:'Négocier avec la contremaîtresse',hint:'VOL/Empathie (10) — obtenir leur confiance',when:()=>!ST.tags.has('Atelier_Allie'),test:{stat:'VOL',skill:'Empathie',dd:10,
-      ok:s=>{s.tags.add('Atelier_Allie');s.objective='Les ouvriers peuvent couvrir ton passage jusqu’aux Berges.';addObj('Les ouvriers de Mazagran te reconnaissent comme allié.');},
-      ko:s=>{s.stress=Math.min(5,s.stress+1);log('On te jauge froidement. +1 Stress.');}
-    },goOK:'maz_atelier',goKO:'maz_atelier'},
-    {label:'Forcer le casier technique',hint:'CIN/Furtivité (10) — récupérer un badge',when:()=>!ST.tags.has('BadgeTech'),test:{stat:'CIN',skill:'Furtivité',dd:10,
-      ok:s=>{gainItem('Badge maintenance');s.tags.add('BadgeTech');s.objective='Utiliser le badge pour traverser les contrôles du Pont.';addObj('Badge de maintenance subtilisé.');},
-      ko:s=>{s.stress=Math.min(5,s.stress+1);log('Un crochet grince. +1 Stress.');}
-    },goOK:'maz_atelier',goKO:'maz_atelier'},
-    {label:'Calibrer leur génératrice',hint:'NEU/Mécanique (10) — stabiliser la nacelle',when:()=>!ST.tags.has('Berges_Stable'),test:{stat:'NEU',skill:'Mécanique',dd:10,
-      ok:s=>{s.tags.add('Berges_Stable');s.objective='Descendre par la nacelle stabilisée vers les Berges.';addObj('La génératrice cale la nacelle : accès plus stable.');},
-      ko:s=>{s.hp=Math.max(0,s.hp-1);log('Courant récalcitrant. +1 Blessure.');}
-    },goOK:'maz_atelier',goKO:'maz_atelier'},
-    {label:'Sangler la nacelle avec ton ruban textile',hint:'Mettre ton matériel au service de l’atelier',when:()=>hasItem('Ruban textile')&&!ST.tags.has('Berges_Stable'),immediate:s=>{s.tags.add('Berges_Stable');s.objective='Descendre par la nacelle stabilisée vers les Berges.';addObj('Ton ruban textile verrouille les attaches de la nacelle.');},go:'maz_atelier'},
-    {label:'Retourner à la cour de Mazagran',hint:'Revenir vers les autres pistes',go:'maz_common'},
-    {label:'Descendre vers les Berges',hint:'Suivre la voie préparée',go:'ber_entry'}
-  ]
- },
- ber_entry:{
- img:IMG.ber,title:'Berges — Darses',text:()=>{
-  const hints=[];
-  if(ST.tags.has('Feuillet_Map')){hints.push('Les repères UV du feuillet scintillent sur un capot presque noyé.');}
-  if(hasItem('Aimant-alu')){hints.push('Ton aimant-alu pulse doucement lorsque tu le rapproches du loquet.');}
-  const extra=hints.length?`<p>${hints.join(' ')}</p>`:'';
-  return `
-  <p>La vase masque une trappe d’entretien. À chaque contact, le métal grince et vibre.</p>${extra}`;
- },
-  choices:()=>{
-    const arr=[
-      {label:'Décrocher la trappe technique',hint:'NEU/Cryptanalyse (10) — ouvrir l’accès vers T1',test:{stat:'NEU',skill:'Cryptanalyse',dd:10,
-        ok:s=>{s.tags.add('Acces_Tech');s.objective='Descendre vers T1 par la trappe technique.';addObj('Trappe vers T1 ouverte.');},ko:s=>{log('Contacts oxydés : il faudra insister.')}}},
-      {label:'Remonter vers le Pont',hint:'Avec le coffret de Milo : passe-droit assuré',go:'pon_pass'}
-    ];
-    if(ST.tags.has('Feuillet_Map')&&!ST.tags.has('T1_Grille')){
-      arr.push({label:'Suivre les repères du feuillet-mica',hint:'Utiliser la cartographie secrète de Noor',immediate:s=>{s.tags.add('Pont_Souterrain');s.tags.add('T1_Grille');s.objective='Atteindre T1 via la gaine repérée sur le feuillet.';addObj('Le feuillet révèle une gaine intacte vers T1.');log('Les repères UV scintillent : un passage s’ouvre.');},go:'pon_shadow'});
-    }
-    if(hasItem('Aimant-alu')&&!ST.tags.has('Acces_Tech')){
-      arr.push({label:'Soulever la trappe avec ton aimant-alu',hint:'Déverrouiller en silence grâce à ton outil',immediate:s=>{s.tags.add('Acces_Tech');s.objective='Descendre vers T1 par la trappe technique.';addObj('Aimant-alu décroche les loquets de la trappe.');log('L’aimant attire les goupilles : la trappe bascule.');},go:'t1_overlook'});
-    }
-    if(ST.tags.has('Atelier_Allie')&&ST.tags.has('Berges_Stable')){
-      arr.push({label:'Appeler la nacelle des ouvriers',hint:'Voie technique sécurisée',immediate:s=>{s.tags.add('Acces_Tech');s.tags.add('T1_Soutien');s.objective='Suivre la nacelle stabilisée jusqu’au périmètre de T1.';addObj('La nacelle de Mazagran t’abaisse vers la sous-station.');},go:'t1_overlook'});
-    }
-    arr.push({label:'Suivre la patrouille fluviale',hint:'Déployer un détour social ou furtif',go:'ber_patrouille'});
-    if(ST.tags.has('Collectif_Dossier')){
-      arr.push({label:'Rediriger les rondes grâce au planning volé',hint:'Créer une diversion sur le Pont',immediate:s=>{s.tags.delete('Collectif_Dossier');s.tags.add('Pont_Distrait');addObj('Tu détournes une patrouille loin du Pont.');},go:'ber_patrouille'});
-    }
-    arr.push({label:'Retourner vers la Place du Pont',hint:'Faire le point sur les alliances',go:'place_return'});
-    return arr;
-  }
- },
-
- ber_patrouille:{
-  img:IMG.ber,title:'Berges — Patrouille fluviale',text:()=>`
-  <p>Une barge grince contre les pieux. La patrouille fluviale tient les accès secondaires et jauge ton approche.</p>`,
-  choices:[
-    {label:'Négocier un couloir sûr',hint:'VOL/Empathie (10) — obtenir une escorte',test:{stat:'VOL',skill:'Empathie',dd:10,
-      ok:s=>{s.tags.add('Pont_Escorte');s.objective='Traverser le Pont escorté par la patrouille.';addObj('La patrouille fluviale t’offre un passage encadré.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('On te renvoie vers la vase. +1 Stress.');}},goOK:'ber_entry',goKO:'ber_patrouille'},
-    {label:'Suivre la patrouille à distance',hint:'CIN/Furtivité (11) — repérer la contre-voie',test:{stat:'CIN',skill:'Furtivité',dd:11,
-      ok:s=>{s.tags.add('Pont_Souterrain');s.objective='Passer sous le pont par la contre-voie.';addObj('Itinéraire sous le tablier repéré.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Un projecteur t’accroche. +1 Stress.');}},goOK:'pon_shadow',goKO:'ber_patrouille'},
-    {label:'Allumer une flamme de détresse',hint:'Utiliser ton briquet pour détourner la patrouille',when:()=>hasItem('Briquet')&&!ST.tags.has('Pont_Distrait'),immediate:s=>{s.tags.add('Pont_Distrait');s.objective='Profiter de la confusion pour franchir le Pont.';addObj('Une flamme brève attire la patrouille vers la vase.');log('Le briquet déclenche une flamme brève : la patrouille se disperse.');},go:'ber_entry'},
-    {label:'Saboter le relais de détection',hint:'NEU/Cryptanalyse (11) — détourner les capteurs',test:{stat:'NEU',skill:'Cryptanalyse',dd:11,
-      ok:s=>{s.tags.add('Pont_Distrait');s.objective='Profiter de la confusion pour franchir le Pont.';addObj('Les capteurs du Pont partent en boucle.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Les alarmes grincent. +1 Stress.');}},goOK:'ber_entry',goKO:'ber_patrouille'},
-    {label:'Revenir vers les darses',hint:'Changer de stratégie',go:'ber_entry'}
-  ]
- },
- pon_pass:{
- img:IMG.pon,title:'Pont de la Guill’ — Passage',text:()=>`
-  <p>Deux guetteurs s’abritent sous le pont. Leurs badges grésillent et ils attendent un signe convaincant pour laisser passer quiconque vers T1.</p>`,
-  choices:()=>{
-    const a=[];
-    if(ST.tags.has('Milo_Pass')){
-      a.push({label:'Montrer le laissez-passer de Milo',hint:'Passe-droit négocié',immediate:s=>{s.objective='Traverser le Pont et atteindre T1.';log('Le laissez-passer de Milo claque, les guetteurs s’écartent.');},go:'t1_entry'});
-    }else if(ST.tags.has('Coffret_Milo')){
-      a.push({label:'Montrer le coffret — franchir le Pont',hint:'Passe-droit négocié avec Milo',immediate:s=>{s.objective='Traverser le Pont et atteindre T1.';log('« C’est pour Milo. » On te laisse filer.');},go:'t1_entry'});
-    }
-    if(ST.tags.has('Collectif_Pret')&&!ST.tags.has('Pont_Escorte')){
-      a.push({label:'Appeler l’escorte du Collectif',hint:'Voie sociale préparée',immediate:s=>{s.tags.add('Pont_Escorte');s.objective='Traverser le Pont escorté par le Collectif.';addObj('Le Collectif t’encadre jusqu’au tablier.');},go:'t1_entry'});
-    }
-    if(ST.tags.has('Pont_Escorte')){
-      a.push({label:'Suivre l’escorte jusqu’à T1',hint:'Route sociale sécurisée',immediate:s=>{s.objective='Laisser l’escorte te mener au périmètre de T1.';},go:'t1_entry'});
-    }
-    if(ST.tags.has('Milo_Code')&&!ST.tags.has('Milo_Pass')&&!ST.tags.has('Pont_Escorte')){
-      a.push({label:'Énoncer le code gravé du coffret',hint:'Convaincre les guetteurs sans montrer de preuve',immediate:s=>{s.objective='Traverser le Pont et atteindre T1.';log('Le code de Milo ouvre la voie : les guetteurs te laissent filer.');},go:'t1_entry'});
-    }
-    if(ST.tags.has('Collectif_Dossier')){
-      a.push({label:'Révéler le planning volé',hint:'Mettre la pression sur les guetteurs',immediate:s=>{s.tags.delete('Collectif_Dossier');s.tags.add('Pont_Distrait');addObj('Les guetteurs lâchent du lest face aux preuves.');},go:'pon_pass'});
-    }
-    if(ST.inv.includes('Badge maintenance')){
-      a.push({label:'Badger la console de service',hint:'NEU/Mécanique (10) — accès technique',test:{stat:'NEU',skill:'Mécanique',dd:10,
-        ok:s=>{s.tags.add('BadgeTech_Used');s.tags.add('Acces_Tech');s.inv=s.inv.filter(it=>it!=='Badge maintenance');s.objective='Remonter le couloir technique vers T1.';addObj('Badge de maintenance accepté sur le Pont.');},
-        ko:s=>{s.stress=Math.min(5,s.stress+1);log('Le lecteur clignote rouge. +1 Stress.');}
-      },goOK:'t1_entry',goKO:'pon_pass'});
-    }
-    if(ST.tags.has('Pont_Distrait')){
-      a.push({label:'Profiter des capteurs en boucle',hint:'Glisser pendant la confusion',go:'pon_shadow'});
-    }
-    if(!ST.tags.has('Milo_Pass')){
-      a.push({label:'Parler sec aux guetteurs',hint:'VOL/Intimidation (10) — passer par la parole',test:{stat:'VOL',skill:'Intimidation',dd:10,
-        ok:s=>{s.objective='Traverser le Pont et atteindre T1.';log('Ça passe. Personne n’a envie d’histoires.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('On te balade. +1 Stress.');}
-      },go:'t1_entry'});
-      a.push({label:'Se glisser le long des barrières',hint:'CIN/Furtivité (12) — contour discret',test:{stat:'CIN',skill:'Furtivité',dd:12,
-        ok:s=>{s.objective='Traverser le Pont et atteindre T1.';log('Tu files comme une ombre.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Repéré·e, tu forces. +1 Stress.');}
-      },go:'t1_entry'});
-    }
-    a.push({label:'Descendre sous le tablier',hint:'Voie d’infiltration vers la contre-voie',go:'pon_shadow'});
-    a.push({label:'Revenir vers la Place',hint:'Changer d’approche',go:'place_return'});
-    return a;
-  }
-},
-
- pon_shadow:{
-  img:IMG.pon,title:'Pont de la Guill’ — Contre-voie',text:()=>`
-  <p>Sous le tablier, l’eau gifle les piliers. Des câbles pendent et une grille d’inspection bat au vent.</p>`,
-  choices:[
-    {label:'Ramper jusqu’à la grille',hint:'CIN/Furtivité (10) — baliser une infiltration',when:()=>!ST.tags.has('T1_Grille'),test:{stat:'CIN',skill:'Furtivité',dd:10,
-      ok:s=>{s.tags.add('Pont_Souterrain');s.tags.add('T1_Grille');s.objective='Atteindre le périmètre de T1 par la grille d’inspection.';addObj('Chemin sous le tablier balisé.');},
-      ko:s=>{s.stress=Math.min(5,s.stress+1);log('Une éclaboussure bruyante trahit ta présence. +1 Stress.');}},goOK:'t1_overlook',goKO:'pon_shadow'},
-    {label:'Pirater le relais de surveillance',hint:'NEU/Cryptanalyse (11) — déclencher une boucle',test:{stat:'NEU',skill:'Cryptanalyse',dd:11,
-      ok:s=>{s.tags.add('Pont_Distrait');addObj('Les capteurs du pont se remettent à zéro dans un grésillement.');},
-      ko:s=>{s.stress=Math.min(5,s.stress+1);log('Le relais claque et t’oblige à reculer. +1 Stress.');}},goOK:'pon_pass',goKO:'pon_shadow'},
-    {label:'Allumer une flamme rassurante',hint:'Utiliser ton briquet pour faire baisser la pression (stress -1)',when:()=>hasItem('Briquet')&&!ST.tags.has('Briquet_Calm')&&ST.stress>0,immediate:s=>{s.stress=Math.max(0,s.stress-1);s.tags.add('Briquet_Calm');log('La flamme vacille mais t’apaise. Stress -1.');},go:'pon_shadow'},
-    {label:'Revenir vers les Berges',hint:'Retenter depuis les darses',go:'ber_entry'},
-    {label:'Remonter vers la Place',hint:'Reprendre son souffle sous l’auvent',go:'place_return'}
-  ]
- },
- t1_entry:{
- img:IMG.t1,title:'Sous-station T1 — Plans froissés',text:()=>`
-  <p>« La douceur est une technologie », griffonné à la craie sur le béton. La porte principale tremble ; la grille renvoie un souffle tiède.</p>`,
-  choices:()=>{
-    const arr=[
-      {label:'Déverrouiller la porte principale',hint:'NEU/Cryptanalyse (12) — ouvrir l’accès frontal',test:{stat:'NEU',skill:'Cryptanalyse',dd:12,
-        ok:s=>{s.tags.add('T1_Ouverte');s.objective='Stabiliser le cœur de T1.';addObj('Porte principale de T1 ouverte.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Le ton faux te vrille. +1 Stress.');}}},
-      {label:'Se glisser par la grille',hint:'CIN/Furtivité (10) — infiltration par le bas',test:{stat:'CIN',skill:'Furtivité',dd:10,
-        ok:s=>{s.tags.add('T1_Grille');s.objective='Stabiliser le cœur de T1.';addObj('Tu t’infiltres par la grille.');},ko:s=>{log('Une vis tinte. Tu attends.');}}}
-    ];
-    if(hasItem('Tournevis isolé')&&!ST.tags.has('T1_Grille')){
-      arr.push({label:'Démonter le panneau latéral',hint:'Utiliser ton tournevis pour créer un accès discret',immediate:s=>{s.tags.add('T1_Grille');s.tags.add('Acces_Tech');s.objective='Glisser vers le cœur de T1 par le panneau démonté.';addObj('Panneau latéral démonté grâce au tournevis isolé.');},go:'t1_overlook'});
-    }
-    if(ST.tags.has('Milo_Code')&&!ST.tags.has('T1_Ouverte')){
-      arr.push({label:'Projeter le motif relevé sur la serrure',hint:'NEU/Déduction (9) — exploiter les codes de Milo',test:{stat:'NEU',skill:'Déduction',dd:9,
-        ok:s=>{s.tags.add('T1_Ouverte');s.objective='Stabiliser le cœur de T1.';addObj('Le motif gravé synchronise la serrure de T1.');},
-        ko:s=>{s.stress=Math.min(5,s.stress+1);log('Le motif rebondit sans effet. +1 Stress.');}
-      },goOK:'t1_entry',goKO:'t1_entry'});
-    }
-    if(ST.tags.has('Noor_Trust')){
-      arr.push({label:'Noor entrouvre la porte',hint:'Voie sociale depuis les caves',immediate:s=>{s.objective='Stabiliser le cœur de T1.';addObj('Noor te fait entrer par la cave.');}});
-    }
-    if(ST.tags.has('Pont_Escorte')&&!ST.tags.has('T1_Soutien')){
-      arr.push({label:'Laisser l’escorte sécuriser l’entrée',hint:'Appui social pour tenir le périmètre',immediate:s=>{s.tags.add('T1_Soutien');s.objective='Stabiliser le cœur de T1 avec l’appui de l’escorte.';addObj('L’escorte verrouille l’entrée de T1.');},go:'t1_entry'});
-    }
-    if(ST.tags.has('Acces_Tech')||ST.tags.has('T1_Silence')){
-      arr.push({label:'Suivre le couloir technique',hint:'Contourner par la passerelle',go:'t1_overlook'});
-    }
-    arr.push({label:'Contourner par la passerelle extérieure',hint:'Explorer le périmètre avant d’agir',go:'t1_overlook'});
-    arr.push({label:'Revenir vers le Pont',hint:'Changer d’approche',go:'pon_pass'});
-    arr.push({label:'Accéder au cœur',hint:'Disponible si une entrée est ouverte',when:()=>ST.tags.has('T1_Ouverte')||ST.tags.has('T1_Grille')||ST.tags.has('Noor_Trust')||ST.tags.has('T1_Soutien'),go:'t1_core'});
-    return arr;
-  }
- },
-
- t1_overlook:{
-  img:IMG.t1,title:'Sous-station T1 — Périmètre',text:()=>`
-  <p>La passerelle technique contourne le bâtiment. Des capteurs clignotent, certains arrachés par la Sourdine.</p>`,
-  choices:[
-    {label:'Se faufiler dans la gaine',hint:'CIN/Furtivité (10) — se positionner près du cœur',when:()=>!ST.tags.has('T1_Grille'),test:{stat:'CIN',skill:'Furtivité',dd:10,
-      ok:s=>{s.tags.add('T1_Grille');s.objective='Stabiliser le cœur de T1 depuis la grille interne.';addObj('Gaine d’accès sécurisée.');},ko:s=>{s.stress=Math.min(5,s.stress+1);log('Un rivet claque. +1 Stress.');}},goOK:'t1_entry',goKO:'t1_overlook'},
-    {label:'Synchroniser les capteurs',hint:'NEU/Cryptanalyse (11) — imposer un silence technique',when:()=>!ST.tags.has('T1_Silence'),test:{stat:'NEU',skill:'Cryptanalyse',dd:11,
-      ok:s=>{s.tags.add('T1_Silence');s.tags.add('Acces_Tech');s.objective='Stabiliser le cœur de T1 à partir du périmètre sécurisé.';addObj('Capteurs synchronisés : la Sourdine se fait plus douce.');},
-      ko:s=>{s.stress=Math.min(5,s.stress+1);log('Le réseau résiste. +1 Stress.');}},goOK:'t1_entry',goKO:'t1_overlook'},
-    {label:'Coordonner l’escorte',hint:'VOL/Empathie (10) — utiliser l’appui social',when:()=>ST.tags.has('Pont_Escorte')&&!ST.tags.has('T1_Soutien'),test:{stat:'VOL',skill:'Empathie',dd:10,
-      ok:s=>{s.tags.add('T1_Soutien');s.objective='Stabiliser le cœur de T1 avec un périmètre tenu par tes alliés.';addObj('L’escorte verrouille les issues autour de T1.');},
-      ko:s=>{s.stress=Math.min(5,s.stress+1);log('La coordination déraille. +1 Stress.');}},goOK:'t1_entry',goKO:'t1_overlook'},
-    {label:'Revenir à l’entrée principale',hint:'Retenter les accès frontaux',go:'t1_entry'},
-    {label:'Rejoindre le Pont',hint:'Changer de stratégie',go:'pon_pass'}
-  ]
- },
- t1_core:{
-  img:IMG.t1,title:'Sous-station T1 — Cœur',text:()=>`
-  <p>Le cœur de T1 vibre. Trois leviers bricolés clignotent : <b>Contournement</b>, <b>Relance</b>, <b>Trame douce</b>. Chaque option a son prix.</p>`,
-  choices:()=>{
-    const arr=[];
-    if(hasItem('Gants usés')&&!ST.tags.has('Leviers_Prepares')){
-      arr.push({label:'Enfiler tes gants sur les leviers',hint:'Préparer les commandes contre les arcs',immediate:s=>{s.tags.add('Leviers_Prepares');addObj('Les leviers sont isolés par tes gants usés.');log('Tu glisses tes gants usés sur les leviers : l’arc sera amorti.');},go:'t1_core'});
-    }
-    if(hasItem('Ruban textile')&&!ST.tags.has('Leviers_Prepares')){
-      arr.push({label:'Enrubanner les câbles avec ton ruban',hint:'Renforcer l’isolation avant d’agir',immediate:s=>{s.tags.add('Leviers_Prepares');addObj('Le ruban textile amortit les arcs autour des leviers.');log('Tu bandes les leviers de ruban textile.');},go:'t1_core'});
-    }
-    arr.push({label:'Contournement — gagner du temps',hint:'SOM/Mécanique (10) — détourner les flux (+1 Flux)',test:{stat:'SOM',skill:'Mécanique',dd:10,
-      ok:s=>{s.flux=Math.max(0,s.flux+1);s.objective='Quitter la zone avant la prochaine alerte.';addObj('Contournement posé : la nuit tiendra un peu plus.');clearEndingTags();markEndingApproach();s.tags.add('End_Contournement');},
-      ko:s=>{
-        if(s.tags.has('Leviers_Prepares')){
-          s.tags.delete('Leviers_Prepares');
-          log('La protection improvisée brûle mais tu restes indemne.');
-        }else{
-          s.hp=Math.max(0,s.hp-1);
-          log('Coup de jus. +1 Blessure.');
-        }
-      }
-    },goOK:()=>pickEnding('cont'),goKO:'ep_silent'});
-    arr.push({label:'Relance — plus risqué',hint:'NEU/Déduction (12) — redémarrage bruyant',test:{stat:'NEU',skill:'Déduction',dd:12,
-      ok:s=>{s.tags.add('Relance');addObj('Relance réussie : T1 repart en claquant.');clearEndingTags();markEndingApproach();s.tags.add('End_Noise');},
-      ko:s=>{
-        if(s.tags.has('Leviers_Prepares')){
-          s.tags.delete('Leviers_Prepares');
-          log('Le ruban fume mais tu restes concentré·e.');
-        }else{
-          s.stress=Math.min(5,s.stress+1);
-          log('Tu recules. +1 Stress.');
-        }
-      }
-    },goOK:()=>pickEnding('noise'),goKO:'ep_silent'});
-    arr.push({label:'Trame douce — protéger les souvenirs',hint:'VOL/Empathie (12) + ✦ — apaiser la Sourdine',test:{stat:'VOL',skill:'Empathie',dd:12,needsFrag:true,
-      ok:s=>{s.tags.add('Trame_Douce');addObj('Voile tiré : les mémoires restent en place.');clearEndingTags();markEndingApproach();s.tags.add('End_Soft');},
-      ko:s=>{log('Tu n’oses pas. Rien ne casse.');}
-    },goOK:()=>pickEnding('soft'),goKO:'ep_silent'});
-    return arr;
-  }
- },
- ep_cont:{img:IMG.t1,title:'Épilogue — Contournement',text:()=>`
-  <p>Le quartier respire encore. Ce n’est pas brillant, mais tu as gagné quelques heures.</p>`,choices:[{label:'Recommencer (retour Prologue)',go:'prologue'}]},
-
- ep_cont_social:{img:IMG.t1,title:'Épilogue — Contournement collectif',text:()=>`
-  <p>Le contournement reste discret grâce aux relais du quartier. Les escortes bloquent les curieux et entretiennent la dérivation.</p>`,choices:[{label:'Recommencer',go:'prologue'}]},
- ep_cont_shadow:{img:IMG.t1,title:'Épilogue — Contournement clandestin',text:()=>`
-  <p>Sous le tablier, tu maintiens la dérivation sans qu’aucun guetteur ne comprenne comment tu as filé.</p>`,choices:[{label:'Recommencer',go:'prologue'}]},
- ep_cont_tech:{img:IMG.t1,title:'Épilogue — Contournement technique',text:()=>`
-  <p>Les capteurs stabilisés guident le flux de réserve. T1 ronronne à bas bruit, mais tu sais où surveiller les prochains points chauds.</p>`,choices:[{label:'Recommencer',go:'prologue'}]},
- ep_noise:{img:IMG.t1,title:'Épilogue — Relance',text:()=>`
-  <p>T1 claque comme une ampoule neuve. Certains applaudiront, d’autres t’en voudront pour le vacarme.</p>`,choices:[{label:'Recommencer',go:'prologue'}]},
-
- ep_noise_social:{img:IMG.t1,title:'Épilogue — Relance soutenue',text:()=>`
-  <p>Le vacarme de T1 est couvert par les chants et les slogans. Les collectifs assument le bruit et revendiquent la relance.</p>`,choices:[{label:'Recommencer',go:'prologue'}]},
- ep_noise_shadow:{img:IMG.t1,title:'Épilogue — Relance fantôme',text:()=>`
-  <p>La relance tonne, mais tu disparais déjà sur la contre-voie. On ne sait pas qui a rendu la lumière.</p>`,choices:[{label:'Recommencer',go:'prologue'}]},
- ep_noise_tech:{img:IMG.t1,title:'Épilogue — Relance calibrée',text:()=>`
-  <p>Les transformateurs claquent en cadence. Tu laisses derrière toi des diagnostics détaillés et des alarmes maîtrisées.</p>`,choices:[{label:'Recommencer',go:'prologue'}]},
- ep_soft:{img:IMG.t1,title:'Épilogue — Trame douce',text:()=>`
-  <p>La Sourdine se relâche. Des visages se souviennent mieux. Tu laisses la nuit respirer.</p>`,choices:[{label:'Recommencer',go:'prologue'}]},
-
- ep_soft_collectif:{img:IMG.t1,title:'Épilogue — Trame douce partagée',text:()=>`
-  <p>Les souvenirs se solidarisent sur la Place. Le Collectif transmet ce qu’il a appris pour maintenir la douceur.</p>`,choices:[{label:'Recommencer',go:'prologue'}]},
- ep_soft_shadow:{img:IMG.t1,title:'Épilogue — Trame douce furtive',text:()=>`
-  <p>Tu quittes T1 sans bruit. Derrière toi, la Sourdine se calme le long du passage souterrain.</p>`,choices:[{label:'Recommencer',go:'prologue'}]},
- ep_soft_tech:{img:IMG.t1,title:'Épilogue — Trame douce synchronisée',text:()=>`
-  <p>Les capteurs alignés diffusent un voile stable. Les habitants respirent enfin sans craindre l’oubli immédiat.</p>`,choices:[{label:'Recommencer',go:'prologue'}]},
- ep_silent:{img:IMG.t1,title:'Épilogue — Silence',text:()=>`
-  <p>T1 se tait. Tu coupes proprement et promets de revenir avec plus de temps.</p>`,choices:[{label:'Recommencer',go:'prologue'}]}
+const evidence = (state, label, count = 1) => {
+  state.frag += count;
+  state.tags.add(label);
 };
-}
 
+export function createScenes({ addObj, gainItem, hasItem, log, openKabeNetwork, addPressure, setRelation, markItemUsed }) {
+  return {
+    retour_place: {
+      img: IMG.place,
+      title: 'Place du Pont - Retour',
+      text: () => `
+        <p>La Guillotiere n a pas disparu: elle a ete renumerotee. Les avis d evacuation recouvrent les menus des snacks. A 02 h 17, Nora t a appele: <i>"Ils effacent les baux vivants."</i> Depuis, silence.</p>
+        <p>A 06 h, la Regie des Quartiers Calmes vide trois immeubles. Sous les arcades, <b>Samia</b> vend de faux briquets, <b>Anette</b> compte les fourgons, et <b>Pauline</b> serre un courrier qu elle n ose pas ouvrir.</p>`,
+      choices: [
+        { label: 'Ouvrir le dossier que Nora a laisse', hint: 'Comprendre l affaire avant de bouger', effect: '+Dossier', go: 'dossier_leyla' },
+        { label: 'Interroger Samia et Anette', hint: 'SOC/Mediation (10)', effect: '+Relation Samia | +Piste Marseille | echec: +Pression', test: { stat: 'SOC', skill: 'Mediation', dd: 10, ok: s => { s.tags.add('Voisins_OK'); setRelation('zaza', 1); setRelation('anette', 1); s.objective = 'Suivre la piste de la Rue de Marseille.'; addObj('Samia et Anette parlent d une archive sortie Rue de Marseille.'); }, ko: s => { s.stress = Math.min(5, s.stress + 1); addPressure(1); log('Les portes se ferment. Stress +1, Pression +1.'); } }, goOK: 'marseille_archive', goKO: 'dossier_leyla' },
+        { label: 'Descendre vers Kabe', hint: 'Anto garde le seuil', effect: '+Seuil Anto', go: 'kabe_seuil' }
+      ]
+    },
+
+    dossier_leyla: {
+      img: IMG.leyla,
+      title: 'Dossier Nora - Bail rature',
+      text: () => `
+        <p>Dans l enveloppe: le bail de Nora, puis le meme bail au nom d une societe vide. Les signatures sont identiques, les dates impossibles. En marge, Nora a ecrit: Rue de Marseille, Mazagran, Berges.</p>
+        <p>Un nom revient sur les scans: <b>Antoine</b>, cadre intermediaire de la Regie. Un autre, raye trois fois: <b>Laura</b>, agente de nuit.</p>`,
+      choices: [
+        { label: 'Classer les pieces du dossier', hint: 'DOC/Archives (9)', effect: '+Preuve | +Dossier solide', test: { stat: 'DOC', skill: 'Archives', dd: 9, ok: s => { evidence(s, 'Preuve_Bail'); s.objective = 'Remonter la chaine du bail falsifie.'; addObj('Preuve obtenue: bail falsifie de Nora.'); }, ko: s => { s.stress = Math.min(5, s.stress + 1); log('Les dates se contredisent. Stress +1.'); } }, goOK: 'place_pistes', goKO: 'place_pistes' },
+        { label: 'Aller Rue de Marseille', hint: 'Juliette connait peut-etre le scelle', effect: '+Piste juridique', go: 'marseille_archive' },
+        { label: 'Aller a Mazagran', hint: 'Mika sait ouvrir ce qui coince', effect: '+Piste technique', go: 'mazagran_entree' }
+      ]
+    },
+
+    place_pistes: {
+      img: IMG.place,
+      title: 'Place du Pont - Trois pistes',
+      text: () => `
+        <p>Samia confirme que <b>Thanos</b>, vigile prive de la Regie, photographie les plaques. Pauline a recu une dette inventee. Anette a note une fourgonnette blanche qui revient toujours par les berges.</p>
+        <p>Il te faut une archive, un temoin et un acces a la Regie. La pression monte a chaque detour.</p>`,
+      choices: [
+        { label: 'Fouiller la permanence Rue de Marseille', hint: 'Archive et Juliette', effect: '+Preuve possible', go: 'marseille_archive' },
+        { label: 'Passer par Mazagran', hint: 'Mika, badges, traces de fourgon', effect: '+Objet possible', go: 'mazagran_entree' },
+        { label: 'Chercher Kabe', hint: 'Chacha, Anto, rumeurs et dettes', effect: '+Reseau Kabe', go: 'kabe_seuil' },
+        { label: 'Longer les berges', hint: 'Yugs et la fourgonnette blanche', effect: '+Temoin possible', go: 'berges_quai' }
+      ]
+    },
+
+    marseille_archive: {
+      img: IMG.marseille,
+      title: 'Rue de Marseille - Permanence fermee',
+      text: () => `
+        <p>La permanence est fermee par un scelle prive. <b>Juliette</b>, juriste stagiaire, attend sous un store eteint. Elle a peur de Laura, d Antoine, de tout ce qui ressemble a une badgeuse.</p>
+        <p>A l interieur, l armoire a dossiers a ete forcee puis rangee trop proprement.</p>`,
+      choices: [
+        { label: 'Convaincre Juliette de parler', hint: 'SOC/Persuasion (10)', effect: '+Relation Juliette | +Acces permanence', test: { stat: 'SOC', skill: 'Persuasion', dd: 10, ok: s => { s.tags.add('Juliette_Source'); setRelation('laura', 1); addObj('Juliette donne le nom de Laura a la Regie.'); }, ko: s => { addPressure(1); log('Juliette recule. Pression +1.'); } }, goOK: 'marseille_dossiers', goKO: 'marseille_dossiers' },
+        { label: 'Crocheter le scelle', hint: 'RUE/Discretion (10)', effect: '+Acces | echec: +Stress', test: { stat: 'RUE', skill: 'Discretion', dd: 10, ok: s => { s.tags.add('Acces_Permanence'); log('Le scelle se decolle en silence.'); }, ko: s => { s.stress = Math.min(5, s.stress + 1); addPressure(1); log('Une diode passe au rouge. Stress +1, Pression +1.'); } }, goOK: 'marseille_dossiers', goKO: 'marseille_dossiers' },
+        { label: 'Revenir a la Place', hint: 'Changer de piste', effect: '+Temps perdu', go: 'place_pistes' }
+      ]
+    },
+
+    marseille_dossiers: {
+      img: IMG.marseille,
+      title: 'Rue de Marseille - Dossiers blancs',
+      text: () => `
+        <p>Les chemises restantes portent la mention <b>depart volontaire confirme</b>. Plusieurs noms sont encore dans les boites aux lettres: Pauline, Anette, Yugs.</p>
+        <p>Dans la photocopieuse, une feuille coincee garde un export signe par Antoine et valide par la direction.</p>`,
+      choices: [
+        { label: 'Extraire la matrice de la photocopieuse', hint: 'TEC/Maintenance (9)', effect: '+Preuve | echec: -Etat', test: { stat: 'TEC', skill: 'Maintenance', dd: 9, ok: s => { evidence(s, 'Preuve_Matrice'); addObj('Preuve obtenue: matrice des departs volontaires.'); }, ko: s => { s.hp = Math.max(0, s.hp - 1); log('Le toner te brule la main. Etat -1.'); } }, goOK: 'place_pistes', goKO: 'place_pistes' },
+        { label: 'Comparer les noms au carnet', hint: 'DOC/Archives (10)', effect: '+Liste habitants', test: { stat: 'DOC', skill: 'Archives', dd: 10, ok: s => { s.tags.add('Liste_Habitants'); setRelation('pauline', 1); addObj('Liste des habitants menaces reconstituee.'); }, ko: s => { s.stress = Math.min(5, s.stress + 1); log('Trop de noms connus. Stress +1.'); } }, goOK: 'kabe_seuil', goKO: 'place_pistes' }
+      ]
+    },
+
+    mazagran_entree: {
+      img: IMG.mazagran,
+      title: 'Mazagran - Friche sous bail',
+      text: () => `
+        <p>Mazagran ressemble a un chantier abandonne par des gens qui comptaient revenir. <b>Mika</b>, serrurier et reparateur de badgeuses, te reconnait avant de l admettre.</p>
+        <p>Une trace de pneu descend vers les berges. Un boitier de badge clignote sur la porte d un local technique.</p>`,
+      choices: [
+        { label: 'Demander a Mika d ouvrir le local', hint: 'SOC/Reseau (9)', effect: '+Relation Mika | +Objet', test: { stat: 'SOC', skill: 'Reseau', dd: 9, ok: s => { gainItem('Badge Regie grille'); setRelation('mika', 1); s.tags.add('Badge_Regie'); addObj('Mika te confie un badge Regie grille.'); }, ko: s => { addPressure(1); log('Mika exige une garantie. Pression +1.'); } }, goOK: 'mazagran_local', goKO: 'mazagran_local' },
+        { label: 'Forcer le boitier toi-meme', hint: 'TEC/Maintenance (10)', effect: '+Objet | echec: -Etat', test: { stat: 'TEC', skill: 'Maintenance', dd: 10, ok: s => { gainItem('Badge Regie grille'); s.tags.add('Badge_Regie'); addObj('Badge Regie grille recupere.'); }, ko: s => { s.hp = Math.max(0, s.hp - 1); log('Le boitier te pince les doigts. Etat -1.'); } }, goOK: 'mazagran_local', goKO: 'mazagran_local' },
+        { label: 'Suivre la trace vers les berges', hint: 'Piste Yugs', effect: '+Berges', go: 'berges_quai' }
+      ]
+    },
+
+    mazagran_local: {
+      img: IMG.mazagran,
+      title: 'Mazagran - Local technique',
+      text: () => `
+        <p>Un plan mural relie Mazagran a l antenne de la Regie. Quelqu un a marque un chemin en vert: court, dangereux, hors cameras.</p>
+        <p>Une etiquette froissee porte le nom d Anto. Mika dit qu Anto travaillait avec Thanos avant de choisir Kabe.</p>`,
+      choices: [
+        { label: 'Photographier le plan des gaines', hint: 'Preuve et acces Regie', effect: '+Preuve | +Acces', immediate: s => { evidence(s, 'Preuve_Gaines'); s.tags.add('Acces_Gaines'); s.tags.add('Regie_Localisee'); addObj('Preuve obtenue: plan des gaines vers la Regie.'); }, go: 'place_pistes' },
+        { label: 'Garder l etiquette d Anto', hint: 'Signe credible pour Kabe', effect: '+Objet | +Acces Kabe', immediate: s => { gainItem('Ancienne etiquette Anto'); setRelation('anto', 1); s.tags.add('Signe_Anto'); addObj('Tu as de quoi parler a Anto sans jouer au dur.'); }, go: 'kabe_seuil' },
+        { label: 'Rejoindre les berges', hint: 'Suivre la trace de pneu', effect: '+Yugs', go: 'berges_quai' }
+      ]
+    },
+
+    kabe_seuil: {
+      img: IMG.kabe,
+      title: 'Kabe - Le seuil d Anto',
+      text: () => `
+        <p>Le bar n a pas d enseigne. Anto bloque l entree, calme comme une menace fatiguee. Derriere lui, <b>Chacha</b> observe qui ment par besoin et qui ment par metier.</p>
+        <p>"Kabe ne fait pas bureau des pleurs", dit Anto. Mais son regard s arrete sur ton sac, puis sur les avis colles dehors.</p>`,
+      choices: () => {
+        const arr = [];
+        if (ST.tags.has('Signe_Anto') || hasItem('Ancienne etiquette Anto')) {
+          arr.push({ label: 'Montrer l ancienne etiquette d Anto', hint: 'Entree sans test', effect: '+Acces Kabe | +Relation Anto', immediate: s => { markItemUsed('Ancienne etiquette Anto'); s.tags.add('Kabe_Entree'); setRelation('anto', 1); log('Anto reconnait l etiquette et s ecarte.'); }, go: 'kabe_salle' });
+        }
+        if (ST.tags.has('Voisins_OK') || ST.tags.has('Juliette_Source') || ST.tags.has('Liste_Habitants')) {
+          arr.push({ label: 'Donner un nom qui compte encore', hint: 'Une alliance ouvre la porte', effect: '+Acces Kabe', immediate: s => { s.tags.add('Kabe_Entree'); setRelation('kabe', 1); log('Chacha verifie ton nom dans la salle, puis Anto te laisse entrer.'); }, go: 'kabe_salle' });
+        }
+        arr.push({ label: 'Convaincre Anto que Nora est en danger', hint: 'SOC/Persuasion (11)', effect: '+Acces | echec: +Pression', test: { stat: 'SOC', skill: 'Persuasion', dd: 11, ok: s => { s.tags.add('Kabe_Entree'); s.tags.add('Anto_Respect'); setRelation('anto', 1); addObj('Anto te laisse entrer chez Kabe.'); }, ko: s => { s.stress = Math.min(5, s.stress + 1); addPressure(1); log('Anto ne bouge pas. Stress +1, Pression +1.'); } }, goOK: 'kabe_salle', goKO: 'place_pistes' });
+        return arr;
+      }
+    },
+
+    kabe_salle: {
+      img: IMG.kabe,
+      title: 'Kabe - Bar d infos',
+      text: () => `
+        <p>Kabe trie les versions, cache les gens, garde les dettes dans une boite a biscuits. Chacha connait les rumeurs qui mentent. Anto reste pres de la porte.</p>
+        <p>Ici, parler trop fort peut sauver quelqu un ou le livrer.</p>`,
+      choices: [
+        { label: 'Ouvrir le reseau de Kabe', hint: 'Samia, Chacha, Mika, Yugs, Antoine', effect: '+Actions sociales', immediate: () => openKabeNetwork() },
+        { label: 'Demander ce que Nora a laisse ici', hint: 'DOC/Archives (10)', effect: '+Preuve | +Nora vivante possible', test: { stat: 'DOC', skill: 'Archives', dd: 10, ok: s => { evidence(s, 'Preuve_LeylaKabe'); s.tags.add('LeylaAlive'); addObj('Chacha remet une cle USB de Nora.'); }, ko: s => { s.stress = Math.min(5, s.stress + 1); log('Kabe te regarde comme si tu arrivais trop tard. Stress +1.'); } }, goOK: 'place_pistes', goKO: 'kabe_salle' },
+        { label: 'Sortir par l arriere vers les berges', hint: 'Anto connait le passage', effect: '+Berges', when: () => ST.tags.has('Anto_Allie') || ST.tags.has('Kabe_Tournee'), go: 'berges_quai' },
+        { label: 'Revenir a la Place', hint: 'Continuer l enquete', effect: '+Carte', go: 'place_pistes' }
+      ]
+    },
+
+    berges_quai: {
+      img: IMG.berges,
+      title: 'Berges du Rhone - Fourgonnette blanche',
+      text: () => `
+        <p>Les berges sont vides sauf pour les joggeurs tres riches et les patrouilles tres pauvres. <b>Yugs</b>, coursier de nuit, attend sous le pont avec une sacoche trempee.</p>
+        <p>Il a vu la fourgonnette blanche. Il connait aussi Thanos, et il prefere ne plus jamais le croiser.</p>`,
+      choices: [
+        { label: 'Faire parler Yugs', hint: 'SOC/Reseau (9)', effect: '+Relation Yugs | +Temoin', test: { stat: 'SOC', skill: 'Reseau', dd: 9, ok: s => { s.tags.add('Yugs_Temoin'); setRelation('yugs', 1); addObj('Yugs decrit le transfert de Nora vers la Regie.'); }, ko: s => { addPressure(1); log('Yugs disparait dans le brouillard. Pression +1.'); } }, goOK: 'berges_temoin', goKO: 'berges_patrouille' },
+        { label: 'Ouvrir la fourgonnette', hint: 'RUE/Discretion (11)', effect: '+Preuve | echec: +Stress', test: { stat: 'RUE', skill: 'Discretion', dd: 11, ok: s => { evidence(s, 'Preuve_Fourgonnette'); s.tags.add('Regie_Localisee'); addObj('Preuve obtenue: bordereau de transfert de Nora.'); }, ko: s => { s.stress = Math.min(5, s.stress + 1); addPressure(1); log('Un gyrophare discret s allume. Stress +1, Pression +1.'); } }, goOK: 'berges_temoin', goKO: 'berges_patrouille' },
+        { label: 'Retourner chez Kabe', hint: 'Faire confirmer l indice', effect: '+Chacha', go: 'kabe_salle' }
+      ]
+    },
+
+    berges_temoin: {
+      img: IMG.berges,
+      title: 'Berges - Temoin sous le pont',
+      text: () => `
+        <p>Yugs parle enfin: Nora n etait pas inconsciente, elle refusait de monter. Anto est arrive, pas pour la prendre. Pour empecher Thanos de faire pire.</p>
+        <p>Yugs veut une chose simple: ne pas finir dans le meme fichier que les autres.</p>`,
+      choices: [
+        { label: 'Le conduire chez Kabe', hint: 'SOC/Reseau (9)', effect: '+Temoin protege | +Kabe', test: { stat: 'SOC', skill: 'Reseau', dd: 9, ok: s => { s.tags.add('TemoinProtege'); setRelation('kabe', 1); addObj('Yugs est protege chez Kabe.'); }, ko: s => { s.stress = Math.min(5, s.stress + 1); log('Yugs disparait avant le pont. Stress +1.'); } }, goOK: 'kabe_salle', goKO: 'place_pistes' },
+        { label: 'Noter sa deposition sur dictaphone', hint: 'Preuve si tu as le dictaphone', effect: '+Preuve audio', when: () => hasItem('Dictaphone fendu'), immediate: s => { markItemUsed('Dictaphone fendu'); evidence(s, 'Preuve_Deposition'); addObj('Preuve obtenue: deposition audio de Yugs.'); }, go: 'regie_entree' },
+        { label: 'Aller directement a la Regie', hint: 'Il est tard', effect: '+Regie', go: 'regie_entree' }
+      ]
+    },
+
+    berges_patrouille: {
+      img: IMG.berges,
+      title: 'Berges - Controle municipal',
+      text: () => `
+        <p>Deux agents te bloquent sous le pont. Leur oreillette crache le nom de Thanos. Ils veulent ton nom, puis ton telephone.</p>`,
+      choices: [
+        { label: 'Donner une vieille carte de presse', hint: 'DOC/Persuasion (10)', effect: '+Acces | objet utilise', when: () => hasItem('Carte de presse perimee'), test: { stat: 'DOC', skill: 'Persuasion', dd: 10, ok: s => { markItemUsed('Carte de presse perimee'); s.tags.add('Regie_Localisee'); log('Ils ne veulent pas d article. Ils te laissent passer.'); }, ko: s => { s.stress = Math.min(5, s.stress + 1); log('Ils photographient ta carte. Stress +1.'); } }, goOK: 'regie_entree', goKO: 'place_pistes' },
+        { label: 'Passer par les escaliers de service', hint: 'TEC/Maintenance (10)', effect: '+Acces Regie', test: { stat: 'TEC', skill: 'Maintenance', dd: 10, ok: s => { s.tags.add('Acces_Regie_Service'); s.tags.add('Regie_Localisee'); addObj('Acces service repere.'); }, ko: s => { s.hp = Math.max(0, s.hp - 1); log('Tu glisses sur la marche. Etat -1.'); } }, goOK: 'regie_entree', goKO: 'place_pistes' }
+      ]
+    },
+
+    regie_entree: {
+      img: IMG.regie,
+      title: 'Antenne de la Regie - Entree de nuit',
+      text: () => `
+        <p>L antenne occupe un ancien bureau de bailleur social. A l accueil, <b>Laura</b> evite les cameras. Dans le couloir, <b>Antoine</b> signe des deplacements qu il appelle arbitrages.</p>
+        <p>Tu peux entrer par badge, par les gaines, ou avec assez de preuves pour faire hesiter Laura.</p>`,
+      choices: () => {
+        const arr = [];
+        if (ST.tags.has('Badge_Regie') || hasItem('Badge Regie grille')) arr.push({ label: 'Badger comme un prestataire', hint: 'Acces direct', effect: '+Acces archives', immediate: () => markItemUsed('Badge Regie grille'), go: 'regie_archives' });
+        if (ST.tags.has('Acces_Gaines') || ST.tags.has('Acces_Regie_Service')) arr.push({ label: 'Passer par l acces service', hint: 'TEC/Maintenance (9)', effect: '+Archives | echec: +Stress', test: { stat: 'TEC', skill: 'Maintenance', dd: 9, ok: () => log('La gaine donne sur les archives.'), ko: s => { s.stress = Math.min(5, s.stress + 1); addPressure(1); log('Tu restes coince trop longtemps. Stress +1, Pression +1.'); } }, goOK: 'regie_archives', goKO: 'regie_accueil' });
+        arr.push({ label: 'Mettre les preuves sur le comptoir de Laura', hint: 'DOC/Archives (12), DD 9 avec 3 Preuves', effect: '+Relation Laura | +Archives', test: { stat: 'DOC', skill: 'Archives', dd: ST.frag >= 3 ? 9 : 12, ok: s => { s.tags.add('Regie_Hesite'); setRelation('laura', 1); log('Laura comprend que tu n es pas seul.'); }, ko: s => { s.stress = Math.min(5, s.stress + 1); addPressure(1); log('On te demande de sortir. Stress +1, Pression +1.'); } }, goOK: 'regie_archives', goKO: 'regie_accueil' });
+        return arr;
+      }
+    },
+
+    regie_accueil: {
+      img: IMG.regie,
+      title: 'Regie - Accueil froid',
+      text: () => `
+        <p>Laura ne leve pas les yeux. Elle connait ton nom avant que tu parles. Sur son ecran: retour suspect, dette inconnue, lien avec Nora.</p>
+        <p>Antoine passe derriere elle et fait semblant de ne pas t avoir vu.</p>`,
+      choices: [
+        { label: 'Tenir la ligne et citer Antoine', hint: 'SOC/Persuasion (11)', effect: '+Acces | echec: fin fragile', test: { stat: 'SOC', skill: 'Persuasion', dd: 11, ok: s => { s.tags.add('Regie_Hesite'); setRelation('laura', 1); log('Le nom d Antoine ouvre une porte invisible.'); }, ko: s => { s.stress = Math.min(5, s.stress + 1); addPressure(1); log('La securite est appelee. Stress +1, Pression +1.'); } }, goOK: 'regie_archives', goKO: 'final_choix' },
+        { label: 'Fuir avec ce que tu as', hint: 'Aller aux fins avec un dossier fragile', effect: '+Final', go: 'final_choix' }
+      ]
+    },
+
+    regie_archives: {
+      img: IMG.regie,
+      title: 'Regie - Archives des vivants',
+      text: () => `
+        <p>Les archives ne sont pas des cartons: ce sont des profils prets a etre deplaces. Chaque personne devient un risque, chaque risque une ligne de cout.</p>
+        <p>Laura te montre le dossier de Nora: <b>retenue pour entretien</b>. Sous-sol B. Salle Antoine.</p>`,
+      choices: [
+        { label: 'Copier l export complet', hint: 'TEC/Maintenance (11)', effect: '+2 Preuves | echec: +Stress', test: { stat: 'TEC', skill: 'Maintenance', dd: 11, ok: s => { evidence(s, 'Preuve_Export', 2); addObj('Export complet copie. Preuves +2.'); }, ko: s => { s.stress = Math.min(5, s.stress + 1); log('La copie s interrompt a 63 %. Stress +1.'); } }, goOK: 'regie_vautrin', goKO: 'regie_vautrin' },
+        { label: 'Chercher d abord Nora', hint: 'Sauvetage avant publication', effect: '+Nora', go: 'regie_vautrin' },
+        { label: 'Appeler Kabe depuis les archives', hint: 'Si Kabe te couvre', effect: '+Publication preparee', when: () => ST.tags.has('TemoinProtege') || ST.tags.has('Kabe_Couvre_Regie'), immediate: s => { s.tags.add('Publication_Preparee'); addObj('Kabe prepare la sortie publique.'); }, go: 'regie_vautrin' }
+      ]
+    },
+
+    regie_vautrin: {
+      img: IMG.regie,
+      title: 'Sous-sol B - Nora',
+      text: () => `
+        <p>Nora est vivante. Fatiguee, lucide, furieuse de te voir seul. Antoine attend pres d une table sans ordinateur, seulement un dossier papier et deux stylos.</p>
+        <p>"Vous pouvez sauver une personne", dit-il. "Ou publier assez mal pour en perdre cent."</p>`,
+      choices: [
+        { label: 'Sortir Nora par les gaines', hint: 'RUE/Discretion (11)', effect: '+Nora vivante', test: { stat: 'RUE', skill: 'Discretion', dd: 11, ok: s => { s.tags.add('LeylaAlive'); addObj('Nora sort de la Regie avec toi.'); }, ko: s => { s.hp = Math.max(0, s.hp - 1); log('La fuite tourne court. Etat -1.'); } }, goOK: 'final_choix', goKO: 'final_choix' },
+        { label: 'Faire parler Antoine en enregistrant', hint: 'DOC/Persuasion (12)', effect: '+Preuve aveu', test: { stat: 'DOC', skill: 'Persuasion', dd: 12, ok: s => { evidence(s, 'Preuve_Aveu'); addObj('Aveu d Antoine enregistre.'); }, ko: s => { s.stress = Math.min(5, s.stress + 1); log('Antoine sourit: il sait que tu enregistres. Stress +1.'); } }, goOK: 'final_choix', goKO: 'final_choix' },
+        { label: 'Accepter d ecouter son marche', hint: 'Ouvrir la fin transaction', effect: '+Fin marche', immediate: s => { s.tags.add('Vautrin_Marche'); addObj('Antoine propose Nora contre le silence.'); }, go: 'final_choix' }
+      ]
+    },
+
+    final_choix: {
+      img: IMG.leyla,
+      title: 'Avant 6 h - Que faire du dossier',
+      text: () => `
+        <p>Le jour commence sans lumiere. Sur la Place, les premieres portes claquent. Tu as ${ST.frag} preuve${ST.frag > 1 ? 's' : ''}, ${ST.flux} levier${ST.flux > 1 ? 's' : ''}, et une pression a ${ST.pressure}/6.</p>
+        <p>Le dossier peut sortir, Nora peut sortir, ou la Regie peut acheter encore une nuit de silence.</p>`,
+      choices: () => [
+        { label: 'Publier le dossier maintenant', hint: ST.frag >= 3 ? 'Dossier solide' : 'Dossier fragile', effect: '+Fin publique', go: () => ST.frag >= 2 || ST.tags.has('Publication_Preparee') ? pickEnding('public') : pickEnding('lost') },
+        { label: 'Sauver Nora et garder une copie', hint: 'Priorite humaine', effect: '+Fin Nora', when: () => ST.tags.has('LeylaAlive') || ST.tags.has('TemoinProtege'), go: () => pickEnding('save') },
+        { label: 'Accepter le marche d Antoine', hint: 'Silence contre protection immediate', effect: '+Fin marche', when: () => ST.tags.has('Vautrin_Marche'), go: () => pickEnding('market') },
+        { label: 'Partir avec un dossier incomplet', hint: 'Personne ne gagne vraiment', effect: '+Fin perdue', go: () => pickEnding('lost') }
+      ]
+    },
+
+    ep_public: { img: IMG.place, title: 'Epilogue - Publication', text: () => `<p>Le dossier sort a 06 h 03. La Regie nie, puis suspend l evacuation. Tu ne sais pas ou est Nora, mais son travail survit dans les copies que le quartier imprime deja.</p>`, choices: [{ label: 'Recommencer', go: 'retour_place' }] },
+    ep_public_leyla: { img: IMG.kabe, title: 'Epilogue - Dossier vivant', text: () => `<p>Nora apparait dans l arriere-salle de Kabe pendant que Laura fuit par une porte de service. Les habitants ne sont pas sauves, pas encore. Mais ils ont des noms, des preuves, et une salle pleine de temoins.</p>`, choices: [{ label: 'Recommencer', go: 'retour_place' }] },
+    ep_save: { img: IMG.berges, title: 'Epilogue - Nora d abord', text: () => `<p>Tu fais sortir Nora avant l aube. La Place perd une bataille, peut-etre plus. Nora garde assez de memoire pour recommencer, et toi assez de honte pour rester.</p>`, choices: [{ label: 'Recommencer', go: 'retour_place' }] },
+    ep_save_with_copy: { img: IMG.leyla, title: 'Epilogue - Copie cachee', text: () => `<p>Nora sort, et une copie du dossier reste chez Kabe. Pas une victoire propre: une braise sous la cendre. Anto promet de tenir la porte tant que la ville fera semblant de dormir.</p>`, choices: [{ label: 'Recommencer', go: 'retour_place' }] },
+    ep_market: { img: IMG.regie, title: 'Epilogue - Marche', text: () => `<p>Antoine tient parole sur Nora et ment sur le reste. L evacuation est repoussee, pas annulee. Tu rentres avec une personne vivante et un quartier qui ne sait pas ce que tu as coute.</p>`, choices: [{ label: 'Recommencer', go: 'retour_place' }] },
+    ep_lost: { img: IMG.place, title: 'Epilogue - Couvre-feu', text: () => `<p>A 06 h, la Place se vide par cages d escalier. Ton dossier ne suffit pas. Dans la foule, quelqu un murmure le nom de Nora, et c est tout ce que la Regie n a pas encore su effacer.</p>`, choices: [{ label: 'Recommencer', go: 'retour_place' }] }
+  };
+}
